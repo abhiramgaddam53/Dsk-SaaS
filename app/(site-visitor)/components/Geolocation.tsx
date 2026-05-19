@@ -178,7 +178,7 @@
 
 // // ─── Main component ───────────────────────────────────────────────────────────
 // export default function GeoCoordinatePicker() {
-//   const apiKey =  "AIzaSyBHMeEzVqW7_6l7ePVNZj4HToBJ1HB9xGA";
+//   const apiKey =  " ";
 
 //   // Controlled Map State
 //   const [center, setCenter] = useState<Coord>({ lat: 20, lng: 78 }); // Default fallback
@@ -659,7 +659,7 @@ function CoordCard({
 }
 
 export default function GeoCoordinatePicker() {
-  const apiKey =  "AIzaSyBHMeEzVqW7_6l7ePVNZj4HToBJ1HB9xGA";
+  const apiKey =  " ";
 
   const [center, setCenter] = useState<Coord>({ lat: 20, lng: 78 });
   const [zoom, setZoom] = useState(4);
