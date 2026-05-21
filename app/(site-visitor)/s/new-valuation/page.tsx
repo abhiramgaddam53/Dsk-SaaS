@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowRight, ArrowLeft, Building, Building2, Grid, Landmark, LayoutGrid, Loader, CheckCircle2, ChevronDown, MapPin, UploadCloud, Image as ImageIcon, X, FileText, Edit, CircleCheck } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Building, Building2, Grid, Landmark, LayoutGrid, Loader, CheckCircle2, ChevronDown, MapPin, UploadCloud, Image as ImageIcon, X, FileText, Edit, CircleCheck, Check  } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback,  useEffect } from "react";
 import {
@@ -12,6 +12,7 @@ import {
   useMap,
 } from "@vis.gl/react-google-maps";
 import {   Undo2, RotateCcw, Edit2,   } from "lucide-react";
+import Link from 'next/link';
 
 // ============================================================
 //  TYPES
@@ -23,10 +24,12 @@ type Coord = { lat: number; lng: number };
 type Pin = { id: number; coord: Coord };
 type Mode = "picking" | "submitted";
 
-const MAX = 4;
-const LABELS = ["P1", "P2", "P3", "P4"];
-const COLORS = ["#00a0ef", "#10b981", "#f59e0b", "#ef4444"];
-
+const MAX = 10;
+const LABELS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10"];
+const COLORS = [
+  "#00a0ef", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", 
+  "#ec4899", "#06b6d4", "#14b8a6", "#f97316", "#6366f1"
+];
 // ---- Step 1 state (your existing FormState) ----
 interface Step1State {
   inputField:     { dateValuation: string; dateInspection: string; propertyType: string; loanType: string; };
@@ -241,7 +244,7 @@ function ActionBar({
   );
 
   const handleSubmit = () => {
-    if (pins.length < MAX) return;
+    if (pins.length === 0) return; // Allows submitting any number of points up to 10
     setSubmitted([...pins]);
     setMode("submitted");
     setEditTarget(null);
@@ -358,22 +361,20 @@ function ActionBar({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={pins.length < MAX}
+              disabled={pins.length === 0}
               className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
-                pins.length === MAX
+                pins.length > 0
                   ? "bg-[#00a0ef] text-white hover:bg-[#008bd1] shadow-sm"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
               }`}
             >
-              {pins.length === MAX ? (
+              {pins.length > 0 ? (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  Confirm Boundaries
+                  Confirm {pins.length} Boundaries
                 </>
               ) : (
-                `Place ${MAX - pins.length} more point${
-                  MAX - pins.length !== 1 ? "s" : ""
-                }`
+                "Place at least 1 point"
               )}
             </button>
           </div>
@@ -696,7 +697,30 @@ function Step2Form({
   setFormData: React.Dispatch<React.SetStateAction<Step2State>>;
 }) {
   const [activeSection, setActiveSection] = useState<keyof Step2State>('intendingVendor');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setFormData(prev => ({
+        ...prev,
+        propertyDetails: {
+          ...prev.propertyDetails,
+          images: [...prev.propertyDetails.images, ...newFiles]
+        }
+      }));
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      propertyDetails: {
+        ...prev.propertyDetails,
+        images: prev.propertyDetails.images.filter((_, i) => i !== index)
+      }
+    }));
+  };
   const handleInputChange = (section: keyof Step2State, field: string, value: any) => {
     setFormData(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
   };
@@ -859,6 +883,53 @@ function Step2Form({
                   <span className="hidden sm:inline">Get Location</span>
                 </button>
               </div> */}
+            </div>
+            <div className="md:col-span-2 mt-6">
+              <label className={labelStyles}>Upload Site Photos</label>
+              <div 
+                className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-white hover:bg-gray-50 transition cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input 
+                  type="file" 
+                  multiple 
+                  accept="image/*" 
+                  className="hidden" 
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                />
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                  <UploadCloud className="w-6 h-6 text-gray-500" />
+                </div>
+                <p className="text-sm text-gray-600 text-center">
+                  Drag and drop your photos here or click to <span className="text-[#00a0ef] font-medium">browse files</span>
+                </p>
+              </div>
+
+              {formData.propertyDetails.images.length > 0 && (
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4">
+                  {formData.propertyDetails.images.map((file, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center group">
+                      
+                      {/* REPLACE ImageIcon with an actual img tag */}
+                      <img 
+                        src={URL.createObjectURL(file)} 
+                        alt={`Preview ${idx + 1}`} 
+                        className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                      />
+                      
+                      <button 
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+                        className="absolute top-1 right-1 bg-white rounded-full p-1.5 shadow-md  opacity-100 transition-all hover:bg-red-50 hover:scale-105"
+                      >
+                        <X className="w-3.5 h-3.5 text-red-500" />
+                      </button>
+                      
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1158,112 +1229,244 @@ function Step4Form({
 // ============================================================
 //  STEP 5 FORM  ← ADD YOUR STEP 5 CONTENT HERE
 // ============================================================
+// ============================================================
+//  STEP 5 FORM  ← REPLACE YOUR EXISTING STEP 5 WITH THIS
+// ============================================================
 function Step5Form({
-    step1,
-    step2,
-    step3,
-    step4,
-    onEditStep,
-    isConfirmed,
-    setIsConfirmed,
-  }: Step5FormProps) {
-    
-    const ReviewSection = ({ title, stepNum, children }: { title: string; stepNum: number; children: React.ReactNode }) => (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-        <div className="px-4 py-3.5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#00a0ef]" />
-            {title}
-          </h3>
-          <button 
-            type="button" 
-            onClick={() => onEditStep(stepNum)}
-            className="text-[#00a0ef] hover:text-[#008bd1] p-1 rounded-md hover:bg-blue-50 transition-colors flex items-center gap-1 text-sm font-medium"
-          >
-            <Edit className="w-4 h-4" />
-            <span className="hidden sm:inline">Edit</span>
-          </button>
+  step1,
+  step2,
+  step3,
+  step4,
+  onEditStep,
+  isConfirmed,
+  setIsConfirmed,
+}: Step5FormProps) {
+  
+  const MainCategory = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
+    <div className="mb-8 px-1">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-5 h-5 flex items-center justify-center text-[#00a0ef]">
+          <Icon className="w-5 h-5 fill-current opacity-20" strokeWidth={2} />
         </div>
-        <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-          {children}
+        <h3 className="text-[15px] font-bold text-gray-900">{title}</h3>
+      </div>
+      <div className="bg-white px-2">
+        {children}
+      </div>
+    </div>
+  );
+
+  const SubCategory = ({ title, stepNum, children }: { title: string, stepNum: number, children: React.ReactNode }) => (
+    <div className="py-4 border-b border-gray-200 last:border-0 first:pt-0">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-[13px] font-bold text-gray-800">{title}</h4>
+        <button 
+          type="button" 
+          onClick={() => onEditStep(stepNum)}
+          className="text-[#00a0ef] hover:bg-blue-50 p-1.5 rounded transition-colors"
+        >
+          <Edit2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-y-4 gap-x-4">
+        {children}
+      </div>
+    </div>
+  );
+
+  const DataField = ({ label, value }: { label: string; value: string | number }) => (
+    <div>
+      <p className="text-[11px] text-gray-500 font-medium mb-1">{label}</p>
+      <p className="text-[13px] font-medium text-gray-900 break-words">{value || '—'}</p>
+    </div>
+  );
+
+  const FileCard = ({ file }: { file: File }) => (
+    <div className="flex items-center justify-between p-3 bg-[#f2f9fd] rounded-xl mb-3 border border-[#e5f3fa]">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-[#00a0ef] rounded-lg flex items-center justify-center text-white shadow-sm">
+          <FileText className="w-4 h-4" />
+        </div>
+        <div>
+          <p className="text-[12px] font-semibold text-gray-900 line-clamp-1">{file.name}</p>
+          <p className="text-[10px] font-medium text-gray-500">{(file.size / (1024 * 1024)).toFixed(1)} MB</p>
         </div>
       </div>
-    );
-  
-    const DataField = ({ label, value }: { label: string; value: string | number }) => (
-      <div>
-        <p className="text-gray-500 font-medium mb-0.5">{label}</p>
-        <p className="text-gray-900 font-semibold break-words">{value || '—'}</p>
+      <button className="text-[#00a0ef] p-1.5 hover:bg-blue-100 rounded-full transition-colors">
+        {/* Placeholder for view icon, using a generic check/eye equivalent */}
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      </button>
+    </div>
+  );
+
+  // Flatten step 3 files for easy display
+  const allStep3Files = Object.values(step3.documentUpload).flat();
+
+  return (
+    <div className="max-w-3xl bg-white mx-auto md:px-4 pb-8">
+      <div className="py-6 px-2">
+        <h2 className="text-[18px] font-medium text-[#00a0ef]">Review & Submit</h2>
       </div>
-    );
-  
-    return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-[#00a0ef]">Review & Submit</h2>
-          <p className="text-sm text-gray-500">Verify your information across all steps before final presentation submission.</p>
-        </div>
-  
-        {/* Step 1 Data Summary */}
-        <ReviewSection title="Basic Input & Applicant Details" stepNum={1}>
+
+      {/* --- Category 1: Basic Details --- */}
+      <MainCategory title="Basic Details" icon={LayoutGrid}>
+        
+        <SubCategory title="Input Details" stepNum={1}>
           <DataField label="Date Valuation" value={step1.inputField.dateValuation} />
-          <DataField label="Date Inspection" value={step1.inputField.dateInspection} />
-          <DataField label="Property Type" value={step1.inputField.propertyType} />
-          <DataField label="Loan Type" value={step1.inputField.loanType} />
-          <DataField label="Applicant Name" value={step1.applicantDetails.name} />
+          <DataField label="Date of Inspection" value={step1.inputField.dateInspection} />
+          <DataField label="Type of Property" value={step1.inputField.propertyType} />
+          <DataField label="Type of Loan" value={step1.inputField.loanType} />
+        </SubCategory>
+
+        <SubCategory title="Applicant Details" stepNum={1}>
+          <DataField label="Name" value={step1.applicantDetails.name} />
           <DataField label="Relation" value={`${step1.applicantDetails.relationType} ${step1.applicantDetails.relationName}`} />
           <DataField label="Occupation" value={step1.applicantDetails.occupation} />
-          <DataField label="Phone 1" value={step1.applicantDetails.phone1} />
-          <DataField label="Pincode" value={step1.address.pincode} />
+          <DataField label="Phone Number 1" value={step1.applicantDetails.phone1} />
+        </SubCategory>
+
+        <SubCategory title="Applicant Address" stepNum={1}>
+          <DataField label="Plot No. / H.No." value={step1.address.plotNo} />
+          <DataField label="Road / Street" value={step1.address.road} />
+          <DataField label="Village / Mandal" value={step1.address.village} />
+          <DataField label="District" value={step1.address.district} />
+        </SubCategory>
+
+        <SubCategory title="Bank Details" stepNum={1}>
           <DataField label="Bank Name" value={step1.bankDetails.bankName} />
-          <DataField label="Site Area (Doc)" value={`${step1.siteArea.asPerDocument} Sq.Yds`} />
-          <DataField label="Plot Value" value={step1.plotValuation.sayValue} />
-        </ReviewSection>
-  
-        {/* Step 2 Data Summary */}
-        <ReviewSection title="Vendor, Property & Boundary Details" stepNum={2}>
+          <DataField label="Branch" value={step1.bankDetails.branch} />
+          <DataField label="IFSC Code" value={step1.bankDetails.ifsc} />
+          <DataField label="Contact Person" value={step1.bankDetails.contactPerson} />
+        </SubCategory>
+
+        <SubCategory title="Site Area" stepNum={1}>
+          <DataField label="As per Document" value={`${step1.siteArea.asPerDocument} Sq.Yds`} />
+          <DataField label="As per Actual" value={`${step1.siteArea.asPerActual} Sq.Yds`} />
+          <DataField label="Site Shape" value={step1.siteArea.siteShape} />
+          <DataField label="Road Affected" value={step1.siteArea.roadAffectedArea} />
+        </SubCategory>
+
+        <SubCategory title="Plot Valuation" stepNum={1}>
+          <DataField label="Site Area" value={step1.plotValuation.siteArea} />
+          <DataField label="GLR" value={step1.plotValuation.glr} />
+          <DataField label="MV" value={step1.plotValuation.mv} />
+          <DataField label="Round Up Value" value={step1.plotValuation.sayValue} />
+        </SubCategory>
+
+      </MainCategory>
+
+      {/* --- Category 2: Vendor, Property Details --- */}
+      <MainCategory title="Vendor, Property Details" icon={Building2}>
+        
+        <SubCategory title="Intending Vendor" stepNum={2}>
           <DataField label="Vendor Name" value={step2.intendingVendor.name} />
+          <DataField label="Occupation" value={step2.intendingVendor.occupation} />
           <DataField label="Realizable Value" value={step2.intendingVendor.realizableValue} />
           <DataField label="Distress Value" value={step2.intendingVendor.distressValue} />
+        </SubCategory>
+
+        <SubCategory title="Property Details" stepNum={2}>
+          <DataField label="Building Type" value={step2.propertyDetails.buildingType} />
           <DataField label="H.No" value={step2.propertyDetails.hNo} />
           <DataField label="Sy.No." value={step2.propertyDetails.syNo} />
-          <DataField label="Coordinates" value={`${step2.propertyDetails.latitude || '—'}, ${step2.propertyDetails.longitude || '—'}`} />
-          <DataField label="North Boundary" value={step2.siteBoundaryDetails.boundariesDoc.north} />
-          <DataField label="South Boundary" value={step2.siteBoundaryDetails.boundariesDoc.south} />
-          <DataField label="Uploaded Images" value={`${step2.propertyDetails.images.length} files attached`} />
-        </ReviewSection>
-  
-        {/* Step 3 Data Summary */}
-        <ReviewSection title="Uploaded Ownership Documents" stepNum={3}>
-          <DataField label="Sale Deed" value={`${step3.documentUpload.saleDeed.length} file(s)`} />
-          <DataField label="Building Permission" value={`${step3.documentUpload.buildingPermission.length} file(s)`} />
-          <DataField label="Layout Copy" value={`${step3.documentUpload.layoutCopy.length} file(s)`} />
-          <DataField label="Legal Opinion" value={`${step3.documentUpload.legalOpinion.length} file(s)`} />
-          <DataField label="Property Tax" value={`${step3.documentUpload.propertyTax.length} file(s)`} />
-        </ReviewSection>
-  
-        {/* Step 4 Data Summary */}
-        <ReviewSection title="Site Inspection Document" stepNum={4}>
-          <DataField label="Inspection Report File" value={`${step4.siteInspection.reportFiles.length} file(s) uploaded`} />
-        </ReviewSection>
-  
-        {/* Declaration Checkbox Card */}
-        <div className="p-4 md:p-5 bg-gray-50 border border-gray-200 rounded-xl flex items-start gap-3 shadow-inner">
+          <DataField label="Geo Center" value={`${step2.propertyDetails.latitude || '-'}, ${step2.propertyDetails.longitude || '-'}`} />
+          
+          {/* RENDER BOUNDARY COORDINATES */}
+          {step2.propertyDetails.boundaryCoordinates && step2.propertyDetails.boundaryCoordinates.length > 0 && (
+            <div className="col-span-2 mt-2">
+              <p className="text-[11px] text-gray-500 font-medium mb-2">Boundary Points</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {step2.propertyDetails.boundaryCoordinates.map((coord, i) => (
+                  <div key={i} className="text-[12px] text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100 flex items-center">
+                    <span className="font-bold text-white bg-[#00a0ef] rounded-full w-5 h-5 flex items-center justify-center text-[10px] mr-2 shrink-0">
+                      P{i + 1}
+                    </span>
+                    <span className="font-mono truncate">{coord.lat.toFixed(5)}, {coord.lng.toFixed(5)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </SubCategory>
+
+        {/* RENDER SITE PHOTOS */}
+        <SubCategory title="Site Photos" stepNum={2}>
+          <div className="col-span-2">
+            {step2.propertyDetails.images && step2.propertyDetails.images.length > 0 ? (
+              <div className="flex flex-wrap gap-3 mt-1">
+                {step2.propertyDetails.images.map((img, i) => (
+                  <div key={i} className="w-16 h-16 md:w-20 md:h-20 rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                    <img 
+                      src={URL.createObjectURL(img)} 
+                      alt={`Site photo ${i + 1}`} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[12px] text-gray-400 italic">No site photos uploaded.</p>
+            )}
+          </div>
+        </SubCategory>
+
+        <SubCategory title="Boundary Details" stepNum={2}>
+          <DataField label="North (Doc)" value={step2.siteBoundaryDetails.boundariesDoc.north} />
+          <DataField label="South (Doc)" value={step2.siteBoundaryDetails.boundariesDoc.south} />
+          <DataField label="East (Doc)" value={step2.siteBoundaryDetails.boundariesDoc.east} />
+          <DataField label="West (Doc)" value={step2.siteBoundaryDetails.boundariesDoc.west} />
+        </SubCategory>
+
+      </MainCategory>
+
+      {/* --- Category 3: Uploaded Documents --- */}
+      <MainCategory title="Uploaded Documents" icon={FileText}>
+        <div className="pt-2">
+          {allStep3Files.length > 0 ? (
+            allStep3Files.map((file, idx) => (
+              <FileCard key={idx} file={file} />
+            ))
+          ) : (
+            <p className="text-sm text-gray-500 italic">No ownership documents uploaded.</p>
+          )}
+        </div>
+      </MainCategory>
+
+      {/* --- Category 4: Site Inspection --- */}
+      <MainCategory title="Site Inspection Document" icon={FileText}>
+        <div className="pt-2">
+          {step4.siteInspection.reportFiles.length > 0 ? (
+            step4.siteInspection.reportFiles.map((file, idx) => (
+              <FileCard key={idx} file={file} />
+            ))
+          ) : (
+            <p className="text-sm text-gray-500 italic">No inspection reports uploaded.</p>
+          )}
+        </div>
+      </MainCategory>
+
+      {/* --- Declaration Checkbox Card --- */}
+      <div className="mt-8 p-4 bg-[#f8fafc] border border-gray-200 rounded-xl flex items-start gap-3">
+        <div className="pt-0.5">
           <input 
             type="checkbox" 
             id="final-confirm"
             checked={isConfirmed}
             onChange={(e) => setIsConfirmed(e.target.checked)}
-            className="mt-1 w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]"
+            className="w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]"
           />
-          <label htmlFor="final-confirm" className="text-sm text-gray-700 leading-relaxed select-none cursor-pointer font-medium">
-            I confirm that all information provided above is correct and I have uploaded the correct version of my document for editing.
-          </label>
         </div>
+        <label htmlFor="final-confirm" className="text-[13px] text-gray-700 leading-relaxed select-none cursor-pointer">
+          I confirm that all information provided above is correct and I have uploaded the correct version of my document for editing.
+        </label>
       </div>
-    );
-  }
 
+    </div>
+  );
+}
 // ============================================================
 //  STEP 6 FORM  ← ADD YOUR STEP 6 CONTENT HERE
 //  This is the last step. "Continue" becomes "Submit Report"
@@ -1410,23 +1613,76 @@ const handleSubmit = async () => {
 
   if (isSubmittedSuccessfully) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-full max-w-md bg-white p-8 border border-gray-100 rounded-2xl md:shadow-md flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-blue-50 text-[#00a0ef] flex items-center justify-center mb-6 ring-8 ring-blue-50/50">
-            <CheckCircle2 className="w-10 h-10 fill-current text-white" />
+      <div className="flex flex-col flex-1 w-full relative min-h-screen md:min-h-0 bg-white overflow-hidden">
+                            
+      {/* --- CONFETTI IMAGES (Responsive Positioning) --- */}
+      {/* Left Confetti */}
+      <img 
+        src="/images/party-left.svg" 
+        alt="Success Confetti Left" 
+        className="absolute -left-[45%] top-0 md:-left-40 md:top-[5%] w-[120%] md:w-[600px] lg:w-[700px] pointer-events-none z-0 opacity-60 md:opacity-100 scale-x-[-1]" 
+      />
+    
+      {/* Right Confetti */}
+      <img 
+        src="/images/party-right.svg" 
+        alt="Success Confetti Right" 
+        className="absolute -right-[45%] top-0 md:-right-32 md:top-[5%] w-[120%] md:w-[600px] lg:w-[700px] pointer-events-none z-0 opacity-60 md:opacity-100"
+      />
+    
+      {/* --- CENTRAL CONTENT --- */}
+      <div className="relative z-10 flex flex-col items-center text-center w-full px-5 pt-24 md:pt-16 max-w-[520px] mx-auto flex-1">
+        
+        {/* Success Icon (Perfectly proportioned nested circles) */}
+        <div className="w-[88px] h-[88px] rounded-full flex items-center justify-center bg-[#f0f8fd] mb-6">
+          <div className="w-[60px] h-[60px] rounded-full bg-white flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <div className="w-[32px] h-[32px] bg-[#00a0ef] rounded-full flex items-center justify-center">
+              <Check className="w-4 h-4 text-white" strokeWidth={3.5} />
+            </div>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">Your document has been submitted successfully.</h1>
-          <p className="text-sm md:text-base text-gray-500 max-w-xs mb-8 leading-relaxed">
-            We are reviewing your document and will notify you once the next step is ready.
-          </p>
-          <button 
-            onClick={() => router.push('/dashboard')}
-            className="w-full py-3 bg-[#00a0ef] hover:bg-[#008bd1] text-white rounded-xl font-semibold transition shadow-sm"
-          >
-            Go to Dashboard
-          </button>
+        </div>
+    
+        {/* Success Text */}
+        <h2 className="text-[20px] lg:text-[24px] font-bold text-gray-900 mb-3 tracking-tight">
+          Your document has been submitted<br className="hidden md:block" /> successfully.
+        </h2>
+        <p className="text-[#8A94A6] text-[14px] md:text-[15px] mb-8 leading-relaxed max-w-[320px] md:max-w-none">
+          We are reviewing your document and will notify you once the next step is ready.
+        </p>
+    
+        {/* What Happens Next Card (Hidden on very small mobile to match screenshot, visible on larger screens) */}
+        <div className="hidden md:block w-full border border-[#EAECF0] bg-[#FAFAFB] rounded-[16px] p-6 lg:p-8 text-left shadow-sm">
+          <h3 className="text-[16px] font-semibold text-[#171717] mb-5">
+            What Happens Next
+          </h3>
+          <ul className="space-y-4">
+            <li className="flex items-start gap-3 text-[14px] text-[#8A94A6]">
+              <span className="text-[#A0AAB5] text-[18px] leading-[14px] mt-[-1px]">•</span>
+              <span className="leading-relaxed">We review your document for quality and compliance.</span>
+            </li>
+            <li className="flex items-start gap-3 text-[14px] text-[#8A94A6]">
+              <span className="text-[#A0AAB5] text-[18px] leading-[14px] mt-[-1px]">•</span>
+              <span className="leading-relaxed">An expert editor matching your field is assigned.</span>
+            </li>
+            <li className="flex items-start gap-3 text-[14px] text-[#8A94A6]">
+              <span className="text-[#A0AAB5] text-[18px] leading-[14px] mt-[-1px]">•</span>
+              <span className="leading-relaxed">You'll receive a notification when updates are ready.</span>
+            </li>
+          </ul>
         </div>
       </div>
+    
+      {/* --- ACTION BAR (Fixed to bottom on mobile, inline on desktop) --- */}
+      <div className="relative z-20 w-full p-4 mt-auto border-t border-gray-100 bg-white md:bg-transparent md:border-none md:p-6 md:max-w-[520px] md:mx-auto">
+        <Link 
+          href='/s/dashboard'  
+          className="flex items-center justify-center w-full md:w-auto md:px-8 py-3.5 md:py-3 bg-[#00a0ef] hover:bg-[#008bd1] rounded-xl md:rounded-lg text-white font-medium transition-colors shadow-sm"
+        >
+          Continue
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Link>
+      </div>
+    </div>
     );
   }
 
