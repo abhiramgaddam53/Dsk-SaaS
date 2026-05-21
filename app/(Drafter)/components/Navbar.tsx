@@ -32,7 +32,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           <PanelLeft className="w-5 h-5" strokeWidth={2} />
         </button>
 
-        <nav className="flex items-center text-[13px] font-medium text-gray-500">
+        <nav className=" md:flex hidden items-center text-[13px] font-medium text-gray-500">
           {segments.length === 0 ? (
             <span className="text-gray-900 text-[15px] font-semibold">Dashboard</span>
           ) : (
