@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowRight, ArrowLeft, Building, Building2, Grid, Landmark, LayoutGrid, Loader, CheckCircle2, ChevronDown, MapPin, UploadCloud, Image as ImageIcon, X, FileText, Edit, CircleCheck, Check  } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Building, Building2, Grid, Landmark, LayoutGrid, Loader, CheckCircle2, ChevronDown, MapPin, UploadCloud, Image as ImageIcon, X, FileText, Edit, CircleCheck, Check, AlertTriangle  } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback,  useEffect } from "react";
 import {
@@ -33,7 +33,7 @@ const COLORS = [
 // ---- Step 1 state (your existing FormState) ----
 interface Step1State {
   inputField:     { dateValuation: string; dateInspection: string; propertyType: string; loanType: string; };
-  applicantDetails: { name: string; relationType: string; relationName: string; occupation: string; phone1: string; phone2: string; };
+  applicantDetails: { prefix: string; name: string; relationType: string; relationName: string; occupation: string; phone1: string; phone2: string; };
   address:        { plotNo: string; road: string; village: string; district: string; pincode: string; };
   bankDetails:    { ifsc: string; bankName: string; branch: string; email: string; contactPerson: string; };
   siteArea:       { asPerDocument: string; asPerActual: string; siteShape: string; roadAffectedArea: string; };
@@ -43,10 +43,22 @@ interface Step1State {
 // ---- Step 2 state (your existing StepTwoForm state) ----
 interface Step2State {
   intendingVendor: {
-    name: string; relationType: string; relationName: string; occupation: string;
-    phone1: string; phone2: string; plotNo: string; road: string; village: string;
-    district: string; pincode: string; realizablePercent: string; realizableValue: string;
-    distressPercent: string; distressValue: string;
+    prefix: string;
+    name: string; 
+    relationType: string; 
+    relationName: string; 
+    occupation: string;
+    phone1: string; 
+    phone2: string; 
+    plotNo: string; 
+    road: string; 
+    village: string;
+    district: string; 
+    pincode: string; 
+    realizablePercent: string; 
+    realizableValue: string;
+    distressPercent: string; 
+    distressValue: string;
   };
   propertyDetails: {
     buildingType: string; hNo: string; syNo: string; road: string; village: string;
@@ -55,6 +67,7 @@ interface Step2State {
     boundaryCoordinates: Coord[]; // <--- ADD THIS LINE
   };
   siteBoundaryDetails: {
+    isActualSameAsDoc: boolean;
     boundariesDoc:    { north: string; south: string; east: string; west: string; };
     boundariesActual: { north: string; south: string; east: string; west: string; };
     dimensionsDoc:    { north: string; south: string; east: string; west: string; };
@@ -200,7 +213,31 @@ function ActionBar({
   const [nextId, setNextId] = useState(0);
   const [submitted, setSubmitted] = useState<Pin[]>([]);
   const [editTarget, setEditTarget] = useState<number | null>(null);
+  const [userLocation, setUserLocation] = useState<Coord | null>(null);
 
+  // useEffect(() => {
+  //   if ("geolocation" in navigator) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const userLoc = {
+  //           lat: position.coords.latitude,
+  //           lng: position.coords.longitude,
+  //         };
+  //         setCenter(userLoc);
+  //         setZoom(18);
+  //         setPins((prev) => {
+  //           if (prev.length === 0) {
+  //             setNextId(1);
+  //             return [{ id: 0, coord: userLoc }];
+  //           }
+  //           return prev;
+  //         });
+  //       },
+  //       (error) => console.error("Error getting user location:", error),
+  //       { enableHighAccuracy: true }
+  //     );
+  //   }
+  // }, []);
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -209,15 +246,10 @@ function ActionBar({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
+  
+          setUserLocation(userLoc);
           setCenter(userLoc);
           setZoom(18);
-          setPins((prev) => {
-            if (prev.length === 0) {
-              setNextId(1);
-              return [{ id: 0, coord: userLoc }];
-            }
-            return prev;
-          });
         },
         (error) => console.error("Error getting user location:", error),
         { enableHighAccuracy: true }
@@ -302,7 +334,7 @@ function ActionBar({
         </div>
       </header>
 
-      <div className="relative w-full h-64 md:h-80 bg-gray-100">
+      {/* <div className="relative w-full h-64 md:h-80 bg-gray-100">
         <APIProvider apiKey={apiKey}>
           <Map
             mapId="geo-picker-form"
@@ -314,6 +346,7 @@ function ActionBar({
             }}
             gestureHandling="greedy"
             colorScheme="LIGHT"
+            
             // ─── ADDED MAP CONTROLS ───
             mapTypeControl={true}      // Enables Map/Satellite toggle
             zoomControl={true}         // Enables +/- zoom buttons
@@ -346,7 +379,68 @@ function ActionBar({
             </span>
           </div>
         )}
-      </div>
+      </div> */}
+      <div className="relative w-full h-64 md:h-80 bg-gray-100">
+  <APIProvider apiKey={apiKey}>
+    <Map
+      mapId="geo-picker-form"
+      center={center}
+      zoom={zoom}
+       mapTypeId="satellite"
+      onCameraChanged={(ev) => {
+        setCenter(ev.detail.center);
+        setZoom(ev.detail.zoom);
+      }}
+      gestureHandling="greedy"
+      colorScheme="LIGHT"
+
+      // Controls
+      mapTypeControl={true}
+      zoomControl={true}
+      fullscreenControl={true}
+      streetViewControl={true}
+
+      style={{ width: "100%", height: "100%" }}
+    >
+      {/* Current Location Blue Dot */}
+      {userLocation && (
+        <AdvancedMarker position={userLocation}>
+          <div className="relative">
+            <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg" />
+            <div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-ping opacity-40" />
+          </div>
+        </AdvancedMarker>
+      )}
+
+      <ClickHandler onClick={handleMapClick} />
+
+      {activePins.map((pin, i) => (
+        <PinMarker
+          key={pin.id}
+          index={i}
+          coord={pin.coord}
+          editing={mode === "submitted"}
+          selected={editTarget === i}
+          onSelect={() =>
+            setEditTarget(editTarget === i ? null : i)
+          }
+        />
+      ))}
+    </Map>
+  </APIProvider>
+
+  {mode === "submitted" && editTarget !== null && (
+    <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-gray-900/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs font-medium flex items-center gap-2 shadow-lg pointer-events-none">
+      Tap anywhere to place
+      <span
+        className="px-1.5 py-0.5 rounded text-[10px] font-bold"
+        style={{ backgroundColor: COLORS[editTarget] }}
+      >
+        {LABELS[editTarget]}
+      </span>
+    </div>
+  )}
+</div>
 
       <div className="p-4 bg-gray-50 border-t border-gray-200">
         {mode === "picking" ? (
@@ -502,6 +596,189 @@ function CoordCard({
 //  STEP 1 FORM
 //  — paste your existing step-1 JSX from NewValuationInit here
 // ============================================================
+// function Step1Form({
+//   formData,
+//   setFormData,
+// }: {
+//   formData: Step1State;
+//   setFormData: React.Dispatch<React.SetStateAction<Step1State>>;
+// }) {
+//   const [activeSection, setActiveSection] = useState<keyof Step1State>('inputField');
+
+//   const handleInputChange = (section: keyof Step1State, field: string, value: string) => {
+//     setFormData(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
+//   };
+
+//   const checkIsFilled = (section: keyof Step1State) => {
+//     return Object.values(formData[section]).every(val => val !== '');
+//   };
+
+//   const renderSectionHeader = (title: string, id: keyof Step1State) => {
+//     const isFilled = checkIsFilled(id);
+//     return (
+//       <div
+//         className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${
+//           activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'
+//         }`}
+//         onClick={() => setActiveSection(activeSection === id ? null as any : id)}
+//       >
+//         <h3 className="font-medium md:text-lg text-[#00a0ef]">{title}</h3>
+//         {isFilled
+//           ? <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-[#00a0ef]" />
+//           : <Loader className={`w-5 h-5 md:w-6 md:h-6 text-[#00a0ef] ${activeSection === id ? '' : 'opacity-70'}`} />
+//         }
+//       </div>
+//     );
+//   };
+
+//   return (
+//     <div className="bg-white border-y md:border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+
+//       {/* ── Input Field ── */}
+//       <div>
+//         {renderSectionHeader('Input Field', 'inputField')}
+//         {activeSection === 'inputField' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div>
+//               <label className={labelStyles}>Date Valuation</label>
+//               <input type="date" className={inputStyles} value={formData.inputField.dateValuation}
+//                 onChange={e => handleInputChange('inputField', 'dateValuation', e.target.value)} />
+//             </div>
+//             <div>
+//               <label className={labelStyles}>Date of Inspection</label>
+//               <input type="date" className={inputStyles} value={formData.inputField.dateInspection}
+//                 onChange={e => handleInputChange('inputField', 'dateInspection', e.target.value)} />
+//             </div>
+//             <div>
+//               <label className={labelStyles}>Type of Property</label>
+//               <input type="text" placeholder="e.g., Existing Building - Residential" className={inputStyles}
+//                 value={formData.inputField.propertyType}
+//                 onChange={e => handleInputChange('inputField', 'propertyType', e.target.value)} />
+//             </div>
+//             <div>
+//               <label className={labelStyles}>Type of Loan</label>
+//               <input type="text" placeholder="e.g., Mortgage Loan" className={inputStyles}
+//                 value={formData.inputField.loanType}
+//                 onChange={e => handleInputChange('inputField', 'loanType', e.target.value)} />
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* ── Applicant Details ── */}
+//       <div>
+//         {renderSectionHeader('Applicant Details', 'applicantDetails')}
+//         {activeSection === 'applicantDetails' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Enter Name (Smt. / Sri.)</label>
+//               <input type="text" placeholder="Enter Name" className={inputStyles}
+//                 value={formData.applicantDetails.name}
+//                 onChange={e => handleInputChange('applicantDetails', 'name', e.target.value)} />
+//             </div>
+//             <div className="flex gap-3 md:col-span-2">
+//               <div className="w-1/3 md:w-1/4">
+//                 <label className={labelStyles}>Relation</label>
+//                 <div className="relative">
+//                   <select className={`${inputStyles} appearance-none`} value={formData.applicantDetails.relationType}
+//                     onChange={e => handleInputChange('applicantDetails', 'relationType', e.target.value)}>
+//                     <option value="W/o">W/o</option>
+//                     <option value="S/o">S/o</option>
+//                     <option value="D/o">D/o</option>
+//                   </select>
+//                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                 </div>
+//               </div>
+//               <div className="flex-1">
+//                 <label className={labelStyles}>Relative's Name</label>
+//                 <input type="text" placeholder="Name" className={inputStyles}
+//                   value={formData.applicantDetails.relationName}
+//                   onChange={e => handleInputChange('applicantDetails', 'relationName', e.target.value)} />
+//               </div>
+//             </div>
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Occupation</label>
+//               <input type="text" placeholder="Enter Occupation Details" className={inputStyles}
+//                 value={formData.applicantDetails.occupation}
+//                 onChange={e => handleInputChange('applicantDetails', 'occupation', e.target.value)} />
+//             </div>
+//             <div>
+//               <label className={labelStyles}>Phone Number 1</label>
+//               <input type="tel" placeholder="+91 1234567890" className={inputStyles}
+//                 value={formData.applicantDetails.phone1}
+//                 onChange={e => handleInputChange('applicantDetails', 'phone1', e.target.value)} />
+//             </div>
+//             <div>
+//               <label className={labelStyles}>Phone Number 2</label>
+//               <input type="tel" placeholder="+91 1234567890" className={inputStyles}
+//                 value={formData.applicantDetails.phone2}
+//                 onChange={e => handleInputChange('applicantDetails', 'phone2', e.target.value)} />
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* ── Address ── */}
+//       <div>
+//         {renderSectionHeader('Address of Applicant', 'address')}
+//         {activeSection === 'address' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles}>Plot No. / H.No.</label><input type="text" className={inputStyles} value={formData.address.plotNo} onChange={e => handleInputChange('address', 'plotNo', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Road / Street / Colony</label><input type="text" className={inputStyles} value={formData.address.road} onChange={e => handleInputChange('address', 'road', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Village / Mandal / Municipality</label><input type="text" className={inputStyles} value={formData.address.village} onChange={e => handleInputChange('address', 'village', e.target.value)} /></div>
+//             <div><label className={labelStyles}>District</label><input type="text" className={inputStyles} value={formData.address.district} onChange={e => handleInputChange('address', 'district', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Pincode</label><input type="text" className={inputStyles} value={formData.address.pincode} onChange={e => handleInputChange('address', 'pincode', e.target.value)} /></div>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* ── Bank Details ── */}
+//       <div>
+//         {renderSectionHeader('Bank Details', 'bankDetails')}
+//         {activeSection === 'bankDetails' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles}>IFSC Code</label><input type="text" className={inputStyles} value={formData.bankDetails.ifsc} onChange={e => handleInputChange('bankDetails', 'ifsc', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Bank Name</label><input type="text" className={inputStyles} value={formData.bankDetails.bankName} onChange={e => handleInputChange('bankDetails', 'bankName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Branch</label><input type="text" className={inputStyles} value={formData.bankDetails.branch} onChange={e => handleInputChange('bankDetails', 'branch', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Email ID</label><input type="email" className={inputStyles} value={formData.bankDetails.email} onChange={e => handleInputChange('bankDetails', 'email', e.target.value)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Contact Person Details</label><input type="text" className={inputStyles} value={formData.bankDetails.contactPerson} onChange={e => handleInputChange('bankDetails', 'contactPerson', e.target.value)} /></div>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* ── Site Area ── */}
+//       <div>
+//         {renderSectionHeader('Site Area', 'siteArea')}
+//         {activeSection === 'siteArea' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles}>As per Document (Sq.Yds)</label><input type="number" className={inputStyles} value={formData.siteArea.asPerDocument} onChange={e => handleInputChange('siteArea', 'asPerDocument', e.target.value)} /></div>
+//             <div><label className={labelStyles}>As per Actual (Sq.Yds)</label><input type="number" className={inputStyles} value={formData.siteArea.asPerActual} onChange={e => handleInputChange('siteArea', 'asPerActual', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Site Shape</label><input type="text" className={inputStyles} value={formData.siteArea.siteShape} onChange={e => handleInputChange('siteArea', 'siteShape', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Road Affected Area (Sq.Yds)</label><input type="number" className={inputStyles} value={formData.siteArea.roadAffectedArea} onChange={e => handleInputChange('siteArea', 'roadAffectedArea', e.target.value)} /></div>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* ── Plot Valuation ── */}
+//       <div>
+//         {renderSectionHeader('Plot Valuation', 'plotValuation')}
+//         {activeSection === 'plotValuation' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles}>Site Area (Sq.Yds)</label><input type="number" className={inputStyles} value={formData.plotValuation.siteArea} onChange={e => handleInputChange('plotValuation', 'siteArea', e.target.value)} /></div>
+//             <div><label className={labelStyles}>GLR (Rs/Sq.Yds)</label><input type="number" className={inputStyles} value={formData.plotValuation.glr} onChange={e => handleInputChange('plotValuation', 'glr', e.target.value)} /></div>
+//             <div><label className={labelStyles}>MV (Rs/Sq.Yds)</label><input type="number" className={inputStyles} value={formData.plotValuation.mv} onChange={e => handleInputChange('plotValuation', 'mv', e.target.value)} /></div>
+//             <div><label className={labelStyles}>PMR (Plot Value)</label><input type="number" className={inputStyles} value={formData.plotValuation.pmr} onChange={e => handleInputChange('plotValuation', 'pmr', e.target.value)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Say (Round Up Value)</label><input type="text" className={inputStyles} value={formData.plotValuation.sayValue} onChange={e => handleInputChange('plotValuation', 'sayValue', e.target.value)} /></div>
+//           </div>
+//         )}
+//       </div>
+
+//     </div>
+//   );
+// }
+// ============================================================
+//  STEP 1 FORM
+// ============================================================
 function Step1Form({
   formData,
   setFormData,
@@ -510,6 +787,47 @@ function Step1Form({
   setFormData: React.Dispatch<React.SetStateAction<Step1State>>;
 }) {
   const [activeSection, setActiveSection] = useState<keyof Step1State>('inputField');
+
+  // Auto-calculate values when dependencies change
+  useEffect(() => {
+    const docArea = parseFloat(formData.siteArea.asPerDocument) || 0;
+    const actArea = parseFloat(formData.siteArea.asPerActual) || 0;
+    
+    // Road Affected Area = Document - Actual
+    const roadAffected = Math.max(0, docArea - actArea);
+    
+    // Plot Valuation Site Area = Min(Document, Actual)
+    const siteAreaPlot = Math.min(docArea, actArea);
+    const mv = parseFloat(formData.plotValuation.mv) || 0;
+    
+    // PMR = Site area * MV
+    const pmr = siteAreaPlot * mv;
+    
+    // Say = Round(PMR, 4). We use toFixed(4) to literally match the PDF requirement.
+    const sayValue = pmr > 0 ? Number(pmr).toFixed(4) : '';
+
+    if (
+      formData.siteArea.roadAffectedArea !== roadAffected.toString() ||
+      formData.plotValuation.siteArea !== siteAreaPlot.toString() ||
+      formData.plotValuation.pmr !== pmr.toString() ||
+      formData.plotValuation.sayValue !== sayValue
+    ) {
+      setFormData(prev => ({
+        ...prev,
+        siteArea: { ...prev.siteArea, roadAffectedArea: roadAffected.toString() },
+        plotValuation: { ...prev.plotValuation, siteArea: siteAreaPlot.toString(), pmr: pmr.toString(), sayValue: sayValue }
+      }));
+    }
+  }, [formData.siteArea.asPerDocument, formData.siteArea.asPerActual, formData.plotValuation.mv, setFormData]);
+
+  // Tab Navigation Handler
+  const handleTabToNextSection = (e: React.KeyboardEvent, nextSection: keyof Step1State, focusId: string) => {
+    if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      setActiveSection(nextSection);
+      setTimeout(() => document.getElementById(focusId)?.focus(), 50);
+    }
+  };
 
   const handleInputChange = (section: keyof Step1State, field: string, value: string) => {
     setFormData(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
@@ -547,7 +865,7 @@ function Step1Form({
           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
             <div>
               <label className={labelStyles}>Date Valuation</label>
-              <input type="date" className={inputStyles} value={formData.inputField.dateValuation}
+              <input type="date" id="inputField-first" className={inputStyles} value={formData.inputField.dateValuation}
                 onChange={e => handleInputChange('inputField', 'dateValuation', e.target.value)} />
             </div>
             <div>
@@ -557,15 +875,38 @@ function Step1Form({
             </div>
             <div>
               <label className={labelStyles}>Type of Property</label>
-              <input type="text" placeholder="e.g., Existing Building - Residential" className={inputStyles}
-                value={formData.inputField.propertyType}
-                onChange={e => handleInputChange('inputField', 'propertyType', e.target.value)} />
+              <div className="relative">
+                <select className={`${inputStyles} appearance-none`} value={formData.inputField.propertyType}
+                  onChange={e => handleInputChange('inputField', 'propertyType', e.target.value)}>
+                  <option value="">Select Property Type</option>
+                  <option value="Vacant Land - Residential">Vacant Land - Residential</option>
+                  <option value="Existing Building - Residential">Existing Building - Residential</option>
+                  <option value="Open Piece of Land">Open Piece of Land</option>
+                  <option value="Residential Flat">Residential Flat</option>
+                  <option value="Agri Land">Agri Land</option>
+                  <option value="Residential Villa">Residential Villa</option>
+                  <option value="Industrial Shed">Industrial Shed</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              </div>
             </div>
             <div>
               <label className={labelStyles}>Type of Loan</label>
-              <input type="text" placeholder="e.g., Mortgage Loan" className={inputStyles}
-                value={formData.inputField.loanType}
-                onChange={e => handleInputChange('inputField', 'loanType', e.target.value)} />
+              <div className="relative">
+                <select 
+                  className={`${inputStyles} appearance-none`} 
+                  value={formData.inputField.loanType}
+                  onChange={e => handleInputChange('inputField', 'loanType', e.target.value)}
+                  onKeyDown={e => handleTabToNextSection(e, 'applicantDetails', 'applicantDetails-first')}
+                >
+                  <option value="">Select Loan Type</option>
+                  <option value="Home Loan">Home Loan</option>
+                  <option value="Mortgage Loan">Mortgage Loan</option>
+                  <option value="Education Loan">Education Loan</option>
+                  <option value="Collateral Security">Collateral Security</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              </div>
             </div>
           </div>
         )}
@@ -576,21 +917,51 @@ function Step1Form({
         {renderSectionHeader('Applicant Details', 'applicantDetails')}
         {activeSection === 'applicantDetails' && (
           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
-            <div className="md:col-span-2">
-              <label className={labelStyles}>Enter Name (Smt. / Sri.)</label>
-              <input type="text" placeholder="Enter Name" className={inputStyles}
-                value={formData.applicantDetails.name}
-                onChange={e => handleInputChange('applicantDetails', 'name', e.target.value)} />
+            <div className="md:col-span-2 flex gap-3">
+              <div className="w-1/3 md:w-1/4">
+                <label className={labelStyles}>Prefix</label>
+                <div className="relative">
+                  <select 
+                    id="applicantDetails-first" 
+                    className={`${inputStyles} appearance-none`} 
+                    value={(formData.applicantDetails as any).prefix || 'Shri'}
+                    onChange={e => {
+                      const prefix = e.target.value;
+                      handleInputChange('applicantDetails', 'prefix', prefix);
+                      // Auto-update relation type based on prefix
+                      handleInputChange('applicantDetails', 'relationType', prefix === 'Smt' ? 'W/o' : 'S/o');
+                    }}>
+                    <option value="Shri">Shri</option>
+                    <option value="Smt">Smt</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className={labelStyles}>Enter Name</label>
+                <input type="text" placeholder="Applicant Name" className={inputStyles}
+                  value={formData.applicantDetails.name}
+                  onChange={e => handleInputChange('applicantDetails', 'name', e.target.value)} />
+              </div>
             </div>
+            
             <div className="flex gap-3 md:col-span-2">
               <div className="w-1/3 md:w-1/4">
                 <label className={labelStyles}>Relation</label>
                 <div className="relative">
                   <select className={`${inputStyles} appearance-none`} value={formData.applicantDetails.relationType}
                     onChange={e => handleInputChange('applicantDetails', 'relationType', e.target.value)}>
-                    <option value="W/o">W/o</option>
-                    <option value="S/o">S/o</option>
-                    <option value="D/o">D/o</option>
+                    {(formData.applicantDetails as any).prefix === 'Smt' ? (
+                      <>
+                        <option value="W/o">W/o</option>
+                        <option value="D/o">D/o</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="S/o">S/o</option>
+                        <option value="F/o">F/o</option>
+                      </>
+                    )}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                 </div>
@@ -602,6 +973,7 @@ function Step1Form({
                   onChange={e => handleInputChange('applicantDetails', 'relationName', e.target.value)} />
               </div>
             </div>
+            
             <div className="md:col-span-2">
               <label className={labelStyles}>Occupation</label>
               <input type="text" placeholder="Enter Occupation Details" className={inputStyles}
@@ -616,9 +988,14 @@ function Step1Form({
             </div>
             <div>
               <label className={labelStyles}>Phone Number 2</label>
-              <input type="tel" placeholder="+91 1234567890" className={inputStyles}
+              <input 
+                type="tel" 
+                placeholder="+91 1234567890" 
+                className={inputStyles}
                 value={formData.applicantDetails.phone2}
-                onChange={e => handleInputChange('applicantDetails', 'phone2', e.target.value)} />
+                onChange={e => handleInputChange('applicantDetails', 'phone2', e.target.value)} 
+                onKeyDown={e => handleTabToNextSection(e, 'address', 'address-first')}
+              />
             </div>
           </div>
         )}
@@ -629,11 +1006,11 @@ function Step1Form({
         {renderSectionHeader('Address of Applicant', 'address')}
         {activeSection === 'address' && (
           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
-            <div><label className={labelStyles}>Plot No. / H.No.</label><input type="text" className={inputStyles} value={formData.address.plotNo} onChange={e => handleInputChange('address', 'plotNo', e.target.value)} /></div>
+            <div><label className={labelStyles}>Plot No. / H.No.</label><input id="address-first" type="text" className={inputStyles} value={formData.address.plotNo} onChange={e => handleInputChange('address', 'plotNo', e.target.value)} /></div>
             <div><label className={labelStyles}>Road / Street / Colony</label><input type="text" className={inputStyles} value={formData.address.road} onChange={e => handleInputChange('address', 'road', e.target.value)} /></div>
             <div><label className={labelStyles}>Village / Mandal / Municipality</label><input type="text" className={inputStyles} value={formData.address.village} onChange={e => handleInputChange('address', 'village', e.target.value)} /></div>
             <div><label className={labelStyles}>District</label><input type="text" className={inputStyles} value={formData.address.district} onChange={e => handleInputChange('address', 'district', e.target.value)} /></div>
-            <div><label className={labelStyles}>Pincode</label><input type="text" className={inputStyles} value={formData.address.pincode} onChange={e => handleInputChange('address', 'pincode', e.target.value)} /></div>
+            <div><label className={labelStyles}>Pincode</label><input type="text" className={inputStyles} value={formData.address.pincode} onChange={e => handleInputChange('address', 'pincode', e.target.value)} onKeyDown={e => handleTabToNextSection(e, 'bankDetails', 'bankDetails-first')}/></div>
           </div>
         )}
       </div>
@@ -643,11 +1020,11 @@ function Step1Form({
         {renderSectionHeader('Bank Details', 'bankDetails')}
         {activeSection === 'bankDetails' && (
           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
-            <div><label className={labelStyles}>IFSC Code</label><input type="text" className={inputStyles} value={formData.bankDetails.ifsc} onChange={e => handleInputChange('bankDetails', 'ifsc', e.target.value)} /></div>
+            <div><label className={labelStyles}>IFSC Code</label><input id="bankDetails-first" type="text" className={inputStyles} value={formData.bankDetails.ifsc} onChange={e => handleInputChange('bankDetails', 'ifsc', e.target.value)} /></div>
             <div><label className={labelStyles}>Bank Name</label><input type="text" className={inputStyles} value={formData.bankDetails.bankName} onChange={e => handleInputChange('bankDetails', 'bankName', e.target.value)} /></div>
             <div><label className={labelStyles}>Branch</label><input type="text" className={inputStyles} value={formData.bankDetails.branch} onChange={e => handleInputChange('bankDetails', 'branch', e.target.value)} /></div>
             <div><label className={labelStyles}>Email ID</label><input type="email" className={inputStyles} value={formData.bankDetails.email} onChange={e => handleInputChange('bankDetails', 'email', e.target.value)} /></div>
-            <div className="md:col-span-2"><label className={labelStyles}>Contact Person Details</label><input type="text" className={inputStyles} value={formData.bankDetails.contactPerson} onChange={e => handleInputChange('bankDetails', 'contactPerson', e.target.value)} /></div>
+            <div className="md:col-span-2"><label className={labelStyles}>Contact Person Details</label><input type="text" className={inputStyles} value={formData.bankDetails.contactPerson} onChange={e => handleInputChange('bankDetails', 'contactPerson', e.target.value)} onKeyDown={e => handleTabToNextSection(e, 'siteArea', 'siteArea-first')}/></div>
           </div>
         )}
       </div>
@@ -657,10 +1034,34 @@ function Step1Form({
         {renderSectionHeader('Site Area', 'siteArea')}
         {activeSection === 'siteArea' && (
           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
-            <div><label className={labelStyles}>As per Document (Sq.Yds)</label><input type="number" className={inputStyles} value={formData.siteArea.asPerDocument} onChange={e => handleInputChange('siteArea', 'asPerDocument', e.target.value)} /></div>
+            <div><label className={labelStyles}>As per Document (Sq.Yds)</label><input id="siteArea-first" type="number" className={inputStyles} value={formData.siteArea.asPerDocument} onChange={e => handleInputChange('siteArea', 'asPerDocument', e.target.value)} /></div>
             <div><label className={labelStyles}>As per Actual (Sq.Yds)</label><input type="number" className={inputStyles} value={formData.siteArea.asPerActual} onChange={e => handleInputChange('siteArea', 'asPerActual', e.target.value)} /></div>
-            <div><label className={labelStyles}>Site Shape</label><input type="text" className={inputStyles} value={formData.siteArea.siteShape} onChange={e => handleInputChange('siteArea', 'siteShape', e.target.value)} /></div>
-            <div><label className={labelStyles}>Road Affected Area (Sq.Yds)</label><input type="number" className={inputStyles} value={formData.siteArea.roadAffectedArea} onChange={e => handleInputChange('siteArea', 'roadAffectedArea', e.target.value)} /></div>
+            
+            {/* Calculated & Disabled Field */}
+            <div>
+              <label className={labelStyles}>Road Affected Area (Sq.Yds) <span className="text-[10px] text-gray-400 font-normal">(Doc - Actual)</span></label>
+              <input type="number" disabled className={`${inputStyles} bg-gray-100 text-gray-500 cursor-not-allowed`} value={formData.siteArea.roadAffectedArea} />
+            </div>
+
+            <div>
+              <label className={labelStyles}>Site Shape</label>
+              <div className="relative">
+                <select 
+                  className={`${inputStyles} appearance-none`} 
+                  value={formData.siteArea.siteShape} 
+                  onChange={e => handleInputChange('siteArea', 'siteShape', e.target.value)}
+                  onKeyDown={e => handleTabToNextSection(e, 'plotValuation', 'plotValuation-first')}
+                >
+                  <option value="">Select Shape</option>
+                  <option value="Rectangular">Rectangular</option>
+                  <option value="Trapezium">Trapezium</option>
+                  <option value="Irregular">Irregular</option>
+                  <option value="Square">Square</option>
+                  <option value="Quadrilateral">Quadrilateral</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -670,11 +1071,26 @@ function Step1Form({
         {renderSectionHeader('Plot Valuation', 'plotValuation')}
         {activeSection === 'plotValuation' && (
           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
-            <div><label className={labelStyles}>Site Area (Sq.Yds)</label><input type="number" className={inputStyles} value={formData.plotValuation.siteArea} onChange={e => handleInputChange('plotValuation', 'siteArea', e.target.value)} /></div>
-            <div><label className={labelStyles}>GLR (Rs/Sq.Yds)</label><input type="number" className={inputStyles} value={formData.plotValuation.glr} onChange={e => handleInputChange('plotValuation', 'glr', e.target.value)} /></div>
+            {/* Calculated & Disabled Field */}
+            <div>
+              <label className={labelStyles}>Site Area (Sq.Yds) <span className="text-[10px] text-gray-400 font-normal">(Min of Doc/Actual)</span></label>
+              <input type="number" disabled className={`${inputStyles} bg-gray-100 text-gray-500 cursor-not-allowed`} value={formData.plotValuation.siteArea} />
+            </div>
+            
+            <div><label className={labelStyles}>GLR (Rs/Sq.Yds)</label><input id="plotValuation-first" type="number" className={inputStyles} value={formData.plotValuation.glr} onChange={e => handleInputChange('plotValuation', 'glr', e.target.value)} /></div>
             <div><label className={labelStyles}>MV (Rs/Sq.Yds)</label><input type="number" className={inputStyles} value={formData.plotValuation.mv} onChange={e => handleInputChange('plotValuation', 'mv', e.target.value)} /></div>
-            <div><label className={labelStyles}>PMR (Plot Value)</label><input type="number" className={inputStyles} value={formData.plotValuation.pmr} onChange={e => handleInputChange('plotValuation', 'pmr', e.target.value)} /></div>
-            <div className="md:col-span-2"><label className={labelStyles}>Say (Round Up Value)</label><input type="text" className={inputStyles} value={formData.plotValuation.sayValue} onChange={e => handleInputChange('plotValuation', 'sayValue', e.target.value)} /></div>
+            
+            {/* Calculated & Disabled Field */}
+            <div>
+              <label className={labelStyles}>PMR (Plot Value) <span className="text-[10px] text-gray-400 font-normal">(Area * MV)</span></label>
+              <input type="number" disabled className={`${inputStyles} bg-gray-100 text-gray-500 cursor-not-allowed`} value={formData.plotValuation.pmr} />
+            </div>
+            
+            {/* Calculated & Disabled Field */}
+            <div className="md:col-span-2">
+              <label className={labelStyles}>Say Value <span className="text-[10px] text-gray-400 font-normal">(Round PMR, 4)</span></label>
+              <input type="text" disabled className={`${inputStyles} bg-gray-100 text-gray-500 cursor-not-allowed font-mono`} value={formData.plotValuation.sayValue} />
+            </div>
           </div>
         )}
       </div>
@@ -682,22 +1098,382 @@ function Step1Form({
     </div>
   );
 }
-
 // ============================================================
 //  STEP 2 FORM
 //  — paste your existing StepTwoForm JSX here
 //  — REMOVE the outer page shell (min-h-screen wrapper, header,
 //    stepper, action bar) — those are now handled by the parent
 // ============================================================
+// function Step2Form({
+//   formData,
+//   setFormData,
+// }: {
+//   formData: Step2State;
+//   setFormData: React.Dispatch<React.SetStateAction<Step2State>>;
+// }) {
+//   const [activeSection, setActiveSection] = useState<keyof Step2State>('intendingVendor');
+//   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+//   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     if (e.target.files) {
+//       const newFiles = Array.from(e.target.files);
+//       setFormData(prev => ({
+//         ...prev,
+//         propertyDetails: {
+//           ...prev.propertyDetails,
+//           images: [...prev.propertyDetails.images, ...newFiles]
+//         }
+//       }));
+//     }
+//   };
+
+//   const removeImage = (index: number) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       propertyDetails: {
+//         ...prev.propertyDetails,
+//         images: prev.propertyDetails.images.filter((_, i) => i !== index)
+//       }
+//     }));
+//   };
+//   const handleInputChange = (section: keyof Step2State, field: string, value: any) => {
+//     setFormData(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
+//   };
+
+//   const handleNestedInputChange = (
+//     section: 'siteBoundaryDetails',
+//     subSection: keyof Step2State['siteBoundaryDetails'],
+//     field: string,
+//     value: string,
+//   ) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       [section]: {
+//         ...prev[section],
+//         [subSection]: { ...prev[section][subSection], [field]: value },
+//       },
+//     }));
+//   };
+
+//   const checkIsFilled = (section: keyof Step2State) => {
+//     if (section === 'siteBoundaryDetails')
+//       return Object.values(formData.siteBoundaryDetails.boundariesDoc).every(v => v !== '');
+//     const data = formData[section] as any;
+//     return Object.entries(data).filter(([k]) => k !== 'images').every(([, v]) => v !== '');
+//   };
+
+//   const renderSectionHeader = (title: string, id: keyof Step2State) => {
+//     const isFilled = checkIsFilled(id);
+//     return (
+//       <div
+//         className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${
+//           activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'
+//         }`}
+//         onClick={() => setActiveSection(activeSection === id ? null as any : id)}
+//       >
+//         <h3 className="font-medium md:text-lg text-[#00a0ef]">{title}</h3>
+//         {isFilled
+//           ? <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-[#00a0ef]" />
+//           : <Loader className={`w-5 h-5 md:w-6 md:h-6 text-[#00a0ef] ${activeSection === id ? '' : 'opacity-70'}`} />
+//         }
+//       </div>
+//     );
+//   };
+
+//   const subHeadingStyles = "text-sm font-semibold text-gray-900 mt-6 mb-4 col-span-full border-b pb-2";
+
+//   return (
+//     <div className="bg-white border-y md:border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+
+//       {/* ── Intending Vendor ── */}
+//       <div>
+//         {renderSectionHeader('Intending Vendor', 'intendingVendor')}
+//         {activeSection === 'intendingVendor' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Enter Name (Sri. / Smt.)</label>
+//               <input type="text" placeholder="Enter Name" className={inputStyles}
+//                 value={formData.intendingVendor.name}
+//                 onChange={e => handleInputChange('intendingVendor', 'name', e.target.value)} />
+//             </div>
+//             <div className="flex gap-3 md:col-span-2">
+//               <div className="w-1/3 md:w-1/4">
+//                 <label className={labelStyles}>Relation</label>
+//                 <div className="relative">
+//                   <select className={`${inputStyles} appearance-none`} value={formData.intendingVendor.relationType}
+//                     onChange={e => handleInputChange('intendingVendor', 'relationType', e.target.value)}>
+//                     <option value="S/o.">S/o.</option>
+//                     <option value="W/o.">W/o.</option>
+//                     <option value="D/o.">D/o.</option>
+//                   </select>
+//                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                 </div>
+//               </div>
+//               <div className="flex-1">
+//                 <label className={labelStyles}>Relative's Name</label>
+//                 <input type="text" placeholder="Name" className={inputStyles}
+//                   value={formData.intendingVendor.relationName}
+//                   onChange={e => handleInputChange('intendingVendor', 'relationName', e.target.value)} />
+//               </div>
+//             </div>
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Occupation</label>
+//               <input type="text" placeholder="Enter Occupation Details" className={inputStyles}
+//                 value={formData.intendingVendor.occupation}
+//                 onChange={e => handleInputChange('intendingVendor', 'occupation', e.target.value)} />
+//             </div>
+//             <div>
+//               <label className={labelStyles}>Phone Number 1</label>
+//               <input type="tel" className={inputStyles} value={formData.intendingVendor.phone1}
+//                 onChange={e => handleInputChange('intendingVendor', 'phone1', e.target.value)} />
+//             </div>
+//             <div>
+//               <label className={labelStyles}>Phone Number 2</label>
+//               <input type="tel" className={inputStyles} value={formData.intendingVendor.phone2}
+//                 onChange={e => handleInputChange('intendingVendor', 'phone2', e.target.value)} />
+//             </div>
+//             <h4 className={subHeadingStyles}>Address of Intending Vendor</h4>
+//             <div><label className={labelStyles}>Plot No. / H.No.</label><input type="text" className={inputStyles} value={formData.intendingVendor.plotNo} onChange={e => handleInputChange('intendingVendor', 'plotNo', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Road / Street / Colony</label><input type="text" className={inputStyles} value={formData.intendingVendor.road} onChange={e => handleInputChange('intendingVendor', 'road', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Village / Mandal / Municipality</label><input type="text" className={inputStyles} value={formData.intendingVendor.village} onChange={e => handleInputChange('intendingVendor', 'village', e.target.value)} /></div>
+//             <div><label className={labelStyles}>District</label><input type="text" className={inputStyles} value={formData.intendingVendor.district} onChange={e => handleInputChange('intendingVendor', 'district', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Pincode</label><input type="text" className={inputStyles} value={formData.intendingVendor.pincode} onChange={e => handleInputChange('intendingVendor', 'pincode', e.target.value)} /></div>
+//             <h4 className={subHeadingStyles}>Valuation Estimates</h4>
+//             <div><label className={labelStyles}>Realizable %</label><input type="text" className={inputStyles} value={formData.intendingVendor.realizablePercent} onChange={e => handleInputChange('intendingVendor', 'realizablePercent', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Realizable Value (Rupees)</label><input type="number" className={inputStyles} value={formData.intendingVendor.realizableValue} onChange={e => handleInputChange('intendingVendor', 'realizableValue', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Distress %</label><input type="text" className={inputStyles} value={formData.intendingVendor.distressPercent} onChange={e => handleInputChange('intendingVendor', 'distressPercent', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Distress Value (Rupees)</label><input type="number" className={inputStyles} value={formData.intendingVendor.distressValue} onChange={e => handleInputChange('intendingVendor', 'distressValue', e.target.value)} /></div>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* ── Property Details ── */}
+//       <div>
+//         {renderSectionHeader('Property Details', 'propertyDetails')}
+//         {activeSection === 'propertyDetails' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Type of Building</label>
+//               <div className="relative">
+//                 <select className={`${inputStyles} appearance-none`} value={formData.propertyDetails.buildingType}
+//                   onChange={e => handleInputChange('propertyDetails', 'buildingType', e.target.value)}>
+//                   <option value="">Choose Option</option>
+//                   <option value="Ground Floor">Ground Floor Building</option>
+//                   <option value="Ground and First Floor">Ground Floor and First Floor Building</option>
+//                   <option value="Apartment">Apartment</option>
+//                 </select>
+//                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//               </div>
+//             </div>
+//             <div><label className={labelStyles}>H.No</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.hNo} onChange={e => handleInputChange('propertyDetails', 'hNo', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Sy.No.</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.syNo} onChange={e => handleInputChange('propertyDetails', 'syNo', e.target.value)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Road / Street / Colony</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.road} onChange={e => handleInputChange('propertyDetails', 'road', e.target.value)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Village</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.village} onChange={e => handleInputChange('propertyDetails', 'village', e.target.value)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Municipality</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.municipality} onChange={e => handleInputChange('propertyDetails', 'municipality', e.target.value)} /></div>
+//             <div><label className={labelStyles}>District</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.district} onChange={e => handleInputChange('propertyDetails', 'district', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Pincode</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.pincode} onChange={e => handleInputChange('propertyDetails', 'pincode', e.target.value)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Landmark</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.landmark} onChange={e => handleInputChange('propertyDetails', 'landmark', e.target.value)} /></div>
+//             <div className="md:col-span-2 mt-4">
+//               <label className={labelStyles}>Select Geo Location</label>
+//               <GeoCoordinatePicker 
+//                 onCoordinatesSubmit={(coords) => {
+//                   handleInputChange('propertyDetails', 'boundaryCoordinates', coords);
+//                   // Optional: Automatically fill the text inputs with the first pin's location
+//                   if (coords.length > 0) {
+//                     handleInputChange('propertyDetails', 'latitude', coords[0].lat.toString());
+//                     handleInputChange('propertyDetails', 'longitude', coords[0].lng.toString());
+//                   }
+//                 }} 
+//               />
+//               {/* <div className="flex gap-3">
+//                 <input type="text" placeholder="Latitude" className={inputStyles} value={formData.propertyDetails.latitude} onChange={e => handleInputChange('propertyDetails', 'latitude', e.target.value)} />
+//                 <input type="text" placeholder="Longitude" className={inputStyles} value={formData.propertyDetails.longitude} onChange={e => handleInputChange('propertyDetails', 'longitude', e.target.value)} />
+//                 <button type="button"
+//                   onClick={() => navigator.geolocation?.getCurrentPosition(pos => {
+//                     handleInputChange('propertyDetails', 'latitude', pos.coords.latitude.toString());
+//                     handleInputChange('propertyDetails', 'longitude', pos.coords.longitude.toString());
+//                   })}
+//                   className="px-4 py-2 bg-gray-900 text-white rounded-lg flex items-center gap-2 hover:bg-gray-800 transition whitespace-nowrap">
+//                   <MapPin className="w-4 h-4" />
+//                   <span className="hidden sm:inline">Get Location</span>
+//                 </button>
+//               </div> */}
+//             </div>
+//             <div className="md:col-span-2 mt-6">
+//               <label className={labelStyles}>Upload Site Photos</label>
+//               <div 
+//                 className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-white hover:bg-gray-50 transition cursor-pointer"
+//                 onClick={() => fileInputRef.current?.click()}
+//               >
+//                 <input 
+//                   type="file" 
+//                   multiple 
+//                   accept="image/*" 
+//                   className="hidden" 
+//                   ref={fileInputRef}
+//                   onChange={handleImageUpload}
+//                 />
+//                 <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+//                   <UploadCloud className="w-6 h-6 text-gray-500" />
+//                 </div>
+//                 <p className="text-sm text-gray-600 text-center">
+//                   Drag and drop your photos here or click to <span className="text-[#00a0ef] font-medium">browse files</span>
+//                 </p>
+//               </div>
+
+//               {formData.propertyDetails.images.length > 0 && (
+//                 <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4">
+//                   {formData.propertyDetails.images.map((file, idx) => (
+//                     <div key={idx} className="relative aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center group">
+                      
+//                       {/* REPLACE ImageIcon with an actual img tag */}
+//                       <img 
+//                         src={URL.createObjectURL(file)} 
+//                         alt={`Preview ${idx + 1}`} 
+//                         className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+//                       />
+                      
+//                       <button 
+//                         type="button"
+//                         onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+//                         className="absolute top-1 right-1 bg-white rounded-full p-1.5 shadow-md  opacity-100 transition-all hover:bg-red-50 hover:scale-105"
+//                       >
+//                         <X className="w-3.5 h-3.5 text-red-500" />
+//                       </button>
+                      
+//                     </div>
+//                   ))}
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* ── Site Boundary Details ── */}
+//       <div>
+//         {renderSectionHeader('Site Boundary Details', 'siteBoundaryDetails')}
+//         {activeSection === 'siteBoundaryDetails' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10 space-y-8">
+//             {(['boundariesDoc', 'boundariesActual', 'dimensionsDoc', 'dimensionsActual'] as const).map(sub => (
+//               <div key={sub}>
+//                 <h4 className="text-sm font-semibold text-gray-900 mb-4">
+//                   {{
+//                     boundariesDoc: 'Boundaries [ Document ]',
+//                     boundariesActual: 'Boundaries [ Actual ]',
+//                     dimensionsDoc: 'Dimensions [ Document ]',
+//                     dimensionsActual: 'Dimensions [ Actual ]',
+//                   }[sub]}
+//                 </h4>
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+//                   {(['north', 'south', 'east', 'west'] as const).map(dir => (
+//                     <div key={dir}>
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)}</label>
+//                       <input type="text" placeholder="Enter Details" className={inputStyles}
+//                         value={formData.siteBoundaryDetails[sub][dir]}
+//                         onChange={e => handleNestedInputChange('siteBoundaryDetails', sub, dir, e.target.value)} />
+//                     </div>
+//                   ))}
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+
+//     </div>
+//   );
+// }
+// ============================================================
 function Step2Form({
   formData,
   setFormData,
+  step1Data
 }: {
   formData: Step2State;
   setFormData: React.Dispatch<React.SetStateAction<Step2State>>;
+  step1Data: Step1State;
 }) {
   const [activeSection, setActiveSection] = useState<keyof Step2State>('intendingVendor');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const sayValue = parseFloat(step1Data.plotValuation.sayValue) || 0;
+    const realPct = parseFloat(formData.intendingVendor.realizablePercent) || 0;
+    const distPct = parseFloat(formData.intendingVendor.distressPercent) || 0;
+
+    const realVal = sayValue * (realPct / 100);
+    const distVal = sayValue * (distPct / 100);
+
+    if (
+      formData.intendingVendor.realizableValue !== realVal.toString() ||
+      formData.intendingVendor.distressValue !== distVal.toString()
+    ) {
+      setFormData(prev => ({
+        ...prev,
+        intendingVendor: {
+          ...prev.intendingVendor,
+          realizableValue: realVal.toString(),
+          distressValue: distVal.toString()
+        }
+      }));
+    }
+  }, [step1Data.plotValuation.sayValue, formData.intendingVendor.realizablePercent, formData.intendingVendor.distressPercent, setFormData]);
+
+  const handleTabToNextSection = (e: React.KeyboardEvent, nextSection: keyof Step2State, focusId: string) => {
+    if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      setActiveSection(nextSection);
+      setTimeout(() => document.getElementById(focusId)?.focus(), 50);
+    }
+  };
+
+  const handleInputChange = (section: keyof Step2State, field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
+  };
+
+  const handleNestedInputChange = (
+    section: 'siteBoundaryDetails',
+    subSection: keyof Step2State['siteBoundaryDetails'],
+    field: string,
+    value: string,
+  ) => {
+    setFormData(prev => {
+      const currentSubSection = prev[section][subSection] as any;
+      let newSubSection = { ...currentSubSection, [field]: value };
+
+      if (field === 'north') newSubSection.south = value;
+      if (field === 'east') newSubSection.west = value;
+
+      const newState = {
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [subSection]: newSubSection,
+        },
+      };
+
+      if (prev[section].isActualSameAsDoc && (subSection === 'boundariesDoc' || subSection === 'dimensionsDoc')) {
+         const actualSubSection = subSection === 'boundariesDoc' ? 'boundariesActual' : 'dimensionsActual';
+         newState[section][actualSubSection] = newSubSection;
+      }
+
+      return newState;
+    });
+  };
+
+  const handleSameAsDocChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    setFormData(prev => ({
+      ...prev,
+      siteBoundaryDetails: {
+        ...prev.siteBoundaryDetails,
+        isActualSameAsDoc: isChecked,
+        boundariesActual: isChecked ? { ...prev.siteBoundaryDetails.boundariesDoc } : prev.siteBoundaryDetails.boundariesActual,
+        dimensionsActual: isChecked ? { ...prev.siteBoundaryDetails.dimensionsDoc } : prev.siteBoundaryDetails.dimensionsActual,
+      }
+    }));
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -721,30 +1497,12 @@ function Step2Form({
       }
     }));
   };
-  const handleInputChange = (section: keyof Step2State, field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
-  };
-
-  const handleNestedInputChange = (
-    section: 'siteBoundaryDetails',
-    subSection: keyof Step2State['siteBoundaryDetails'],
-    field: string,
-    value: string,
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [subSection]: { ...prev[section][subSection], [field]: value },
-      },
-    }));
-  };
 
   const checkIsFilled = (section: keyof Step2State) => {
     if (section === 'siteBoundaryDetails')
       return Object.values(formData.siteBoundaryDetails.boundariesDoc).every(v => v !== '');
     const data = formData[section] as any;
-    return Object.entries(data).filter(([k]) => k !== 'images').every(([, v]) => v !== '');
+    return Object.entries(data).filter(([k]) => k !== 'images' && k !== 'boundaryCoordinates').every(([, v]) => v !== '');
   };
 
   const renderSectionHeader = (title: string, id: keyof Step2State) => {
@@ -765,7 +1523,7 @@ function Step2Form({
     );
   };
 
-  const subHeadingStyles = "text-sm font-semibold text-gray-900 mt-6 mb-4 col-span-full border-b pb-2";
+  const subHeadingStyles = "text-sm font-semibold text-gray-900 mt-6 mb-4 col-span-full border-b pb-2 flex items-center justify-between";
 
   return (
     <div className="bg-white border-y md:border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
@@ -775,21 +1533,50 @@ function Step2Form({
         {renderSectionHeader('Intending Vendor', 'intendingVendor')}
         {activeSection === 'intendingVendor' && (
           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
-            <div className="md:col-span-2">
-              <label className={labelStyles}>Enter Name (Sri. / Smt.)</label>
-              <input type="text" placeholder="Enter Name" className={inputStyles}
-                value={formData.intendingVendor.name}
-                onChange={e => handleInputChange('intendingVendor', 'name', e.target.value)} />
+            <div className="md:col-span-2 flex gap-3">
+              <div className="w-1/3 md:w-1/4">
+                <label className={labelStyles}>Prefix</label>
+                <div className="relative">
+                  <select 
+                    id="intendingVendor-first" 
+                    className={`${inputStyles} appearance-none`} 
+                    value={formData.intendingVendor.prefix || 'Shri'}
+                    onChange={e => {
+                      const prefix = e.target.value;
+                      handleInputChange('intendingVendor', 'prefix', prefix);
+                      handleInputChange('intendingVendor', 'relationType', prefix === 'Smt' ? 'W/o.' : 'S/o.');
+                    }}>
+                    <option value="Shri">Shri</option>
+                    <option value="Smt">Smt</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className={labelStyles}>Enter Name</label>
+                <input type="text" placeholder="Vendor Name" className={inputStyles}
+                  value={formData.intendingVendor.name}
+                  onChange={e => handleInputChange('intendingVendor', 'name', e.target.value)} />
+              </div>
             </div>
+            
             <div className="flex gap-3 md:col-span-2">
               <div className="w-1/3 md:w-1/4">
                 <label className={labelStyles}>Relation</label>
                 <div className="relative">
                   <select className={`${inputStyles} appearance-none`} value={formData.intendingVendor.relationType}
                     onChange={e => handleInputChange('intendingVendor', 'relationType', e.target.value)}>
-                    <option value="S/o.">S/o.</option>
-                    <option value="W/o.">W/o.</option>
-                    <option value="D/o.">D/o.</option>
+                    {formData.intendingVendor.prefix === 'Smt' ? (
+                      <>
+                        <option value="W/o.">W/o.</option>
+                        <option value="D/o.">D/o.</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="S/o.">S/o.</option>
+                        <option value="F/o.">F/o.</option>
+                      </>
+                    )}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                 </div>
@@ -817,17 +1604,31 @@ function Step2Form({
               <input type="tel" className={inputStyles} value={formData.intendingVendor.phone2}
                 onChange={e => handleInputChange('intendingVendor', 'phone2', e.target.value)} />
             </div>
+            
             <h4 className={subHeadingStyles}>Address of Intending Vendor</h4>
             <div><label className={labelStyles}>Plot No. / H.No.</label><input type="text" className={inputStyles} value={formData.intendingVendor.plotNo} onChange={e => handleInputChange('intendingVendor', 'plotNo', e.target.value)} /></div>
             <div><label className={labelStyles}>Road / Street / Colony</label><input type="text" className={inputStyles} value={formData.intendingVendor.road} onChange={e => handleInputChange('intendingVendor', 'road', e.target.value)} /></div>
             <div><label className={labelStyles}>Village / Mandal / Municipality</label><input type="text" className={inputStyles} value={formData.intendingVendor.village} onChange={e => handleInputChange('intendingVendor', 'village', e.target.value)} /></div>
             <div><label className={labelStyles}>District</label><input type="text" className={inputStyles} value={formData.intendingVendor.district} onChange={e => handleInputChange('intendingVendor', 'district', e.target.value)} /></div>
             <div><label className={labelStyles}>Pincode</label><input type="text" className={inputStyles} value={formData.intendingVendor.pincode} onChange={e => handleInputChange('intendingVendor', 'pincode', e.target.value)} /></div>
+            
             <h4 className={subHeadingStyles}>Valuation Estimates</h4>
-            <div><label className={labelStyles}>Realizable %</label><input type="text" className={inputStyles} value={formData.intendingVendor.realizablePercent} onChange={e => handleInputChange('intendingVendor', 'realizablePercent', e.target.value)} /></div>
-            <div><label className={labelStyles}>Realizable Value (Rupees)</label><input type="number" className={inputStyles} value={formData.intendingVendor.realizableValue} onChange={e => handleInputChange('intendingVendor', 'realizableValue', e.target.value)} /></div>
-            <div><label className={labelStyles}>Distress %</label><input type="text" className={inputStyles} value={formData.intendingVendor.distressPercent} onChange={e => handleInputChange('intendingVendor', 'distressPercent', e.target.value)} /></div>
-            <div><label className={labelStyles}>Distress Value (Rupees)</label><input type="number" className={inputStyles} value={formData.intendingVendor.distressValue} onChange={e => handleInputChange('intendingVendor', 'distressValue', e.target.value)} /></div>
+            <div>
+              <label className={labelStyles}>Realizable %</label>
+              <input type="number" className={inputStyles} value={formData.intendingVendor.realizablePercent} onChange={e => handleInputChange('intendingVendor', 'realizablePercent', e.target.value)} />
+            </div>
+            <div>
+              <label className={labelStyles}>Realizable Value (Say * %)</label>
+              <input type="text" disabled className={`${inputStyles} bg-gray-100 text-gray-500 cursor-not-allowed`} value={formData.intendingVendor.realizableValue} />
+            </div>
+            <div>
+              <label className={labelStyles}>Distress %</label>
+              <input type="number" className={inputStyles} value={formData.intendingVendor.distressPercent} onChange={e => handleInputChange('intendingVendor', 'distressPercent', e.target.value)} onKeyDown={e => handleTabToNextSection(e, 'propertyDetails', 'propertyDetails-first')} />
+            </div>
+            <div>
+              <label className={labelStyles}>Distress Value (Say * %)</label>
+              <input type="text" disabled className={`${inputStyles} bg-gray-100 text-gray-500 cursor-not-allowed`} value={formData.intendingVendor.distressValue} />
+            </div>
           </div>
         )}
       </div>
@@ -840,11 +1641,11 @@ function Step2Form({
             <div className="md:col-span-2">
               <label className={labelStyles}>Type of Building</label>
               <div className="relative">
-                <select className={`${inputStyles} appearance-none`} value={formData.propertyDetails.buildingType}
+                <select id="propertyDetails-first" className={`${inputStyles} appearance-none`} value={formData.propertyDetails.buildingType}
                   onChange={e => handleInputChange('propertyDetails', 'buildingType', e.target.value)}>
                   <option value="">Choose Option</option>
-                  <option value="Ground Floor">Ground Floor Building</option>
-                  <option value="Ground and First Floor">Ground Floor and First Floor Building</option>
+                  <option value="Ground Floor Building">Ground Floor Building</option>
+                  <option value="Ground + First Floor">Ground + First Floor</option>
                   <option value="Apartment">Apartment</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
@@ -856,34 +1657,21 @@ function Step2Form({
             <div className="md:col-span-2"><label className={labelStyles}>Village</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.village} onChange={e => handleInputChange('propertyDetails', 'village', e.target.value)} /></div>
             <div className="md:col-span-2"><label className={labelStyles}>Municipality</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.municipality} onChange={e => handleInputChange('propertyDetails', 'municipality', e.target.value)} /></div>
             <div><label className={labelStyles}>District</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.district} onChange={e => handleInputChange('propertyDetails', 'district', e.target.value)} /></div>
-            <div><label className={labelStyles}>Pincode</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.pincode} onChange={e => handleInputChange('propertyDetails', 'pincode', e.target.value)} /></div>
-            <div className="md:col-span-2"><label className={labelStyles}>Landmark</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.landmark} onChange={e => handleInputChange('propertyDetails', 'landmark', e.target.value)} /></div>
+            <div><label className={labelStyles}>Pincode</label><input type="text" placeholder="Enter Details" className={inputStyles} value={formData.propertyDetails.pincode} onChange={e => handleInputChange('propertyDetails', 'pincode', e.target.value)} onKeyDown={e => handleTabToNextSection(e, 'siteBoundaryDetails', 'siteBoundaryDetails-first')} /></div>
+            
             <div className="md:col-span-2 mt-4">
               <label className={labelStyles}>Select Geo Location</label>
               <GeoCoordinatePicker 
                 onCoordinatesSubmit={(coords) => {
                   handleInputChange('propertyDetails', 'boundaryCoordinates', coords);
-                  // Optional: Automatically fill the text inputs with the first pin's location
                   if (coords.length > 0) {
                     handleInputChange('propertyDetails', 'latitude', coords[0].lat.toString());
                     handleInputChange('propertyDetails', 'longitude', coords[0].lng.toString());
                   }
                 }} 
               />
-              {/* <div className="flex gap-3">
-                <input type="text" placeholder="Latitude" className={inputStyles} value={formData.propertyDetails.latitude} onChange={e => handleInputChange('propertyDetails', 'latitude', e.target.value)} />
-                <input type="text" placeholder="Longitude" className={inputStyles} value={formData.propertyDetails.longitude} onChange={e => handleInputChange('propertyDetails', 'longitude', e.target.value)} />
-                <button type="button"
-                  onClick={() => navigator.geolocation?.getCurrentPosition(pos => {
-                    handleInputChange('propertyDetails', 'latitude', pos.coords.latitude.toString());
-                    handleInputChange('propertyDetails', 'longitude', pos.coords.longitude.toString());
-                  })}
-                  className="px-4 py-2 bg-gray-900 text-white rounded-lg flex items-center gap-2 hover:bg-gray-800 transition whitespace-nowrap">
-                  <MapPin className="w-4 h-4" />
-                  <span className="hidden sm:inline">Get Location</span>
-                </button>
-              </div> */}
             </div>
+            
             <div className="md:col-span-2 mt-6">
               <label className={labelStyles}>Upload Site Photos</label>
               <div 
@@ -910,22 +1698,18 @@ function Step2Form({
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4">
                   {formData.propertyDetails.images.map((file, idx) => (
                     <div key={idx} className="relative aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center group">
-                      
-                      {/* REPLACE ImageIcon with an actual img tag */}
                       <img 
                         src={URL.createObjectURL(file)} 
                         alt={`Preview ${idx + 1}`} 
                         className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
                       />
-                      
                       <button 
                         type="button"
                         onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
-                        className="absolute top-1 right-1 bg-white rounded-full p-1.5 shadow-md  opacity-100 transition-all hover:bg-red-50 hover:scale-105"
+                        className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-red-50 hover:scale-105"
                       >
                         <X className="w-3.5 h-3.5 text-red-500" />
                       </button>
-                      
                     </div>
                   ))}
                 </div>
@@ -940,28 +1724,69 @@ function Step2Form({
         {renderSectionHeader('Site Boundary Details', 'siteBoundaryDetails')}
         {activeSection === 'siteBoundaryDetails' && (
           <div className="p-4 md:p-6 bg-blue-50/10 space-y-8">
-            {(['boundariesDoc', 'boundariesActual', 'dimensionsDoc', 'dimensionsActual'] as const).map(sub => (
-              <div key={sub}>
-                <h4 className="text-sm font-semibold text-gray-900 mb-4">
-                  {{
-                    boundariesDoc: 'Boundaries [ Document ]',
-                    boundariesActual: 'Boundaries [ Actual ]',
-                    dimensionsDoc: 'Dimensions [ Document ]',
-                    dimensionsActual: 'Dimensions [ Actual ]',
-                  }[sub]}
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  {(['north', 'south', 'east', 'west'] as const).map(dir => (
-                    <div key={dir}>
-                      <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)}</label>
-                      <input type="text" placeholder="Enter Details" className={inputStyles}
-                        value={formData.siteBoundaryDetails[sub][dir]}
-                        onChange={e => handleNestedInputChange('siteBoundaryDetails', sub, dir, e.target.value)} />
-                    </div>
-                  ))}
+            
+            <div className="flex flex-col gap-6">
+              
+              {/* Document Inputs */}
+              {(['boundariesDoc', 'dimensionsDoc'] as const).map(sub => (
+                <div key={sub} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                  <h4 className="text-sm font-semibold text-[#00a0ef] mb-4 border-b border-gray-100 pb-2">
+                    {{ boundariesDoc: 'Document Boundaries', dimensionsDoc: 'Document Dimensions' }[sub]}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(['north', 'south', 'east', 'west'] as const).map(dir => (
+                      <div key={dir}>
+                        <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)}</label>
+                        <input 
+                          id={sub === 'boundariesDoc' && dir === 'north' ? 'siteBoundaryDetails-first' : undefined}
+                          type="text" placeholder="Enter Details" className={inputStyles}
+                          value={formData.siteBoundaryDetails[sub][dir]}
+                          onChange={e => handleNestedInputChange('siteBoundaryDetails', sub, dir, e.target.value)} 
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              ))}
+
+              {/* Checkbox for Actuals */}
+              <div className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                <input 
+                  type="checkbox" 
+                  id="same-as-doc"
+                  checked={formData.siteBoundaryDetails.isActualSameAsDoc}
+                  onChange={handleSameAsDocChange}
+                  className="w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]"
+                />
+                <label htmlFor="same-as-doc" className="text-sm font-medium text-gray-800 cursor-pointer select-none">
+                  Actual Boundaries & Dimensions are the same as Document
+                </label>
               </div>
-            ))}
+
+              {/* Actual Inputs */}
+              {(['boundariesActual', 'dimensionsActual'] as const).map(sub => (
+                <div key={sub} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-2">
+                    {{ boundariesActual: 'Actual Boundaries', dimensionsActual: 'Actual Dimensions' }[sub]}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(['north', 'south', 'east', 'west'] as const).map(dir => (
+                      <div key={dir}>
+                        <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)}</label>
+                        <input 
+                          type="text" placeholder="Enter Details" 
+                          disabled={formData.siteBoundaryDetails.isActualSameAsDoc}
+                          className={`${inputStyles} ${formData.siteBoundaryDetails.isActualSameAsDoc ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
+                          value={formData.siteBoundaryDetails[sub][dir]}
+                          onChange={e => handleNestedInputChange('siteBoundaryDetails', sub, dir, e.target.value)} 
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+            </div>
           </div>
         )}
       </div>
@@ -1495,17 +2320,26 @@ export default function NewValuationInit() {
   // ── Per-step form state ──
   const [step1Data, setStep1Data] = useState<Step1State>({
     inputField:      { dateValuation: '', dateInspection: '', propertyType: '', loanType: '' },
-    applicantDetails:{ name: '', relationType: 'W/o', relationName: '', occupation: '', phone1: '', phone2: '' },
+ 
+    applicantDetails:{ prefix: 'Shri', name: '', relationType: 'S/o', relationName: '', occupation: '', phone1: '', phone2: '' },
     address:         { plotNo: '', road: '', village: '', district: '', pincode: '' },
     bankDetails:     { ifsc: '', bankName: '', branch: '', email: '', contactPerson: '' },
     siteArea:        { asPerDocument: '', asPerActual: '', siteShape: '', roadAffectedArea: '' },
     plotValuation:   { siteArea: '', glr: '', mv: '', pmr: '', sayValue: '' },
   });
-
   const [step2Data, setStep2Data] = useState<Step2State>({
-    intendingVendor: { name: '', relationType: 'S/o.', relationName: '', occupation: '', phone1: '', phone2: '', plotNo: '', road: '', village: '', district: '', pincode: '', realizablePercent: '90%', realizableValue: '', distressPercent: '80%', distressValue: '' },
-    propertyDetails: { buildingType: '', hNo: '', syNo: '', road: '', village: '', municipality: '', district: '', pincode: '', landmark: '', latitude: '', longitude: '', images: [] ,boundaryCoordinates: []},
+    intendingVendor: { 
+      prefix: 'Shri', name: '', relationType: 'S/o.', relationName: '', occupation: '', 
+      phone1: '', phone2: '', plotNo: '', road: '', village: '', district: '', pincode: '', 
+      realizablePercent: '90', realizableValue: '', distressPercent: '80', distressValue: '' 
+    },
+    propertyDetails: { 
+      buildingType: '', hNo: '', syNo: '', road: '', village: '', municipality: '', 
+      district: '', pincode: '', landmark: '', latitude: '', longitude: '', images: [] ,
+      boundaryCoordinates: []
+    },
     siteBoundaryDetails: {
+      isActualSameAsDoc: false,
       boundariesDoc:    { north: '', south: '', east: '', west: '' },
       boundariesActual: { north: '', south: '', east: '', west: '' },
       dimensionsDoc:    { north: '', south: '', east: '', west: '' },
@@ -1799,7 +2633,7 @@ const handleSubmit = async () => {
         {/* Step content area */}
         <div className="flex-1 overflow-y-auto bg-gray-50 md:p-6">
           {currentStep === 1 && <Step1Form formData={step1Data} setFormData={setStep1Data} />}
-          {currentStep === 2 && <Step2Form formData={step2Data} setFormData={setStep2Data} />}
+          {currentStep === 2 && <Step2Form formData={step2Data} setFormData={setStep2Data} step1Data={step1Data}/>}
           {currentStep === 3 && <Step3Form formData={step3Data} setFormData={setStep3Data} />}
           {currentStep === 4 && <Step4Form formData={step4Data} setFormData={setStep4Data} />}
           {currentStep === 5 && <Step5Form 
