@@ -1,9 +1,10 @@
  
 'use client';
 
-import { PanelLeft, Bell, ChevronRight, Plus } from 'lucide-react';
+import { PanelLeft, Bell, ChevronRight, Plus, ChevronDown } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -19,6 +20,20 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   const formatSegment = (segment: string) => {
     return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
   };
+
+   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+  
+    // Close dropdown when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setIsDropdownOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
   return (
     <header className="h-[50px] bg-white flex items-center justify-between px-6 w-full shrink-0 border-b border-gray-100 md:border-none">
@@ -61,10 +76,37 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
       
       {/* Right Side Icons */}
       <div className="flex items-center gap-3">
-       <Link href = "/s/new-valuation"  className="flex items-center gap-1 bg-[#00a0ef] hover:bg-[#008bd1] text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors">
-         <Plus className="w-4 h-4" />
-         New Valuation
-       </Link>
+      <div className="relative" ref={dropdownRef}>
+        <button 
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className="flex items-center gap-1.5 bg-[#00a0ef] hover:bg-[#008bd1] text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          New Entry
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 opacity-80 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {/* Dropdown Menu */}
+        {isDropdownOpen && (
+          <div className="absolute  md:right-0 mt-2 w-48 bg-white border border-gray-100 rounded-lg shadow-lg py-1.5 z-50 overflow-hidden">
+            <Link 
+              href="/s/new-valuation" 
+              onClick={() => setIsDropdownOpen(false)}
+              className="block px-4 py-2.5 text-[13px] font-medium text-gray-700 hover:bg-blue-50 hover:text-[#00a0ef] transition-colors"
+            >
+              New Valuation
+            </Link>
+            <Link 
+              href="/s/new-customer" 
+              onClick={() => setIsDropdownOpen(false)}
+              className="block px-4 py-2.5 text-[13px] font-medium text-gray-700 hover:bg-blue-50 hover:text-[#00a0ef] transition-colors"
+            >
+              New Customer
+            </Link>
+          </div>
+        )}
+      </div>
+
        <button className="p-1.5 border border-gray-200 rounded-full text-gray-600 hover:bg-gray-50">
          <Bell className="w-4 h-4" />
        </button>
