@@ -735,7 +735,8 @@ import BuildingCommencementSidebar from '@/app/(Drafter)/components/sidebar/Buil
 import BuildingCommencementDoc from '@/app/(Drafter)/components/document/BuildingCommencementDoc';
 import BuildingPermitSidebar from '@/app/(Drafter)/components/sidebar/BuildingPermitSidebar';
 import BuildingPermitDoc from '@/app/(Drafter)/components/document/BuildingPermitDoc';
-
+import BuildingValuationDoc from '@/app/(Drafter)/components/document/BuildingValuationDoc';
+import BuildingValuationSidebar from '@/app/(Drafter)/components/sidebar/BuildingValuationSidebar';
 const TEMPLATE_OPTIONS = [
   { value: 'provisional_building', label: 'Provisional Building Permit Order' },
   { value: 'building_valuation', label: 'Building Valuation Report' },
@@ -767,7 +768,7 @@ export default function DocumentEditorPage() {
   const renderSidebar = () => {
     switch (selectedTemplate) {
       case 'provisional_building': return <BuildingPermitSidebar formData={formData} handleChange={handleChange} />;
-      case 'building_valuation': return <BuildingCommencementSidebar formData={formData} handleChange={handleChange} />;
+      case 'building_valuation': return <BuildingValuationSidebar formData={formData} handleChange={handleChange} />;
       default: return <div className="p-10 text-center text-sm font-medium text-gray-400">Template input coming soon</div>;
     }
   };
@@ -775,7 +776,7 @@ export default function DocumentEditorPage() {
   const renderDocument = () => {
     switch (selectedTemplate) {
       case 'provisional_building': return <BuildingPermitDoc formData={formData} handleChange={handleChange} editMode={editMode} />;
-      case 'building_valuation': return <BuildingCommencementDoc formData={formData} handleChange={handleChange} editMode={editMode}/>;
+      case 'building_valuation': return <BuildingValuationDoc formData={formData} handleChange={handleChange} editMode={editMode}/>;
 
       default: return (
         <div className="flex items-center justify-center h-[800px] w-full bg-white shadow-sm border border-dashed border-gray-300">
@@ -827,7 +828,9 @@ export default function DocumentEditorPage() {
             <button onClick={() => setEditMode('form')} className={`px-4 py-1 text-[13px] font-semibold rounded-sm transition-colors ${editMode === 'form' ? 'bg-white shadow-sm text-[#00a0ef]' : 'text-gray-600'}`}>Form Edit</button>
             <button onClick={() => setEditMode('direct')} className={`px-4 py-1 text-[13px] font-semibold rounded-sm transition-colors ${editMode === 'direct' ? 'bg-white shadow-sm text-[#00a0ef]' : 'text-gray-600'}`}>Direct Edit</button>
           </div>
-
+          <button onClick={() => handleSubmitToBackend()} className="px-5 py-1.5 bg-[#00a0ef] text-white text-[13px] font-semibold rounded-lg flex items-center gap-2">
+            <Save className="w-4 h-4"/>  Save
+          </button>
           <button onClick={() => handleExport()} className="px-5 py-1.5 bg-[#00a0ef] text-white text-[13px] font-semibold rounded-lg flex items-center gap-2">
             <Printer className="w-4 h-4" /> Download PDF
           </button>
