@@ -584,6 +584,9 @@ export function useDocumentEditor() {
       prevailingMarketRateRange: "Rs.17000 to Rs.19000",
       unitRatePMR: "17,000",
       landValuePMR: "21,50,840",
+      CompoundWall:"",
+      Gate:"",
+      power:"",
 
       portico: "",
       ornamentalDoor: "35,000",

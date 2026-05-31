@@ -337,6 +337,10 @@ export interface FormData {
   unitRatePMR: string;
   landValuePMR: string;
 
+  CompoundWall:string;
+  Gate:string;
+  power:string;
+
   // Extra items (Part C)
   portico: string;
   ornamentalDoor: string;

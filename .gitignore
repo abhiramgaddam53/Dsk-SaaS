@@ -23,6 +23,10 @@
 # misc
 .DS_Store
 *.pem
+plan.json
+plan.js
+plan.*
+
 
 # debug
 npm-debug.log*
