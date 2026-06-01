@@ -559,7 +559,8 @@ export default function DocumentEditorPage() {
   // Track preview container width for mobile auto-scaling
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(DOCUMENT_WIDTH);
-
+  const [sitePhotos, setSitePhotos] = useState<{ url: string; name: string }[]>([]);
+  const [mapPhotos, setMapPhotos] = useState<{ url: string; label: string }[]>([]);
   // Measure the actual rendered height of the document inner div.
   // Using a callback ref so we get notified the moment the element mounts
   // and can immediately attach a ResizeObserver to track height changes
@@ -655,12 +656,36 @@ export default function DocumentEditorPage() {
   // No manual translateX needed — centering is handled by the wrapper div below.
 
   // ─── Render helpers ───────────────────────────────────────────────────────
+  // const renderSidebar = () => {
+  //   switch (selectedTemplate) {
+  //     case 'provisional_building':
+  //       return <BuildingPermitSidebar formData={formData} handleChange={handleChange} />;
+  //     case 'building_valuation':
+  //       return <BuildingValuationSidebar formData={formData} handleChange={handleChange} />;
+  //     default:
+  //       return (
+  //         <div className="p-10 text-center text-sm font-medium text-gray-400">
+  //           Template input coming soon
+  //         </div>
+  //       );
+  //   }
+  // };
   const renderSidebar = () => {
     switch (selectedTemplate) {
       case 'provisional_building':
         return <BuildingPermitSidebar formData={formData} handleChange={handleChange} />;
       case 'building_valuation':
-        return <BuildingValuationSidebar formData={formData} handleChange={handleChange} />;
+        return (
+          <BuildingValuationSidebar 
+            formData={formData as any} 
+            handleChange={handleChange} 
+            // Add these 4 lines:
+            sitePhotos={sitePhotos}
+            onSitePhotosChange={setSitePhotos}
+            mapPhotos={mapPhotos}
+            onMapPhotosChange={setMapPhotos}
+          />
+        );
       default:
         return (
           <div className="p-10 text-center text-sm font-medium text-gray-400">
@@ -670,6 +695,24 @@ export default function DocumentEditorPage() {
     }
   };
 
+  // const renderDocument = () => {
+  //   switch (selectedTemplate) {
+  //     case 'provisional_building':
+  //       return (
+  //         <BuildingPermitDoc
+  //           formData={formData}
+  //           handleChange={handleChange}
+  //           editMode={editMode}
+  //         />
+  //       );
+  //     case 'building_valuation':
+  //       return (
+  //         <BuildingValuationDoc
+  //           formData={formData}
+  //           handleChange={handleChange}
+  //           editMode={editMode}
+  //         />
+  //       );
   const renderDocument = () => {
     switch (selectedTemplate) {
       case 'provisional_building':
@@ -683,9 +726,12 @@ export default function DocumentEditorPage() {
       case 'building_valuation':
         return (
           <BuildingValuationDoc
-            formData={formData}
+            formData={formData as any} // (Good to add 'as any' here too)
             handleChange={handleChange}
             editMode={editMode}
+            // Add these 2 lines so the document can display the photos!
+            sitePhotos={sitePhotos}
+            mapPhotos={mapPhotos}
           />
         );
       default:

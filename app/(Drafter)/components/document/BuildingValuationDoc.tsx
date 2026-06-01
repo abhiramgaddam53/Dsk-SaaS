@@ -87,10 +87,14 @@ export default function BuildingValuationDoc({
   formData,
   handleChange,
   editMode,
+  mapPhotos = [],
+  sitePhotos = [],
 }: {
   formData: FormData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   editMode: any;
+  mapPhotos?: { url: string; label: string }[];
+  sitePhotos?: { url: string; name: string }[];
 }) {
   const F = (name: keyof FormData, inline = true) => (
     <DocField
@@ -1717,9 +1721,8 @@ export default function BuildingValuationDoc({
       </PageShell>
 
       {/* ════════════════════════════════════════════════════════════ PAGE 16 - KEY PLAN / MAP */}
+      {/* ════════════════════════════════════════════════════════════ PAGE 16 - KEY PLAN / MAP */}
       <PageShell>
-        {/* <ValuerHeader /> */}
-
         <p className="text-[12px] font-bold text-center mb-3">Key Plan Showing the Location of the Property (Google Map Extract)</p>
         <div className="flex justify-between text-[10.5px] mb-3">
           <span>Google Coordinates</span>
@@ -1727,36 +1730,45 @@ export default function BuildingValuationDoc({
           <span>Lon: &nbsp;{F("longitude")}</span>
         </div>
 
-        {/* Map placeholder - 3 map frames mimicking the PDF */}
-        <div className="border-2 border-dashed border-gray-300 rounded bg-gray-50 h-48 flex items-center justify-center mb-3">
-          <div className="text-center text-gray-400">
-            <p className="text-[11px] font-semibold">Aerial / Satellite View</p>
-            <p className="text-[10px]">Google Map Extract – Close Up</p>
-            <p className="text-[10px]">Lat: {formData.latitude || "18.851065"}, Lon: {formData.longitude || "78.621209"}</p>
-          </div>
-        </div>
-        <div className="flex gap-3 mb-3">
-          <div className="border-2 border-dashed border-gray-300 rounded bg-gray-50 h-36 flex-1 flex items-center justify-center">
-            <div className="text-center text-gray-400">
-              <p className="text-[10px] font-semibold">Property Boundary View</p>
-              <p className="text-[9px]">Site outline highlighted</p>
+        {/* Dynamic Maps Grid */}
+        {mapPhotos && mapPhotos.length >= 4 ? (
+          <div className="flex flex-col gap-4">
+            {/* Top Row: Close-up views */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <p className="text-[11px] font-bold text-center mb-1 text-blue-900">Roadmap (Close-up)</p>
+                <img src={mapPhotos[0].url} alt="Roadmap Close" className="w-full h-[300px] object-cover border border-black p-1" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[11px] font-bold text-center mb-1 text-blue-900">Satellite (Close-up)</p>
+                <img src={mapPhotos[2].url} alt="Satellite Close" className="w-full h-[300px] object-cover border border-black p-1" />
+              </div>
+            </div>
+            {/* Bottom Row: Wide views with polygon */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <p className="text-[11px] font-bold text-center mb-1 text-blue-900">Roadmap (Wide Angle)</p>
+                <img src={mapPhotos[1].url} alt="Roadmap Wide" className="w-full h-[300px] object-cover border border-black p-1" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[11px] font-bold text-center mb-1 text-blue-900">Satellite (Wide Angle)</p>
+                <img src={mapPhotos[3].url} alt="Satellite Wide" className="w-full h-[300px] object-cover border border-black p-1" />
+              </div>
             </div>
           </div>
-          <div className="border-2 border-dashed border-gray-300 rounded bg-gray-50 h-36 flex-1 flex items-center justify-center">
-            <div className="text-center text-gray-400">
-              <p className="text-[10px] font-semibold">Area Location Map</p>
-              <p className="text-[9px]">Wider locality context</p>
-            </div>
+        ) : (
+          <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 text-gray-400">
+            <p>Maps not generated yet.</p>
+            <p className="text-[10px]">Use the Sidebar to fetch Google Maps.</p>
           </div>
-        </div>
+        )}
 
         <ValuerFooter pageNum={16} total={19} />
       </PageShell>
 
-
       {/* ════════════════════════════════════════════════════════════ PAGE 17+ - SITE PHOTOS */}
-      <SitePhotosPage formData={formData} />
-
+      {/* <SitePhotosPage formData={formData} /> */}
+      <SitePhotosPage formData={formData} sitePhotos={sitePhotos} />
     </>
   );
 }
@@ -1764,119 +1776,177 @@ export default function BuildingValuationDoc({
 // ── Site Photos Page Component ─────────────────────────────────────────────────
 // Allows uploading any number of photos; auto-arranges them 2-per-row per page
 
-function SitePhotosPage({ formData }: { formData: FormData }) {
-  const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+// function SitePhotosPage({ formData }: { formData: FormData }) {
+//   const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
+//   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFiles = useCallback((files: FileList | null) => {
-    if (!files) return;
-    const newPhotos = Array.from(files).map((f) => ({
-      url: URL.createObjectURL(f),
-      name: f.name,
-    }));
-    setPhotos((prev) => [...prev, ...newPhotos]);
-  }, []);
+//   const handleFiles = useCallback((files: FileList | null) => {
+//     if (!files) return;
+//     const newPhotos = Array.from(files).map((f) => ({
+//       url: URL.createObjectURL(f),
+//       name: f.name,
+//     }));
+//     setPhotos((prev) => [...prev, ...newPhotos]);
+//   }, []);
 
-  const removePhoto = (idx: number) => {
-    setPhotos((prev) => {
-      const next = [...prev];
-      URL.revokeObjectURL(next[idx].url);
-      next.splice(idx, 1);
-      return next;
-    });
-  };
+//   const removePhoto = (idx: number) => {
+//     setPhotos((prev) => {
+//       const next = [...prev];
+//       URL.revokeObjectURL(next[idx].url);
+//       next.splice(idx, 1);
+//       return next;
+//     });
+//   };
 
+//   // Each page holds up to 4 photos (2×2 grid)
+//   const photosPerPage = 4;
+//   const pageCount = Math.max(1, Math.ceil(photos.length / photosPerPage));
+
+//   return (
+//     <>
+//       {Array.from({ length: pageCount }).map((_, pageIdx) => {
+//         const slice = photos.slice(pageIdx * photosPerPage, (pageIdx + 1) * photosPerPage);
+//         const pageNum = 17 + pageIdx;
+//         return (
+//           <PageShell key={pageIdx}>
+//             {/* <ValuerHeader /> */}
+
+//             <div className="flex items-center justify-between mb-3">
+//               <p className="text-[12px] font-bold text-center flex-1">
+//                 Site Photos (Page {pageIdx + 1})
+//               </p>
+//               {/* Upload button only on first page */}
+//               {pageIdx === 0 && (
+//                 <div className="flex gap-2">
+//                   <button
+//                     onClick={() => fileInputRef.current?.click()}
+//                     className="px-3 py-1.5 bg-blue-600 text-white text-[11px] rounded hover:bg-blue-700 font-semibold shadow-sm"
+//                   >
+//                     + Upload Photos
+//                   </button>
+//                   <input
+//                     ref={fileInputRef}
+//                     type="file"
+//                     accept="image/*"
+//                     multiple
+//                     className="hidden"
+//                     onChange={(e) => handleFiles(e.target.files)}
+//                   />
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* Drop zone (only on first page when no photos yet) */}
+//             {pageIdx === 0 && photos.length === 0 && (
+//               <div
+//                 className="border-2 border-dashed border-blue-300 rounded-lg bg-blue-50 h-60 flex flex-col items-center justify-center mb-4 cursor-pointer"
+//                 onClick={() => fileInputRef.current?.click()}
+//                 onDragOver={(e) => e.preventDefault()}
+//                 onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+//               >
+//                 <svg className="w-10 h-10 text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+//                 </svg>
+//                 <p className="text-[12px] font-semibold text-blue-600">Click or drag photos here</p>
+//                 <p className="text-[10px] text-gray-400 mt-1">Upload any number of site photos — they will auto-arrange 4 per page</p>
+//                 <p className="text-[10px] text-gray-400">Supports JPG, PNG, WEBP, HEIC</p>
+//               </div>
+//             )}
+
+//             {/* Photo grid — 2 columns, 2 rows = 4 per page */}
+//             {slice.length > 0 && (
+//               <div className="grid grid-cols-2 gap-3">
+//                 {slice.map((photo, i) => (
+//                   <div key={i} className="relative border border-gray-200 rounded overflow-hidden bg-gray-50">
+//                     <img
+//                       src={photo.url}
+//                       alt={`Site photo ${pageIdx * photosPerPage + i + 1}`}
+//                       className="w-full object-contain"
+//                       style={{ maxHeight: "260px" }}
+//                     />
+//                     <div className="absolute top-1 right-1">
+//                       <button
+//                         onClick={() => removePhoto(pageIdx * photosPerPage + i)}
+//                         className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold hover:bg-red-600 shadow"
+//                         title="Remove photo"
+//                       >
+//                         ×
+//                       </button>
+//                     </div>
+//                     <p className="text-[9px] text-gray-500 text-center py-0.5 bg-white border-t border-gray-100 truncate px-1">
+//                       {photo.name}
+//                     </p>
+//                   </div>
+//                 ))}
+//                 {/* Empty placeholder slots to maintain grid on partial last page */}
+//                 {slice.length < photosPerPage && pageIdx === pageCount - 1 && Array.from({ length: photosPerPage - slice.length }).map((_, j) => (
+//                   <div
+//                     key={`empty-${j}`}
+//                     className="border-2 border-dashed border-gray-200 rounded bg-gray-50 flex items-center justify-center cursor-pointer"
+//                     style={{ minHeight: "260px" }}
+//                     onClick={() => fileInputRef.current?.click()}
+//                   >
+//                     <p className="text-[10px] text-gray-300">+ add photo</p>
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+
+//             <ValuerFooter pageNum={pageNum} total={19} />
+//           </PageShell>
+//         );
+//       })}
+//     </>
+//   );
+// }
+// ── Site Photos Page Component ─────────────────────────────────────────────────
+// Auto-arranges the photos from the sidebar into a 2x2 grid per page
+
+function SitePhotosPage({ formData, sitePhotos }: { formData: FormData, sitePhotos: { url: string; name: string }[] }) {
   // Each page holds up to 4 photos (2×2 grid)
   const photosPerPage = 4;
-  const pageCount = Math.max(1, Math.ceil(photos.length / photosPerPage));
+  const pageCount = Math.max(1, Math.ceil(sitePhotos.length / photosPerPage));
 
   return (
     <>
       {Array.from({ length: pageCount }).map((_, pageIdx) => {
-        const slice = photos.slice(pageIdx * photosPerPage, (pageIdx + 1) * photosPerPage);
+        const slice = sitePhotos.slice(pageIdx * photosPerPage, (pageIdx + 1) * photosPerPage);
         const pageNum = 17 + pageIdx;
+        
         return (
           <PageShell key={pageIdx}>
-            {/* <ValuerHeader /> */}
-
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <p className="text-[12px] font-bold text-center flex-1">
                 Site Photos (Page {pageIdx + 1})
               </p>
-              {/* Upload button only on first page */}
-              {pageIdx === 0 && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-1.5 bg-blue-600 text-white text-[11px] rounded hover:bg-blue-700 font-semibold shadow-sm"
-                  >
-                    + Upload Photos
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => handleFiles(e.target.files)}
-                  />
-                </div>
-              )}
             </div>
 
-            {/* Drop zone (only on first page when no photos yet) */}
-            {pageIdx === 0 && photos.length === 0 && (
-              <div
-                className="border-2 border-dashed border-blue-300 rounded-lg bg-blue-50 h-60 flex flex-col items-center justify-center mb-4 cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
-              >
-                <svg className="w-10 h-10 text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-[12px] font-semibold text-blue-600">Click or drag photos here</p>
-                <p className="text-[10px] text-gray-400 mt-1">Upload any number of site photos — they will auto-arrange 4 per page</p>
-                <p className="text-[10px] text-gray-400">Supports JPG, PNG, WEBP, HEIC</p>
-              </div>
-            )}
-
-            {/* Photo grid — 2 columns, 2 rows = 4 per page */}
-            {slice.length > 0 && (
-              <div className="grid grid-cols-2 gap-3">
-                {slice.map((photo, i) => (
-                  <div key={i} className="relative border border-gray-200 rounded overflow-hidden bg-gray-50">
-                    <img
-                      src={photo.url}
-                      alt={`Site photo ${pageIdx * photosPerPage + i + 1}`}
-                      className="w-full object-contain"
-                      style={{ maxHeight: "260px" }}
-                    />
-                    <div className="absolute top-1 right-1">
-                      <button
-                        onClick={() => removePhoto(pageIdx * photosPerPage + i)}
-                        className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold hover:bg-red-600 shadow"
-                        title="Remove photo"
-                      >
-                        ×
-                      </button>
+            {slice.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {slice.map((photo, i) => {
+                  const absoluteIndex = pageIdx * photosPerPage + i + 1;
+                  // Pull the caption from formData if typed in sidebar, otherwise fallback to filename
+                  const caption = (formData as any)[`photoCaption${absoluteIndex}`] || photo.name;
+                  
+                  return (
+                    <div key={i} className="border border-black p-1 flex flex-col">
+                      <img
+                        src={photo.url}
+                        alt={`Site photo ${absoluteIndex}`}
+                        className="w-full object-contain bg-gray-50"
+                        style={{ height: "320px" }}
+                      />
+                      <p className="text-[10px] font-bold text-center mt-2 pb-1 text-[#000080]">
+                        {caption}
+                      </p>
                     </div>
-                    <p className="text-[9px] text-gray-500 text-center py-0.5 bg-white border-t border-gray-100 truncate px-1">
-                      {photo.name}
-                    </p>
-                  </div>
-                ))}
-                {/* Empty placeholder slots to maintain grid on partial last page */}
-                {slice.length < photosPerPage && pageIdx === pageCount - 1 && Array.from({ length: photosPerPage - slice.length }).map((_, j) => (
-                  <div
-                    key={`empty-${j}`}
-                    className="border-2 border-dashed border-gray-200 rounded bg-gray-50 flex items-center justify-center cursor-pointer"
-                    style={{ minHeight: "260px" }}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <p className="text-[10px] text-gray-300">+ add photo</p>
-                  </div>
-                ))}
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 text-gray-400 mt-10 h-64">
+                <p>No site photos uploaded.</p>
+                <p className="text-[10px]">Use the Sidebar to upload photos.</p>
               </div>
             )}
 
