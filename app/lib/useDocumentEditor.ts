@@ -410,7 +410,8 @@ export function useDocumentEditor() {
   const [selectedTemplate, setSelectedTemplate] = useState('provisional_building');
   const [editMode, setEditMode] = useState<EditMode>('form');
   const documentRef = useRef<HTMLDivElement>(null);
-
+  const [sitePhotos, setSitePhotos] = useState<{ url: string; name: string }[]>([]);
+  const [mapPhotos, setMapPhotos] = useState<{ url: string; label: string }[]>([]);
   // Group data by template ID so they are completely isolated
   const [allFormData, setAllFormData] = useState<Record<string, FormData>>({
     provisional_building: {
@@ -783,7 +784,14 @@ export function useDocumentEditor() {
   // Submit ONLY the isolated data for the active template
   const handleSubmitToBackend = async () => {
     const dataToSave = allFormData[selectedTemplate];
-    console.log(`Saved ${selectedTemplate} to Backend:`, dataToSave);
+    
+    // Now it grabs the photos directly from the hook's state!
+    const finalPayload = {
+      ...dataToSave,
+      sitePhotos: sitePhotos, 
+      mapPhotos: mapPhotos
+    } 
+    console.log(`Saved ${selectedTemplate} to Backend:`, finalPayload);
   };
 
   return {
@@ -793,6 +801,8 @@ export function useDocumentEditor() {
     documentRef,
     formData, setFormData,
     handleChange,
-    handleSubmitToBackend
+    handleSubmitToBackend,
+    sitePhotos, setSitePhotos,
+    mapPhotos, setMapPhotos
   };
 }
