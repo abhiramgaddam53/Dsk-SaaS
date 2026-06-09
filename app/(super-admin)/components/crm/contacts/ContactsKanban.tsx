@@ -1,7 +1,8 @@
 // ContactsKanban.tsx
 import React from 'react';
 import { MoreVertical, Mail, Phone, Plus, ChevronDown } from 'lucide-react';
-import { Contact, ContactStatus } from '../types/types';
+import { Contact, ContactStatus } from '@/app/(super-admin)/types/types';
+// import { Contact, ContactStatus } from '../types/types';
 
 interface ContactsKanbanProps {
   contacts: Contact[];
