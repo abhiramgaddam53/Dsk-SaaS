@@ -14,7 +14,7 @@ import {
   Info, 
   X
 } from 'lucide-react';
-import CreateInvoice from '../components/sales/invoices/CreateInvoice'; // Importing the existing CreateInvoice component
+import CreateInvoice from '../components/sales/invoices/CreateInvoice';  
 import { useRouter } from "next/navigation";  
 interface NavbarProps {
   toggleMobile: () => void;
@@ -270,7 +270,7 @@ export default function Navbar({ toggleMobile }: NavbarProps) {
     company: false,
     contact: false,
     deal: false,
-    invoice: false, // <-- Added Invoice State
+    invoice: false,  
   });
 
   // Close dropdown when clicking outside

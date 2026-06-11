@@ -1,11 +1,13 @@
 // ContactsList.tsx
 import React from 'react';
-import { MoreVertical, ChevronDown } from 'lucide-react';
+import { MoreVertical, ChevronDown, Link as LinkIcon } from 'lucide-react';
 import { Contact, ContactStatus } from '../../../types/types';
 import { useRouter } from 'next/navigation';
+
 interface ContactsListProps {
   contacts: Contact[];
   onStatusChange: (id: string, status: ContactStatus) => void;
+  activeTab?: string; // <-- New prop added
 }
 
 const STATUS_OPTIONS: ContactStatus[] = [
@@ -14,7 +16,6 @@ const STATUS_OPTIONS: ContactStatus[] = [
 ];
 
 const getStatusStyles = (status: ContactStatus) => {
-  
   switch (status) {
     case 'New-Lead': return 'bg-blue-50 text-blue-600 border-blue-200';
     case 'Contacted': return 'bg-yellow-50 text-yellow-600 border-yellow-200';
@@ -27,7 +28,9 @@ const getStatusStyles = (status: ContactStatus) => {
   }
 };
 
-export default function ContactsList({ contacts, onStatusChange }: ContactsListProps) {
+export default function ContactsList({ contacts, onStatusChange, activeTab }: ContactsListProps) {
+  const router = useRouter();
+
   if (!contacts?.length) {
     return (
       <div className="w-full bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500 text-sm">
@@ -35,7 +38,10 @@ export default function ContactsList({ contacts, onStatusChange }: ContactsListP
       </div>
     );
   }
-  const router  =  useRouter();
+
+  // Determine if we are on the Connected Contacts tab
+  const isConnectedTab = activeTab === 'Connected Contacts';
+
   return (
     <div className="w-full overflow-x-auto rounded-lg border border-gray-200 bg-white">
       <table className="w-full text-sm text-left text-gray-600 whitespace-nowrap">
@@ -48,6 +54,17 @@ export default function ContactsList({ contacts, onStatusChange }: ContactsListP
               </div>
             </th>
             <th className="px-6 py-3 font-medium">Company</th>
+            
+            {/* Conditional Column Header */}
+            {isConnectedTab && (
+              <th className="px-6 py-3 font-medium">
+                <div className="flex items-center gap-1.5">
+                  <LinkIcon size={14} className="text-gray-400" />
+                  Linked With
+                </div>
+              </th>
+            )}
+
             <th className="px-6 py-3 font-medium">Status</th>
             <th className="px-6 py-3 font-medium">Email</th>
             <th className="px-6 py-3 font-medium">Phone</th>
@@ -56,10 +73,18 @@ export default function ContactsList({ contacts, onStatusChange }: ContactsListP
         </thead>
         <tbody>
           {contacts.map((contact) => (
-            <tr onClick={( )=>{router.push(`/sa/crm/contacts/${contact.id}` ) } }  key={contact.id} className="border-b border-gray-100 cursor-pointer hover:bg-gray-50/50 transition-colors">
+            <tr 
+              key={contact.id} 
+              onClick={() => router.push(`/sa/crm/contacts/${contact.id}`)}
+              className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors cursor-pointer"
+            >
               <td className="px-6 py-2">
                 <div className="flex items-center gap-3">
-                  <input type="checkbox" className="rounded border-gray-300" />
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300 cursor-default" 
+                    onClick={(e) => e.stopPropagation()} 
+                  />
                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shrink-0 border border-gray-200">
                     {contact.avatar ? (
                       <img src={contact.avatar} alt={contact.name} className="w-full h-full object-cover" />
@@ -73,11 +98,29 @@ export default function ContactsList({ contacts, onStatusChange }: ContactsListP
                 </div>
               </td>
               <td className="px-6 py-2">{contact.company}</td>
+
+              {/* Conditional Column Data (Parent Tag) */}
+              {isConnectedTab && (
+                <td className="px-6 py-2">
+                  {contact.linkedWith ? (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                      {contact.linkedWith}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </td>
+              )}
+
               <td className="px-6 py-2">
                 <div className="relative inline-block w-36">
                   <select
                     value={contact.status}
-                    onChange={(e) => onStatusChange(contact.id, e.target.value as ContactStatus)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onStatusChange(contact.id, e.target.value as ContactStatus);
+                    }}
                     className={`appearance-none w-full px-3 py-1.5 pr-8 text-xs font-medium border rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${getStatusStyles(contact.status)}`}
                   >
                     {STATUS_OPTIONS.map(status => (
@@ -92,7 +135,10 @@ export default function ContactsList({ contacts, onStatusChange }: ContactsListP
               <td className="px-6 py-2">{contact.email}</td>
               <td className="px-6 py-2">{contact.phone}</td>
               <td className="px-4 py-2 text-right">
-                <button className="text-gray-400 hover:text-gray-600 p-1.5 rounded-md hover:bg-gray-100 transition-colors">
+                <button 
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-gray-400 hover:text-gray-600 p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                >
                   <MoreVertical size={16} />
                 </button>
               </td>
@@ -105,7 +151,10 @@ export default function ContactsList({ contacts, onStatusChange }: ContactsListP
         <div className="flex items-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <span>Show</span>
-            <select className="border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+            <select 
+              className="border border-gray-200 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+            >
               <option>10</option>
               <option>20</option>
               <option>50</option>

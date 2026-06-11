@@ -2,6 +2,11 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
+import { Inter } from 'next/font/google';
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+});
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,7 +17,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
 
   return (
-    <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
+    <div className= {`${inter.className} flex h-screen w-full bg-gray-50 overflow-hidden`}>
       {/* Mobile Sidebar Overlay */}
       {isMobileSidebarOpen && (
         <div

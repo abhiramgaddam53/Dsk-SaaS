@@ -91,7 +91,8 @@ export const mockContacts: Contact[] = [
       company: 'Asterisks.Inc',
       status: 'New-Lead',
       email: 'pradhyum@example.com',
-      phone: '+91 9876543210'
+      phone: '+91 9876543210',
+      linkedWith : "Abhiram Gaddam"
     },
     {
       id: '2',
@@ -99,7 +100,8 @@ export const mockContacts: Contact[] = [
       company: 'Random Agency',
       status: 'Interested',
       email: 'yash@example.com',
-      phone: '+91 9876543211'
+      phone: '+91 9876543211',
+      linkedWith : "Pradhyumn Dhondi"
     },
     {
       id: '3',
@@ -107,7 +109,9 @@ export const mockContacts: Contact[] = [
       company: 'Random Manufacturing Firm',
       status: 'Won Lead',
       email: 'aniketh@example.com',
-      phone: '+91 9876543212'
+      phone: '+91 9876543212',
+       linkedWith : "Pradhyumn Dhondi"
+      
     },
     {
       id: '4',
@@ -115,7 +119,8 @@ export const mockContacts: Contact[] = [
       company: 'Random Aesthetic Studio',
       status: 'Contacted',
       email: 'sai@example.com',
-      phone: '+91 9876543213'
+      phone: '+91 9876543213',
+       linkedWith : "Pradhyumn Dhondi"
     },
     {
       id: '5',
@@ -123,7 +128,8 @@ export const mockContacts: Contact[] = [
       company: 'Random Interior Design',
       status: 'Qualified',
       email: 'pranav@example.com',
-      phone: '+91 9876543214'
+      phone: '+91 9876543214',
+       linkedWith : "Pradhyumn Dhondi"
     },
     {
       id: '6',
@@ -131,7 +137,8 @@ export const mockContacts: Contact[] = [
       company: 'Random Shoe Manufacturer',
       status: 'Lost Lead',
       email: 'krishna@example.com',
-      phone: '+91 9876543215'
+      phone: '+91 9876543215',
+       linkedWith : "Pradhyumn Dhondi"
     },
     {
       id: '7',
@@ -139,7 +146,8 @@ export const mockContacts: Contact[] = [
       company: 'Random Landscaping',
       status: 'Un-Qualified',
       email: 'lorem@example.com',
-      phone: '+91 9876543216'
+      phone: '+91 9876543216',
+       linkedWith : "Pradhyumn Dhondi"
     },
     {
       id: '8',
@@ -147,12 +155,13 @@ export const mockContacts: Contact[] = [
       company: 'Asterisks.Inc',
       status: 'New-Lead',
       email: 'sujal@example.com',
-      phone: '+91 9876543217'
+      phone: '+91 9876543217',
+       linkedWith : "Pradhyumn Dhondi"
     }
   ];
 export const mockDeals: Deal[] = [
   {
-    id: '1',
+    id: 'cnt-1',
     name: 'Manufacturing Service',
     stage: 'Onboarding',
     amount: 75000,
@@ -160,7 +169,7 @@ export const mockDeals: Deal[] = [
     company: 'DataCircles'
   },
   {
-    id: '2',
+    id: 'cnt-2',
     name: 'Manufacturing Service',
     stage: 'Project Kick-Off',
     amount: 75000,
@@ -168,7 +177,7 @@ export const mockDeals: Deal[] = [
     company: 'DataCircles'
   },
   {
-    id: '3',
+    id: 'cnt-3',
     name: 'Manufacturing Service',
     stage: 'Project Initiation',
     amount: 75000,
@@ -176,7 +185,7 @@ export const mockDeals: Deal[] = [
     company: 'DataCircles'
   },
   {
-    id: '4',
+    id: 'cnt-4',
     name: 'User Analytics Dashboard',
     stage: 'In-Progress',
     amount: 156490,
@@ -184,7 +193,7 @@ export const mockDeals: Deal[] = [
     company: 'Asterisks.Inc'
   },
   {
-    id: '5',
+    id: 'cnt-5',
     name: 'Manufacturing Service',
     stage: 'Project Complete',
     amount: 75000,
@@ -192,7 +201,7 @@ export const mockDeals: Deal[] = [
     company: 'DataCircles'
   },
   {
-    id: '6',
+    id: 'cnt-6',
     name: 'Deal Name Goes Here',
     stage: 'Onboarding',
     amount: 156490,

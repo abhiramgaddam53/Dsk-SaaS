@@ -14,11 +14,26 @@ const STAGES: ReportStatus[] = [
 
 const getStageStyles = (stage: ReportStatus) => {
   switch (stage) {
-    case 'Proposal Flow': return { badge: 'bg-blue-50 text-blue-600', gradient: 'from-white to-blue-50' };
-    case 'File Creation': return { badge: 'bg-yellow-50 text-yellow-600', gradient: 'from-white to-yellow-50' };
-    case 'Site Visit': return { badge: 'bg-purple-50 text-purple-600', gradient: 'from-white to-purple-50' };
-    case 'Documentation': return { badge: 'bg-teal-50 text-teal-600', gradient: 'from-white to-teal-50' };
-    default: return { badge: 'bg-gray-100 text-gray-600', gradient: 'from-white to-gray-50' };
+    case 'Proposal Flow': 
+      return { badge: 'bg-blue-50 text-blue-600', gradient: 'from-white to-blue-50' };
+    case 'File Creation': 
+      return { badge: 'bg-yellow-50 text-yellow-600', gradient: 'from-white to-yellow-50' };
+    case 'Site Visit': 
+      return { badge: 'bg-purple-50 text-purple-600', gradient: 'from-white to-purple-50' };
+    case 'Documentation': 
+      return { badge: 'bg-teal-50 text-teal-600', gradient: 'from-white to-teal-50' };
+    case 'Drafting': 
+      return { badge: 'bg-orange-50 text-orange-600', gradient: 'from-white to-orange-50' };
+    case 'Review': 
+      return { badge: 'bg-indigo-50 text-indigo-600', gradient: 'from-white to-indigo-50' };
+    case 'Approval': 
+      return { badge: 'bg-emerald-50 text-emerald-600', gradient: 'from-white to-emerald-50' };
+    case 'Complete': 
+      return { badge: 'bg-green-50 text-green-600', gradient: 'from-white to-green-50' };
+    case 'Print and dispatch': 
+      return { badge: 'bg-rose-50 text-rose-600', gradient: 'from-white to-rose-50' };
+    default: 
+      return { badge: 'bg-gray-100 text-gray-600', gradient: 'from-white to-gray-50' };
   }
 };
 

@@ -27,7 +27,7 @@ import { ReportStatus } from '@/app/(super-admin)/types/types';
          <div className="flex items-center gap-3">
            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 border border-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors shadow-sm">
              <Plus size={16} />
-             Add New Deal
+             Add New Report
            </button>
          </div>
        </div>

@@ -27,7 +27,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, isMobileOpen }: S
   const menuItems: MenuSection[] = [
     { title: 'GENERAL', items: [
       { name: 'Overview', icon: User , href :"/sa/gen/overview" },
-      { name: 'User Management', icon: Users ,href :"/sa/gen/users"},
+      // { name: 'User Management', icon: Users ,href :"/sa/gen/users"},
       { name: 'Reports', icon: FileText ,href :"/sa/gen/reports"},
      ]},
     { title: 'CRM', items: [

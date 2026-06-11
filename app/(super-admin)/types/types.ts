@@ -17,6 +17,7 @@ export interface Contact {
   phone: string;
   avatar?: string;
   tags?: string[];
+  linkedWith?: string;
 }
 
 // types.ts
