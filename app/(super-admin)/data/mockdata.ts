@@ -1,8 +1,8 @@
 // mockData.ts
-import { Contact, Deal } from '../types/types';
+import { Contact, Deal, ReportStatus } from '../types/types';
 
 // mockData.ts
-import { Task, Meeting, ProductItem  , CompanyFolder, CompanyFile} from '../types/types';
+import { Task, Meeting, ProductItem  , Report, CompanyFolder, CompanyFile} from '../types/types';
 
 export const mockTasks: Task[] = [
   {
@@ -247,3 +247,20 @@ export const mockProducts: ProductItem[] = Array(12).fill(null).map((_, i) => ({
   variants: ['0-1 Variant', '1-5 Variant', '<5 Variant'][i % 3],
   status: i % 2 === 0 ? 'Active' : 'In-Active'
 }));
+ 
+export const mockReports: Report[] = Array(12).fill(null).map((_, i) => {
+  const statuses: ReportStatus[] = ['Proposal Flow', 'File Creation', 'Site Visit', 'Documentation', 'Drafting', 'Review', 'Approval', 'Complete', 'Print and dispatch'];
+  return {
+    id: `rep-${i}`,
+    reportId: `DSK-04839${i}`,
+    customerName: 'Pradhyumn Dhondi',
+    documentType: 'Valuation Report',
+    assignedTo: 'Team Member Name',
+    lastUpdated: 'Nov 24th, 2025',
+    deadline: 'Mon 00th, 2026',
+    status: statuses[i % statuses.length],
+    price: i % 2 === 0 ? 2998520 : 156490,
+    dealName: 'Deal Name Goes Here',
+    company: 'Asterisks.Inc - Non-Creative Digital Studio'
+  };
+});

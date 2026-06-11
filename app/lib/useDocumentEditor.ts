@@ -407,7 +407,7 @@ export const spellNumberIndian = (numInput: string | number): string => {
 
 export function useDocumentEditor() {
   const [zoom, setZoom] = useState(100);
-  const [selectedTemplate, setSelectedTemplate] = useState('provisional_building');
+  const [selectedTemplate, setSelectedTemplate] = useState('building_valuation');
   const [editMode, setEditMode] = useState<EditMode>('form');
   const documentRef = useRef<HTMLDivElement>(null);
   const [sitePhotos, setSitePhotos] = useState<{ url: string; name: string }[]>([]);

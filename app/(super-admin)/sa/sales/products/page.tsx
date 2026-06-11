@@ -20,7 +20,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white px-4 md:px-8 py-6 max-w-7xl mx-auto w-full min-h-screen overflow-x-hidden">
+    <div className="flex flex-col h-full bg-white px-4 md:px-8 py-6   w-full min-h-screen overflow-x-hidden">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Products & Services</h1>
         <p className="text-sm text-gray-500 mt-1">Manage your products and services</p>

@@ -8,7 +8,7 @@ interface CreateInvoiceProps {
 
 export default function CreateInvoice({ onBack }: CreateInvoiceProps) {
   return (
-    <div className="flex flex-col w-full bg-white px-4 md:px-8 py-6 max-w-7xl mx-auto min-h-screen">
+    <div className="flex flex-col w-full bg-white px-4 md:px-8 py-6   min-h-screen">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Create New Invoice</h1>
@@ -52,7 +52,7 @@ export default function CreateInvoice({ onBack }: CreateInvoiceProps) {
                 <input 
                   type="text" 
                   placeholder="Choose Existing Deal" 
-                  className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full pl-9 pr-4 py-2 text-black border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
@@ -76,10 +76,10 @@ export default function CreateInvoice({ onBack }: CreateInvoiceProps) {
                   <Calendar size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm text-gray-700 mb-1.5">Receivers GSTIN <span className="text-red-500">*</span></label>
                 <input type="text" placeholder="Enter Receivers GSTIN..." className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -122,12 +122,12 @@ export default function CreateInvoice({ onBack }: CreateInvoiceProps) {
             <label className="block text-sm text-gray-700 mb-1.5">Select Item <span className="text-red-500">*</span></label>
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input type="text" placeholder="Choose Existing Item" className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+              <input type="text" placeholder="Choose Existing Item" className="w-full text-gray-700 pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
             </div>
           </div>
           <div>
             <label className="block text-sm text-gray-700 mb-1.5">Description <span className="text-red-500">*</span></label>
-            <input type="text" placeholder="Add Item Description" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            <input type="text" placeholder="Add Item Description" className="w-full text-gray-700 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
           </div>
         </div>
 
@@ -135,21 +135,21 @@ export default function CreateInvoice({ onBack }: CreateInvoiceProps) {
         <div className="grid grid-cols-4 gap-4 items-end mb-6">
           <div>
             <label className="block text-xs text-gray-500 mb-1.5">Rate (₹) <span className="text-red-500">*</span></label>
-            <input type="number" placeholder="0" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            <input type="number" placeholder="0" className="w-full px-3 text-gray-700 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1.5">Quantity</label>
-            <input type="number" defaultValue="01" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            <input type="number" defaultValue="01" className="w-full px-3 text-gray-700 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1.5">HSN/SAC</label>
-            <input type="text" placeholder="HSN/SAC Code" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            <input type="text" placeholder="HSN/SAC Code" className="w-full text-gray-700 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1.5">Discount</label>
             <div className="flex">
-              <input type="number" placeholder="0" className="w-full px-3 py-2 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
-              <span className="px-3 py-2 border-y border-r border-gray-200 bg-gray-50 rounded-r-lg text-sm text-gray-600">₹</span>
+              <input type="number" placeholder="0" className="w-full text-gray-700 px-3 py-2 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+              <span className="px-3 py-2 border-y border-r border-gray-200  bg-gray-50 rounded-r-lg text-sm text-gray-600">₹</span>
             </div>
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function CreateInvoice({ onBack }: CreateInvoiceProps) {
             <div className="w-48">
               <label className="block text-xs text-gray-500 mb-1.5">Discount</label>
               <div className="flex">
-                <input type="number" placeholder="0" className="w-full px-3 py-2 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                <input type="number" placeholder="0" className="w-full px-3 text-gray-700 py-2 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                 <span className="px-3 py-2 border-y border-r border-gray-200 bg-gray-50 rounded-r-lg text-sm text-gray-600">₹</span>
               </div>
             </div>

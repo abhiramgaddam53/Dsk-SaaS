@@ -51,6 +51,16 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm text-gray-900"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Contact <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Search or enter company name"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm text-gray-900"
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -80,7 +90,7 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
               </select>
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Expected Close Date
               </label>
@@ -88,7 +98,7 @@ export default function CreateDealModal({ isOpen, onClose }: CreateDealModalProp
                 type="date"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm text-gray-900 bg-white"
               />
-            </div>
+            </div> */}
           </form>
         </div>
         

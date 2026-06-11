@@ -132,3 +132,31 @@ export interface ProductItem {
   variants: string;
   status: ItemStatus;
 }
+
+// types.ts
+// Add these to your existing types
+export type ReportStatus = 
+  | 'Proposal Flow' 
+  | 'File Creation' 
+  | 'Site Visit' 
+  | 'Documentation' 
+  | 'Drafting' 
+  | 'Review' 
+  | 'Approval' 
+  | 'Complete' 
+  | 'Print and dispatch';
+
+export interface Report {
+  id: string;
+  reportId: string;
+  customerName: string;
+  documentType: string;
+  assignedTo: string;
+  lastUpdated: string;
+  deadline: string;
+  status: ReportStatus;
+  price: number;
+  dealName?: string;
+  company?: string;
+  avatar?: string;
+}

@@ -2,7 +2,7 @@
 import React from 'react';
 import { MoreVertical, ChevronDown } from 'lucide-react';
 import { Contact, ContactStatus } from '../../../types/types';
-
+import { useRouter } from 'next/navigation';
 interface ContactsListProps {
   contacts: Contact[];
   onStatusChange: (id: string, status: ContactStatus) => void;
@@ -14,6 +14,7 @@ const STATUS_OPTIONS: ContactStatus[] = [
 ];
 
 const getStatusStyles = (status: ContactStatus) => {
+  
   switch (status) {
     case 'New-Lead': return 'bg-blue-50 text-blue-600 border-blue-200';
     case 'Contacted': return 'bg-yellow-50 text-yellow-600 border-yellow-200';
@@ -34,7 +35,7 @@ export default function ContactsList({ contacts, onStatusChange }: ContactsListP
       </div>
     );
   }
-
+  const router  =  useRouter();
   return (
     <div className="w-full overflow-x-auto rounded-lg border border-gray-200 bg-white">
       <table className="w-full text-sm text-left text-gray-600 whitespace-nowrap">
@@ -55,7 +56,7 @@ export default function ContactsList({ contacts, onStatusChange }: ContactsListP
         </thead>
         <tbody>
           {contacts.map((contact) => (
-            <tr key={contact.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+            <tr onClick={( )=>{router.push(`/sa/crm/contacts/${contact.id}` ) } }  key={contact.id} className="border-b border-gray-100 cursor-pointer hover:bg-gray-50/50 transition-colors">
               <td className="px-6 py-2">
                 <div className="flex items-center gap-3">
                   <input type="checkbox" className="rounded border-gray-300" />

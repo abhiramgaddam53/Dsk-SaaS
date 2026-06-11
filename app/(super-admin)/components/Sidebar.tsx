@@ -29,18 +29,15 @@ export default function Sidebar({ isCollapsed, toggleCollapse, isMobileOpen }: S
       { name: 'Overview', icon: User , href :"/sa/gen/overview" },
       { name: 'User Management', icon: Users ,href :"/sa/gen/users"},
       { name: 'Reports', icon: FileText ,href :"/sa/gen/reports"},
-      { name: 'Pipeline', icon: Network,href :"/sa/gen/pipeline" },
-    ]},
+     ]},
     { title: 'CRM', items: [
-      { name: 'Companies', icon: Building2,href :"/sa/crm/companies" },
-      { name: 'Contacts', icon: Contact2,href :"/sa/crm/contacts" },
+       { name: 'Contacts', icon: Contact2,href :"/sa/crm/contacts" },
       { name: 'Deals', icon: Handshake,href :"/sa/crm/deals" },
     ]},
     { title: 'SALES', items: [
       { name: 'Products & Services', icon: Box,href :"/sa/sales/products" },
-      { name: 'Sales', icon: Database, href :"/sa/sales/invoices" },
-      { name: 'Insights', icon: LineChart , href : "/sa/sales/insights"},
-      { name: 'Settings', icon: Settings, href : "/sa/settings "},
+      { name: 'Invoices', icon: Database, href :"/sa/sales/invoices" },
+       
     ]}
   ];
 

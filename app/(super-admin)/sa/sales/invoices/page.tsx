@@ -29,7 +29,7 @@ export default function InvoicesPage() {
 
   return (
     // Changed overflow handling on the main container to prevent squishing
-    <div className="flex flex-col min-h-screen bg-white px-4 md:px-8 py-6 max-w-7xl mx-auto w-full overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-white px-4 md:px-8 py-6   w-full overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 shrink-0">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Invoices</h1>

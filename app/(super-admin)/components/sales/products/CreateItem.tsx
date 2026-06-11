@@ -11,7 +11,7 @@ export default function CreateItem({ onBack }: CreateItemProps) {
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
 
   return (
-    <div className="flex flex-col w-full bg-white px-4 md:px-8 py-6 max-w-5xl mx-auto min-h-screen">
+    <div className="flex flex-col w-full bg-white px-4 md:px-8 py-6   min-h-screen">
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Create New Item</h1>
@@ -89,7 +89,7 @@ export default function CreateItem({ onBack }: CreateItemProps) {
             <input 
               type="number" 
               placeholder="Enter Purchase Price" 
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full px-3 py-2.5 border text-gray-700 border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
           <div>
@@ -97,13 +97,13 @@ export default function CreateItem({ onBack }: CreateItemProps) {
             <input 
               type="number" 
               placeholder="Enter Selling Price" 
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full px-3 py-2.5 border text-gray-700 border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+          <input type="checkbox" className="w-5 h-5 rounded  border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
           <span className="text-sm font-medium text-gray-900">Tax Inclusive</span>
         </div>
 
@@ -112,23 +112,10 @@ export default function CreateItem({ onBack }: CreateItemProps) {
           <input 
             type="text" 
             placeholder="Enter HSN/SAC Code" 
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="w-full px-3 py-2.5 border border-gray-200 text-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Barcode</label>
-          <div className="flex gap-2">
-            <input 
-              type="text" 
-              placeholder="Enter or Generate a Barcode" 
-              className="flex-1 px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-            <button className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shrink-0">
-              Generate Barcode
-            </button>
-          </div>
-        </div>
+ 
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Primary Unit</label>
