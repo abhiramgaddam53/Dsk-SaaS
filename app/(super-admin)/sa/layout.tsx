@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import { Inter } from 'next/font/google';
+import { verifyRole } from "@/app/lib/auth-middleware";
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],

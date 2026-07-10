@@ -1698,7 +1698,8 @@
 //     </div>
 //   );
 // }
-import React, { useState, useRef, useCallback } from "react";
+
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { FormData } from '@/app/(Drafter)/types/types';
 
 interface Props {
@@ -1707,8 +1708,12 @@ interface Props {
   // Photo state lifted to parent so Doc can read them
   sitePhotos?: { url: string; name: string }[];
   onSitePhotosChange?: (photos: { url: string; name: string }[]) => void;
+  onAddSitePhotos?: (files: FileList) => Promise<void>;   
   mapPhotos?: { url: string; label: string }[];
   onMapPhotosChange?: (photos: { url: string; label: string }[]) => void;
+
+  locked?: boolean
+
 }
 
 // ── Indian Number to Words ────────────────────────────────────────────────────
@@ -1748,7 +1753,14 @@ function SubLabel({ label }: { label: string }) {
 const InputField = ({ label, name, value, onChange }: any) => (
   <div className="mb-2">
     <label className="block text-[10px] font-semibold text-gray-500 uppercase mb-0.5 leading-tight">{label}</label>
-    <input type="text" name={name} value={value??''} onChange={onChange}
+    <input type="text" name={name} value={value??''} onChange={onChange}  
+      className="w-full px-2 py-1 border border-gray-300 rounded text-[11.5px] text-gray-800 bg-white focus:outline-none focus:border-[#00a0ef] focus:ring-1 focus:ring-[#00a0ef] transition-colors" />
+  </div>
+);
+const InputFieldDate = ({ label, name, value, onChange }: any) => (
+  <div className="mb-2">
+    <label className="block text-[10px] font-semibold text-gray-500 uppercase mb-0.5 leading-tight">{label}</label>
+    <input type="date" name={name} value={value??''} onChange={onChange}
       className="w-full px-2 py-1 border border-gray-300 rounded text-[11.5px] text-gray-800 bg-white focus:outline-none focus:border-[#00a0ef] focus:ring-1 focus:ring-[#00a0ef] transition-colors" />
   </div>
 );
@@ -1850,7 +1862,7 @@ const OPT_FAN_POINTS=["One per habitable room","One per room + additional in liv
 const OPT_PLUG_POINTS=["Limited – Only one per room","Adequate – Two per room including kitchen & toilet"];
 const OPT_OTHER_ELEC=["Exhaust fans / Geyser points in kitchen & toilets","A/C points in bedrooms and halls","Inverter wiring / Solar power provision / UPS backup","Provisions for A/C and inverter connection available"];
 const OPT_WATER_CLOSETS=["Attached full bathroom & toilets","Indian Closet","Western Closet"];
-
+const OPT_UnderStateCentralEnactment = ["Yes","No"];
 // ── Map photo labels ──────────────────────────────────────────────────────────
 const MAP_PHOTO_LABELS = [
   "Roadmap – Close-up View (site highlighted)",
@@ -1864,12 +1876,30 @@ export default function BuildingValuationSidebar({
   formData, handleChange,
   sitePhotos = [], 
   onSitePhotosChange = () => {},
+  onAddSitePhotos = async () => {},   
   mapPhotos = [],  
   onMapPhotosChange = () => {},
+  locked = false  
 }: Props) {
-
+console.log("SideBar DAta :",formData)
   const siteFileRef = useRef<HTMLInputElement>(null);
   const mapFileRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+
+  useEffect(() => {
+    // Check if we have at least one valid coordinate in the formData
+    const hasCoordinates = (formData.latitude && formData.longitude) || 
+                           (formData as any).mapLat1 && (formData as any).mapLng1;
+
+    // Only trigger if we have coordinates AND we haven't generated the maps yet
+    if (hasCoordinates && mapPhotos.length === 0) {
+      // Use setTimeout to ensure the component has fully mounted and state is stable
+      const timer = setTimeout(() => {
+        generateMapPhotos();
+      }, 500); 
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.latitude, formData.longitude, mapPhotos.length]);
 
   const fire = (name: string, value: string) => handleChange({ target: { name, value } } as any);
 
@@ -1984,18 +2014,18 @@ export default function BuildingValuationSidebar({
 
   // Site photo handlers
   const handleSiteFiles = useCallback((files: FileList|null) => {
-    if (!files) return;
-    const news = Array.from(files).map(f=>({ url:URL.createObjectURL(f), name:f.name }));
-    onSitePhotosChange([...sitePhotos, ...news]);
-  }, [sitePhotos, onSitePhotosChange]);
+    if (!files || files.length === 0) return;
+    onAddSitePhotos(files);
+  }, [onAddSitePhotos]);
+  
 
   const removeSitePhoto = (idx: number) => {
     const next = [...sitePhotos];
-    URL.revokeObjectURL(next[idx].url);
+    if (next[idx].url.startsWith('blob:')) URL.revokeObjectURL(next[idx].url);
     next.splice(idx,1);
     onSitePhotosChange(next);
   };
-
+  
   // ─── GOOGLE MAPS STATIC API LOGIC ───
   const generateMapPhotos = () => {
     // ⚠️ Replace this with your actual Google Maps API Key
@@ -2079,7 +2109,8 @@ export default function BuildingValuationSidebar({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 scrollbar-thin bg-white text-[11.5px]">
+    <div className="flex-1   p-3 scrollbar-thin bg-white text-[11.5px]">
+    <fieldset disabled={locked} style={{ display: 'contents' }}>
 
       {/* ══ 1. BASIC INFO ══ */}
       <div className="mb-6">
@@ -2147,8 +2178,10 @@ export default function BuildingValuationSidebar({
         <SectionHeader label="6 · Part A – General" />
         <div className="grid grid-cols-2 gap-2 pl-3">
           <InputField label="Purpose of Valuation" name="purposeOfValuation" value={formData.purposeOfValuation} onChange={handleInterceptChange} />
-          <InputField label="Date of Inspection" name="dateOfInspection" value={formData.dateOfInspection} onChange={handleInterceptChange} />
-          <InputField label="Date of Valuation" name="dateOfValuation" value={formData.dateOfValuation} onChange={handleInterceptChange} />
+          {/* <InputField label="Date of Inspection" name="dateOfInspection" value={formData.dateOfInspection} onChange={handleInterceptChange} />
+          <InputField label="Date of Valuation" name="dateOfValuation" value={formData.dateOfValuation} onChange={handleInterceptChange} /> */}
+          <InputFieldDate  label="Date of Valuation" name="dateOfValuation"  value={formData.dateOfValuation} onChange={handleInterceptChange} />
+          <InputFieldDate  label="Date of Inspection" name="dateOfInspection"  value={formData.dateOfInspection} onChange={handleInterceptChange} />
         </div>
       </div>
 
@@ -2162,7 +2195,7 @@ export default function BuildingValuationSidebar({
               <div className="grid grid-cols-2 gap-2">
                 <InputField label="Description" name={desc} value={(formData as any)[desc]} onChange={handleInterceptChange} />
                 <InputField label="Doc No" name={no} value={(formData as any)[no]} onChange={handleInterceptChange} />
-                <InputField label="Date" name={dt} value={(formData as any)[dt]} onChange={handleInterceptChange} />
+                <InputFieldDate label="Date" name={dt} value={(formData as any)[dt]} onChange={handleInterceptChange} />
                 <InputField label="Original/Copy" name={copy} value={(formData as any)[copy]} onChange={handleInterceptChange} />
               </div>
             </div>
@@ -2216,6 +2249,9 @@ export default function BuildingValuationSidebar({
           <RadioGroup label="Is Power Supply Available at Site?" name="powerSupply" options={OPT_POWER} value={formData.powerSupply} onChange={handleInterceptChange} />
           <RadioGroup label="Advantages of the Site" name="advantagesOfSite" options={OPT_ADVANTAGES} value={formData.advantagesOfSite} onChange={handleInterceptChange} />
           <TextArea label="General Remarks" name="generalRemarks" value={formData.generalRemarks} onChange={handleInterceptChange} rows={3} />
+          <RadioGroup label="Whether covered under any State / Central Govt. enactment's" name="stateOrCentralEnactment" options={OPT_UnderStateCentralEnactment} value =  {formData.stateOrCentralEnactment} onChange={handleInterceptChange}   ></RadioGroup>
+          <RadioGroup label="In case it is an agricultural land, any conversion to house site plots is contemplated" name="agriculturalLandContemplated" options={OPT_UnderStateCentralEnactment} value = {formData.agriculturalLandContemplated} onChange={handleInterceptChange}   ></RadioGroup>
+
         </div>
       </div>
 
@@ -2658,7 +2694,7 @@ export default function BuildingValuationSidebar({
       </div>
 
    
-
+      </fieldset>
     </div>
   );
 }

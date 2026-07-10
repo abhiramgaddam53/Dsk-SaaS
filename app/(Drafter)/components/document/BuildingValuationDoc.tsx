@@ -439,12 +439,12 @@ export default function BuildingValuationDoc({
               <tr className={trClass}>
                 <td className={`${tdLabel} w-[5%]`}>11</td>
                 <td className={`${tdLabel} w-[45%]`}>Whether covered under any State / Central Govt. enactment's (e.g., Urban Land Ceiling Act) or notified under agency area / scheduled area / cantonment area.</td>
-                <td className={tdValue}>No</td>
+                <td className={tdValue}>{F('stateOrCentralEnactment')} </td>
               </tr>
               <tr className={trClass}>
                 <td className={tdLabel}>12</td>
                 <td className={tdLabel}>In case it is an agricultural land, any conversion to house site plots is contemplated</td>
-                <td className={tdValue}>No</td>
+                <td className={tdValue}>{F('agriculturalLandContemplated')} </td>
               </tr>
 
               {/* Boundaries */}
@@ -1151,7 +1151,7 @@ export default function BuildingValuationDoc({
               ))}
               <tr className={trClass}>
               <td className={tdLabel}> </td>
-                <td className={`${tdLabel } text-base `} >Over head water tank</td>
+                <td className={`${tdLabel } text-sm  `} >Over head water tank</td>
                 <td className={`${tdValue} text-right`}>
                   {formData.overheadTankServices ? `Rs.${formData.overheadTankServices}` : ""}
                 </td>

@@ -982,7 +982,7 @@
 
 import React, { useState } from 'react';
 import { User, Landmark, Phone, Briefcase, Save, ArrowLeft, Building2, CheckCircle2, ChevronDown } from 'lucide-react';
-
+import { api } from '@/app/lib/userApis';
 interface CustomerProfileState {
   profileReference: string; // A name to identify this profile in the dropdown later
   owner: {
@@ -1049,27 +1049,32 @@ export default function CreateCustomerProfile() {
     setFormData(prev => ({ ...prev, clientBank: { ...prev.clientBank, [field]: value } }));
   };
 
+   
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // This is the JSON payload you will send to your backend to save the customer
+    // Map the frontend state exactly to the API Documentation's expected format
     const payload = {
-      profileName: formData.profileReference || `${formData.owner.ownerName} - ${formData.clientBank.bankName}`,
-      ownerDetails: formData.owner,
-      bankDetails: formData.clientBank,
-      createdAt: new Date().toISOString(),
+      profileReference: formData.profileReference || `${formData.owner.ownerName} - ${formData.clientBank.bankName}`,
+      owner: formData.owner,
+      clientBank: formData.clientBank
     };
 
     console.log("Saving New Customer Profile:", JSON.stringify(payload, null, 2));
 
-    // Simulate API Call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await api.createCustomerProfile(payload);
       setIsSuccess(true);
-    }, 1000);
+    } catch (error) {
+      console.error("Error saving customer profile:", error);
+      alert("Failed to save customer profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
+  
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">

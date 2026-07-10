@@ -1,26 +1,61 @@
  
 'use client';
 
-import { PanelLeft, Bell, ChevronRight, Plus, ChevronDown } from 'lucide-react';
+import { PanelLeft, Bell, ChevronRight, Plus, ChevronDown, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react'; 
+import { useRouter } from 'next/navigation';
+import { auth } from '@/app/lib/firebase/firebase'; 
+import { logoutUser } from '@/app/lib/firebase/authUtils';
+import { onAuthStateChanged } from 'firebase/auth';
 
 interface NavbarProps {
   onMenuClick: () => void;
 }
 
+const LIGHT_GRADIENTS = [
+  "bg-gradient-to-br from-blue-100 to-cyan-200 text-blue-700",
+  "bg-gradient-to-br from-emerald-100 to-teal-200 text-emerald-700",
+  "bg-gradient-to-br from-rose-100 to-pink-200 text-rose-700",
+  "bg-gradient-to-br from-purple-100 to-fuchsia-200 text-purple-700",
+  "bg-gradient-to-br from-amber-100 to-yellow-200 text-amber-700"
+];
 export default function Navbar({ onMenuClick }: NavbarProps) {
   const pathname = usePathname();
+  const profileRef = useRef<HTMLDivElement>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [initials, setInitials] = useState("U");
+    const [profileGradient, setProfileGradient] = useState(LIGHT_GRADIENTS[0]);
   
+  useEffect(() => {
+      setProfileGradient(LIGHT_GRADIENTS[Math.floor(Math.random() * LIGHT_GRADIENTS.length)]);
+  
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          const name = user.displayName || user.email || "User";
+          setInitials(name.substring(0, 2).toUpperCase());
+        }
+      });
+      
+      return () => unsubscribe();
+    }, []);
   // Split the pathname into segments and remove empty strings/route group identifiers
   const segments = pathname.split('/').filter((p) => p !== '' && p !== 'd' && !p.startsWith('('));
-
+    const router = useRouter();
   // Helper function to capitalize and format the URL segments
   const formatSegment = (segment: string) => {
     return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
   };
 
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      router.push('/login');
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -110,9 +145,26 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
        <button className="p-1.5 border border-gray-200 rounded-full text-gray-600 hover:bg-gray-50">
          <Bell className="w-4 h-4" />
        </button>
-       <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-         <img src="/api/placeholder/32/32" alt="User" className="w-full h-full object-cover" />
-       </div>
+       <div className="relative" ref={profileRef}>
+            <button 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className={`w-9 h-9 flex items-center justify-center rounded-full font-semibold text-sm shadow-sm transition-transform hover:scale-105 border border-white ${profileGradient}`}
+            >
+              {initials}
+            </button>
+
+            {isProfileOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-lg shadow-lg py-1.5 z-50 overflow-hidden">
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
      </div>
     </header>
   );

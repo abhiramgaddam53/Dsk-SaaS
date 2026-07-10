@@ -1,118 +1,194 @@
- // ReportsPage.tsx
- "use client";
+ 
+// "use client";
 
- import React, { useState } from 'react';
- import { Search, Plus, Filter, Download, MoreVertical } from 'lucide-react';
+// import React, { useState, useEffect } from 'react';
+// import { useRouter } from 'next/navigation';
+// import { Plus, Filter, Download, MoreVertical, Loader2, AlertCircle } from 'lucide-react';
+// import ReportsKanban from '@/app/(super-admin)/components/general/ReportsKanban';
+// import ReportsList from '@/app/(super-admin)/components/general/ReportsList';
+// import { ReportStatus } from '@/app/(super-admin)/types/types';
+// import { api } from '@/app/lib/userApis';
+
+// export default function ReportsPage() {
+//   const router = useRouter();
+//   const [viewType, setViewType] = useState<'list' | 'kanban'>('list');
+//   const [reports, setReports] = useState<any[]>([]);
+//   const [isLoading, setIsLoading] = useState(true);
+
+//   // Fetch real data from the Valuator API
+//   useEffect(() => {
+//     const fetchReports = async () => {
+//       try {
+//         const data = await api.getValuatorRecords();
+//         setReports(data);
+//       } catch (error) {
+//         console.error("Failed to fetch reports:", error);
+//       } finally {
+//         setIsLoading(false);
+//       }
+//     };
+//     fetchReports();
+//   }, []);
+
+//   // Handler for list-view status changes
+//   const handleStatusChange = (id: string, newStatus: ReportStatus) => {
+//     setReports(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+//   };
+
+//   return (
+//     <div className="flex flex-col min-h-screen bg-white px-4 md:px-8 py-6 w-full overflow-x-hidden">
+//       <div className="flex items-center justify-between mb-6 shrink-0">
+//         <div>
+//           <h1 className="text-2xl font-medium text-gray-800">Reports</h1>
+//           <p className="text-sm text-gray-500 mt-1">Valuator Approval Dashboard</p>
+//         </div>
+//       </div>
+
+//       {/* Loading & Empty States */}
+//       {isLoading ? (
+//         <div className="flex items-center justify-center h-64">
+//           <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+//         </div>
+//       ) : reports.length === 0 ? (
+//         <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+//           <AlertCircle size={48} className="mb-2 opacity-50" />
+//           <p>No reports currently pending approval.</p>
+//         </div>
+//       ) : (
+//         <>
+//           <div className="flex flex-col sm:flex-row items-center justify-between mb-6 border-b border-gray-200 shrink-0 gap-4">
+//             <div className="flex items-center gap-8 w-full sm:w-auto overflow-x-auto scrollbar-hide">
+//               <button onClick={() => setViewType('list')} className={`text-sm font-medium pb-3 border-b-2 transition-colors ${viewType === 'list' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}>List View</button>
+//               <button onClick={() => setViewType('kanban')} className={`text-sm font-medium pb-3 border-b-2 transition-colors ${viewType === 'kanban' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}>Kanban</button>
+//             </div>
+//           </div>
+
+//           <div className="w-full min-w-0 flex-1">
+//             {viewType === 'list' ? (
+//               <ReportsList reports={reports} onStatusChange={handleStatusChange} />
+//             ) : (
+//               <ReportsKanban reports={reports} />
+//             )}
+//           </div>
+//         </>
+//       )}
+//     </div>
+//   );
+// }
+
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Plus, Filter, Download, MoreVertical, Loader2, AlertCircle } from 'lucide-react';
 import ReportsKanban from '@/app/(super-admin)/components/general/ReportsKanban';
 import ReportsList from '@/app/(super-admin)/components/general/ReportsList';
-import { mockReports } from '@/app/(super-admin)/data/mockdata';
 import { ReportStatus } from '@/app/(super-admin)/types/types';
- 
-  
- export default function ReportsPage() {
-   const [viewType, setViewType] = useState<'list' | 'kanban'>('list');
-   const [reports, setReports] = useState(mockReports);
- 
-   const handleStatusChange = (id: string, newStatus: ReportStatus) => {
-     setReports(prev => prev.map(report => report.id === id ? { ...report, status: newStatus } : report));
-   };
- 
-   return (
-     <div className="flex flex-col min-h-screen bg-white px-4 md:px-8 py-6  w-full overflow-x-hidden">
-       <div className="flex items-center justify-between mb-6 shrink-0">
-         <div>
-           <h1 className="text-2xl font-medium text-gray-800">Reports</h1>
-           <p className="text-sm text-gray-500 mt-1">Manage Your Valuation Reports</p>
-         </div>
-         <div className="flex items-center gap-3">
-           <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 border border-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors shadow-sm">
-             <Plus size={16} />
-             Add New Report
-           </button>
-         </div>
-       </div>
- 
-       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 shrink-0">
-         <div className="p-5 rounded-xl border border-gray-100 bg-gradient-to-tr from-white to-[#EBF0FF] relative">
-           <div className="flex justify-between items-center mb-6">
-             <p className="text-sm text-gray-600">Active Reports</p>
-             <button className="text-gray-400 hover:text-gray-600"><MoreVertical size={16} /></button>
-           </div>
-           <div className="flex items-end justify-between">
-             <h2 className="text-3xl font-medium text-gray-800">23</h2>
-             <span className="text-sm text-blue-500">+10% from last month</span>
-           </div>
-         </div>
- 
-         <div className="p-5 rounded-xl border border-gray-100 bg-gradient-to-tr from-white to-[#FEF7E0] relative">
-           <div className="flex justify-between items-center mb-6">
-             <p className="text-sm text-gray-600">Pending Reports</p>
-             <button className="text-gray-400 hover:text-gray-600"><MoreVertical size={16} /></button>
-           </div>
-           <div className="flex items-end justify-between">
-             <h2 className="text-3xl font-medium text-gray-800">8</h2>
-             <span className="text-sm text-yellow-600">+10% from last month</span>
-           </div>
-         </div>
- 
-         <div className="p-5 rounded-xl border border-gray-100 bg-gradient-to-tr from-white to-[#FDEBEB] relative">
-           <div className="flex justify-between items-center mb-6">
-             <p className="text-sm text-gray-600">Due Today</p>
-             <button className="text-gray-400 hover:text-gray-600"><MoreVertical size={16} /></button>
-           </div>
-           <div className="flex items-end justify-between">
-             <h2 className="text-3xl font-medium text-gray-800">3</h2>
-             <span className="text-sm text-red-500">-20% This Month</span>
-           </div>
-         </div>
- 
-         <div className="p-5 rounded-xl border border-gray-100 bg-gradient-to-tr from-white to-[#EBF9F1] relative">
-           <div className="flex justify-between items-center mb-6">
-             <p className="text-sm text-gray-600">Completed</p>
-             <button className="text-gray-400 hover:text-gray-600"><MoreVertical size={16} /></button>
-           </div>
-           <div className="flex items-end justify-between">
-             <h2 className="text-3xl font-medium text-gray-800">12</h2>
-             <span className="text-sm text-green-500">+10% from last month</span>
-           </div>
-         </div>
-       </div>
- 
-       <div className="flex flex-col sm:flex-row items-center justify-between mb-6 border-b border-gray-200 shrink-0 gap-4">
-         <div className="flex items-center gap-8 w-full sm:w-auto overflow-x-auto scrollbar-hide">
-           <button 
-             onClick={() => setViewType('list')}
-             className={`text-sm font-medium pb-3 border-b-2 transition-colors whitespace-nowrap ${viewType === 'list' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
-           >
-             List View
-           </button>
-           <button 
-             onClick={() => setViewType('kanban')}
-             className={`text-sm font-medium pb-3 border-b-2 transition-colors whitespace-nowrap ${viewType === 'kanban' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
-           >
-             Kanban
-           </button>
-         </div>
-         
-         <div className="flex items-center gap-4 text-sm font-medium text-gray-500 pb-3 w-full sm:w-auto justify-end">
-           <button className="flex items-center gap-2 hover:text-gray-800 transition-colors">
-             <Download size={16} />
-             Import/Export
-           </button>
-           <button className="flex items-center gap-2 hover:text-gray-800 transition-colors">
-             <Filter size={16} />
-             Filter
-           </button>
-         </div>
-       </div>
- 
-       <div className="w-full min-w-0 flex-1">
-         {viewType === 'list' ? (
-           <ReportsList reports={reports} onStatusChange={handleStatusChange} />
-         ) : (
-           <ReportsKanban reports={reports} />
-         )}
-       </div>
-     </div>
-   );
- }
+import { api } from '@/app/lib/userApis';
+
+export default function ReportsPage() {
+  const router = useRouter();
+  const [viewType, setViewType] = useState<'list' | 'kanban'>('list');
+  const [reports, setReports] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch real data from the Valuator API
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const data = await api.getValuatorRecords();
+        
+        // 🟢 FIX: Map the backend data to match exactly what ReportsList and ReportsKanban expect
+        // This converts the Firestore Timestamp object into a normal readable string.
+        const formattedData = data.map((r: any) => {
+          
+          // 1. Safely format the date
+          let dateStr = 'Unknown Date';
+          if (r.lastUpdated) {
+            // Check if it's a Firestore Timestamp object with 'seconds'
+            if (r.lastUpdated.seconds) {
+              dateStr = new Date(r.lastUpdated.seconds * 1000).toLocaleDateString('en-IN');
+            } else {
+              // Fallback if it's a normal ISO string
+              dateStr = new Date(r.lastUpdated).toLocaleDateString('en-IN');
+            }
+          }
+
+          // 2. Return the mapped object
+          return {
+            id: r.id,
+            reportId: r.id.substring(0, 8).toUpperCase(), // Generate a short ID for the table
+            customerName: r.customerName || 'Unknown Customer',
+            documentType: r.reportType || 'Valuation Report',
+            assignedTo: 'Valuator', // Can be made dynamic later
+            lastUpdated: dateStr,
+            status: r.status,
+            deadline: 'TBD',
+            
+            // Kanban Specific Fields
+            price: 0, 
+            dealName: r.reportType || 'Valuation',
+            company: r.bankName || 'Unknown Bank'
+          };
+        });
+
+        setReports(formattedData);
+      } catch (error) {
+        console.error("Failed to fetch reports:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchReports();
+  }, []);
+
+  // Handler for list-view status changes
+  const handleStatusChange = (id: string, newStatus: string) => {
+    setReports(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+  };
+
+  // Calculate stats dynamically
+  const activeReportsCount = reports.filter(r => r.status === 'pending_approval' || r.status === 'drafting').length;
+  const pendingReportsCount = reports.filter(r => r.status === 'pending_approval').length;
+  const completedReportsCount = reports.filter(r => r.status === 'approved').length;
+
+  return (
+    <div className="flex flex-col min-h-screen bg-white px-4 md:px-8 py-6 w-full overflow-x-hidden">
+      <div className="flex items-center justify-between mb-6 shrink-0">
+        <div>
+          <h1 className="text-2xl font-medium text-gray-800">Reports</h1>
+          <p className="text-sm text-gray-500 mt-1">Valuator Approval Dashboard</p>
+        </div>
+      </div>
+
+      {/* Loading & Empty States */}
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-[#00a0ef] animate-spin" />
+        </div>
+      ) : reports.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <AlertCircle size={48} className="mb-2 opacity-50" />
+          <p>No reports currently pending approval.</p>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-6 border-b border-gray-200 shrink-0 gap-4">
+            <div className="flex items-center gap-8 w-full sm:w-auto overflow-x-auto scrollbar-hide">
+              <button onClick={() => setViewType('list')} className={`text-sm font-medium pb-3 border-b-2 transition-colors ${viewType === 'list' ? 'border-[#00a0ef] text-[#00a0ef]' : 'border-transparent text-gray-500'}`}>List View</button>
+              <button onClick={() => setViewType('kanban')} className={`text-sm font-medium pb-3 border-b-2 transition-colors ${viewType === 'kanban' ? 'border-[#00a0ef] text-[#00a0ef]' : 'border-transparent text-gray-500'}`}>Kanban</button>
+            </div>
+          </div>
+
+          <div className="w-full min-w-0 flex-1">
+            {viewType === 'list' ? (
+              <ReportsList reports={reports} onStatusChange={handleStatusChange} />
+            ) : (
+              <ReportsKanban reports={reports} />
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

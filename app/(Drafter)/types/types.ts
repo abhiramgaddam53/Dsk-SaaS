@@ -207,6 +207,8 @@ export interface FormData {
   undergroundSewerage: string;
   powerSupply: string;
   advantagesOfSite: string;
+  stateOrCentralEnactment: string;
+  agriculturalLandContemplated :string;
   generalRemarks: string;
 
   // Dimensions

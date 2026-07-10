@@ -1345,11 +1345,4011 @@
 //     </div>
 //   );
 // }
+
+// 'use client';
+
+// import React, { useState, useEffect, useCallback, useRef } from 'react';
+// import { Building, Building2, Landmark, LayoutGrid, CheckCircle2, UploadCloud, X, FileText, Edit2, CircleCheck, Plus, Trash2, Check, RotateCcw, ArrowLeft, ArrowRight, ChevronDown, Map as MapIcon } from 'lucide-react';
+// import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+// import { api } from '@/app/lib/userApis';
+
+// type Coord = { lat: number; lng: number };
+// type Pin = { id: number; coord: Coord };
+// type Mode = "picking" | "submitted";
+
+// const MAX = 10;
+// const LABELS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10"];
+// const COLORS = ["#00a0ef", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#14b8a6", "#f97316", "#6366f1"];
+
+// export interface FloorDetail {
+//   id: string;
+//   floorName: string;
+//   possessionWith: string;
+//   unit: string;
+//   length: string;
+//   breadth: string;
+//   conversionUnit: string;
+//   coveredArea: string;
+//   condition: string;
+//   structure: string;
+//   flooring: string;
+//   accommodation: string;
+//   doorsWindows: string;
+//   floorRemarks: string;
+// }
+
+// interface AppState {
+//   customer: string;
+//   clientBank: { ifsc: string; bankName: string; branch: string; email: string; contactPersonName: string; contactPersonNumber: string; dateOfInspection: string; dateOfValuation: string; propertyType: string; purposeOfValuation: string; };
+//   owner: { prefix: string; ownerName: string; relation: string; relationName: string; occupation: string; phone1: string; phone2: string; };
+//   locality: { urbanRural: string; localityClass: string; landTenure: string; widthOfRoad: string; noOfStories: string; sanitaryFitting: string; electricalFitting: string; townplan: string; };
+//   property: { address: string; natureOfProperty: string; vacantPlot: string; widthOfRoad: string; latitude: string; longitude: string; boundaryCoordinates: Coord[]; plotShape: string; dimensionUnit: string; length: string; breadth: string; conversionUnit: string; calculatedArea: string; wallUnit: string; wallLength: string; wallHeight: string; wallsOnSide: string; brickType: string; };
+//   boundaries: { unit: string; northDoc: string; northAct: string; southDoc: string; southAct: string; eastDoc: string; eastAct: string; westDoc: string; westAct: string; };
+//   floors: FloorDetail[];
+//   market: { yearOfConstruction: string; renovation: string; parking: string; lift: string; rentalMin: string; rentalMax: string; rentalUnit: string; kitchenType: string; marketClientMin: string; marketClientMax: string; marketClientUnit: string; marketDealerMin: string; marketDealerMax: string; marketDealerUnit: string; marketMarketMin: string; marketMarketMax: string; marketMarketUnit: string; dealerName: string; dealerMobile: string; additionalDetails: { key: string; value: string }[]; };
+//   negativePoints: string[];
+//   uploads: { photos: File[]; documents: File[]; };
+// }
+
+// const inputStyles = "w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] focus:ring-1 focus:ring-[#00a0ef] text-[13px] text-gray-900 bg-white shadow-sm transition-shadow";
+// const labelStyles = "block text-[13px] font-semibold text-gray-700 mb-2";
+
+// const RadioGroup = ({ options, value, onChange }: { options: string[], value: string, onChange: (val: string) => void }) => {
+//   const isCustom = value !== '' && !options.includes(value);
+//   const [showCustom, setShowCustom] = useState(isCustom);
+
+//   return (
+//     <div className="flex flex-wrap gap-2 items-center">
+//       {options.map(opt => (
+//         <button key={opt} type="button" onClick={() => { setShowCustom(false); onChange(opt); }}
+//           className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border ${!showCustom && value === opt ? 'bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+//           {opt}
+//         </button>
+//       ))}
+//       <div className="flex items-center gap-2">
+//         {!showCustom && (
+//           <button type="button" onClick={() => { setShowCustom(true); onChange(''); }}
+//             className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border bg-white border-gray-200 text-gray-600 hover:bg-gray-50`}>
+//             Other / Add Option
+//           </button>
+//         )}
+//         {showCustom && (
+//           <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg pr-1 shadow-sm focus-within:border-[#00a0ef] focus-within:ring-1 focus-within:ring-[#00a0ef]">
+//             <input type="text" placeholder="Type custom option..." className="px-3 py-2 text-[13px] rounded-l-lg focus:outline-none border-none w-40" value={value} onChange={e => onChange(e.target.value)} autoFocus />
+//             <button type="button" onClick={() => { setShowCustom(false); onChange(''); }} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+//               <X size={14} />
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// const MultiSelectGroup = ({ options, selected, onChange }: { options: string[], selected: string[], onChange: (val: string[]) => void }) => {
+//   const toggle = (opt: string) => selected.includes(opt) ? onChange(selected.filter(i => i !== opt)) : onChange([...selected, opt]);
+//   const customValues = selected.filter(val => !options.includes(val));
+//   const [customInput, setCustomInput] = useState('');
+
+//   const handleAddCustom = () => {
+//     if (customInput.trim() && !selected.includes(customInput.trim())) {
+//       onChange([...selected, customInput.trim()]);
+//       setCustomInput('');
+//     }
+//   };
+
+//   return (
+//     <div className="flex flex-col gap-3">
+//       <div className="flex flex-wrap gap-2">
+//         {options.map(opt => (
+//           <button key={opt} type="button" onClick={() => toggle(opt)}
+//             className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border ${selected.includes(opt) ? 'bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+//             {opt}
+//           </button>
+//         ))}
+//         {customValues.map(opt => (
+//           <button key={opt} type="button" onClick={() => toggle(opt)}
+//             className="px-3 py-2 rounded-lg text-[13px] font-medium transition-all border bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm flex items-center gap-2">
+//             {opt} <X className="w-3 h-3" />
+//           </button>
+//         ))}
+//       </div>
+//       <div className="flex items-center gap-2">
+//         <input type="text" placeholder="Add custom option..." className="px-3 py-2 text-[13px] border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] w-48 shadow-sm" value={customInput} onChange={e => setCustomInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustom(); } }} />
+//         <button type="button" onClick={handleAddCustom} className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-[13px] font-medium hover:bg-gray-200 transition-colors">Add</button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// function NextSectionButton({ onClick, nextFocusId }: { onClick: () => void, nextFocusId: string }) {
+//   const handleAction = (e: React.MouseEvent | React.KeyboardEvent) => {
+//     e.preventDefault();
+//     onClick();
+//     setTimeout(() => document.getElementById(nextFocusId)?.focus(), 50);
+//   };
+//   return (
+//     <div className="md:col-span-full flex justify-end mt-4 border-t border-gray-200/50 pt-4">
+//       <button type="button" onClick={handleAction} onKeyDown={(e) => { if (e.key === 'Tab' && !e.shiftKey) { handleAction(e); } }} className="text-[#00a0ef] text-[13px] font-bold hover:underline flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#00a0ef] focus:ring-offset-2 rounded px-3 py-1.5 transition-colors">
+//         Next Section <ArrowRight className="w-4 h-4" />
+//       </button>
+//     </div>
+//   );
+// }
+
+// function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (coords: Coord[]) => void }) {
+//   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+//   const [center, setCenter] = useState<Coord>({ lat: 20, lng: 78 });
+//   const [zoom, setZoom] = useState(4);
+//   const [mode, setMode] = useState<Mode>("picking");
+//   const [pins, setPins] = useState<Pin[]>([]);
+//   const [nextId, setNextId] = useState(0);
+//   const [submitted, setSubmitted] = useState<Pin[]>([]);
+//   const [editTarget, setEditTarget] = useState<number | null>(null);
+//   const [userLocation, setUserLocation] = useState<Coord | null>(null);
+
+//   useEffect(() => {
+//     if ("geolocation" in navigator) {
+//       navigator.geolocation.getCurrentPosition(
+//         (position) => {
+//           const userLoc = { lat: position.coords.latitude, lng: position.coords.longitude };
+//           setUserLocation(userLoc); setCenter(userLoc); setZoom(18);
+//         },
+//         (error) => console.error("Error getting user location:", error),
+//         { enableHighAccuracy: true }
+//       );
+//     }
+//   }, []);
+
+//   const handleMapClick = useCallback((coord: Coord) => {
+//     if (mode === "picking") {
+//       if (pins.length >= MAX) return;
+//       setPins((prev) => [...prev, { id: nextId, coord }]);
+//       setNextId((n) => n + 1); return;
+//     }
+//     if (mode === "submitted" && editTarget !== null) {
+//       setSubmitted((prev) => prev.map((p, i) => (i === editTarget ? { ...p, coord } : p)));
+//       setEditTarget(null);
+//     }
+//   }, [mode, pins.length, nextId, editTarget]);
+
+//   const handleSubmit = () => {
+//     if (pins.length === 0) return;
+//     setSubmitted([...pins]); setMode("submitted"); setEditTarget(null);
+//     onCoordinatesSubmit(pins.map(p => p.coord));
+//   };
+
+//   return (
+//     <div className="flex flex-col w-full bg-white border border-gray-300 rounded-xl overflow-hidden shadow-sm">
+//       <div className="relative w-full h-64 md:h-80 bg-gray-100">
+//         <APIProvider apiKey={apiKey}>
+//           <Map mapId="geo-picker-form" center={center} zoom={zoom} mapTypeId="satellite"
+//             onCameraChanged={(ev) => { setCenter(ev.detail.center); setZoom(ev.detail.zoom); }}
+//             gestureHandling="greedy" colorScheme="LIGHT" mapTypeControl={true} zoomControl={true} fullscreenControl={true} streetViewControl={true}
+//             style={{ width: "100%", height: "100%" }}>
+//             {userLocation && (
+//               <AdvancedMarker position={userLocation}>
+//                 <div className="relative"><div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg" /><div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-ping opacity-40" /></div>
+//               </AdvancedMarker>
+//             )}
+//             <ClickHandler onClick={handleMapClick} />
+//             {(mode === "picking" ? pins : submitted).map((pin, i) => (
+//               <AdvancedMarker key={pin.id} position={pin.coord} zIndex={editTarget === i ? 100 : i}>
+//                 <button type="button" onClick={(e) => { e.stopPropagation(); if (mode === "submitted") setEditTarget(editTarget === i ? null : i); }}
+//                   className={`flex items-center justify-center rounded-full font-bold text-white text-xs shadow-md transition-all ${editTarget === i ? "w-10 h-10 ring-4 ring-white scale-110" : "w-8 h-8 ring-2 ring-white/80 scale-100"} ${mode === "submitted" ? "cursor-pointer" : "cursor-default"}`}
+//                   style={{ backgroundColor: COLORS[i] }}>{LABELS[i]}</button>
+//               </AdvancedMarker>
+//             ))}
+//           </Map>
+//         </APIProvider>
+//       </div>
+//       <div className="p-4 bg-gray-50 border-t border-gray-200">
+//         {mode === "picking" ? (
+//           <button type="button" onClick={handleSubmit} disabled={pins.length === 0}
+//             className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${pins.length > 0 ? "bg-[#00a0ef] text-white hover:bg-[#008bd1] shadow-sm" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+//             {pins.length > 0 ? <><CheckCircle2 className="w-4 h-4" /> Confirm Boundaries</> : "Place at least 1 point"}
+//           </button>
+//         ) : (
+//           <button type="button" onClick={() => { setPins([]); setSubmitted([]); setMode("picking"); setEditTarget(null); setNextId(0); }}
+//             className="w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100">
+//             <RotateCcw className="w-4 h-4" /> Reset Boundaries
+//           </button>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function ClickHandler({ onClick }: { onClick: (c: Coord) => void }) {
+//   const map = useMap();
+//   useEffect(() => {
+//     if (!map) return;
+//     const listener = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+//       if (e.latLng) onClick({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+//     });
+//     return () => { google.maps.event.removeListener(listener); };
+//   }, [map, onClick]);
+//   return null;
+// }
+
+// function Step1Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const [activeSection, setActiveSection] = useState<string>('clientBank');
+
+//   const updateSection = (section: keyof AppState, field: string, value: any) => {
+//     setFormData((prev: AppState) => ({ ...prev, [section]: { ...(prev[section] as any), [field]: value } }));
+//   };
+
+//   const renderSectionHeader = (title: string, id: string) => (
+//     <div className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'}`} onClick={() => setActiveSection(activeSection === id ? '' : id)}>
+//       <h3 className="font-bold md:text-[15px] text-[#00a0ef]">{title}</h3>
+//       <ChevronDown className={`w-5 h-5 text-[#00a0ef] transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+      
+//       <div>
+//         {renderSectionHeader('Client / Bank Details', 'clientBank')}
+//         {activeSection === 'clientBank' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles}>IFSC Code</label><input id="clientBank-first" type="text" className={inputStyles} value={formData.clientBank.ifsc} onChange={e => updateSection('clientBank', 'ifsc', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Bank Name</label><input type="text" className={inputStyles} value={formData.clientBank.bankName} onChange={e => updateSection('clientBank', 'bankName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Branch</label><input type="text" className={inputStyles} value={formData.clientBank.branch} onChange={e => updateSection('clientBank', 'branch', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Email ID</label><input type="email" className={inputStyles} value={formData.clientBank.email} onChange={e => updateSection('clientBank', 'email', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Point of Contact Name</label><input type="text" className={inputStyles} value={formData.clientBank.contactPersonName} onChange={e => updateSection('clientBank', 'contactPersonName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Point of Contact Number</label><input type="tel" className={inputStyles} value={formData.clientBank.contactPersonNumber} onChange={e => updateSection('clientBank', 'contactPersonNumber', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Date of Inspection</label><input type="date" className={inputStyles} value={formData.clientBank.dateOfInspection} onChange={e => updateSection('clientBank', 'dateOfInspection', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Date Valuation</label><input type="date" className={inputStyles} value={formData.clientBank.dateOfValuation} onChange={e => updateSection('clientBank', 'dateOfValuation', e.target.value)} /></div>
+            
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Type of Property</label>
+//               <RadioGroup options={['Vacant Land - Residential', 'Existing Building - Residential', 'Open Piece of Land', 'Residential Flat', 'Agri Land', 'Residential Villa', 'Industrial Shed']} value={formData.clientBank.propertyType} onChange={v => updateSection('clientBank', 'propertyType', v)} />
+//             </div>
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Purpose of Valuation (Loan Type)</label>
+//               <RadioGroup options={['Home Loan', 'Mortgage Loan', 'Education Loan', 'Collateral Security', 'For Bank Loan / Mortgage Purpose']} value={formData.clientBank.purposeOfValuation} onChange={v => updateSection('clientBank', 'purposeOfValuation', v)} />
+//             </div>
+//             <NextSectionButton onClick={() => setActiveSection('ownerLocality')} nextFocusId="owner-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Owner Details & Locality Classification', 'ownerLocality')}
+//         {activeSection === 'ownerLocality' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10">
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-b border-gray-200 pb-6 mb-6">
+//               <div className="md:col-span-2 flex gap-3">
+//                 <div className="w-1/3 md:w-1/4">
+//                   <label className={labelStyles}>Prefix</label>
+//                   <div className="relative">
+//                     <select id="owner-first" className={`${inputStyles} appearance-none bg-white`} value={formData.owner.prefix} onChange={e => {
+//                       const val = e.target.value;
+//                       updateSection('owner', 'prefix', val);
+//                       if (val === 'Smt' || val === 'Mrs') updateSection('owner', 'relation', 'W/o');
+//                       else if (val === 'Shri' || val === 'Mr') updateSection('owner', 'relation', 'S/o');
+//                     }}>
+//                       <option value="Shri">Shri</option>
+//                       <option value="Smt">Smt</option>
+//                       <option value="Mr">Mr</option>
+//                       <option value="Mrs">Mrs</option>
+//                     </select>
+//                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                   </div>
+//                 </div>
+//                 <div className="flex-1"><label className={labelStyles}>Owner Name</label><input type="text" className={inputStyles} value={formData.owner.ownerName} onChange={e => updateSection('owner', 'ownerName', e.target.value)} /></div>
+//               </div>
+//               <div className="md:col-span-2 flex gap-3">
+//                 <div className="w-1/3 md:w-1/4">
+//                   <label className={labelStyles}>Relation</label>
+//                   <div className="relative">
+//                     <select className={`${inputStyles} appearance-none bg-white`} value={formData.owner.relation} onChange={e => updateSection('owner', 'relation', e.target.value)}>
+//                       <option value="S/o">S/o</option>
+//                       <option value="D/o">D/o</option>
+//                       <option value="W/o">W/o</option>
+//                       <option value="F/o">F/o</option>
+//                     </select>
+//                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                   </div>
+//                 </div>
+//                 <div className="flex-1"><label className={labelStyles}>Relative's Name</label><input type="text" className={inputStyles} value={formData.owner.relationName} onChange={e => updateSection('owner', 'relationName', e.target.value)} /></div>
+//               </div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Occupation</label><input type="text" className={inputStyles} value={formData.owner.occupation} onChange={e => updateSection('owner', 'occupation', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Phone Number 1</label><input type="tel" className={inputStyles} value={formData.owner.phone1} onChange={e => updateSection('owner', 'phone1', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Phone Number 2</label><input type="tel" className={inputStyles} value={formData.owner.phone2} onChange={e => updateSection('owner', 'phone2', e.target.value)} /></div>
+//             </div>
+
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//               <div className="md:col-span-2"><label className={labelStyles}>Rural / Urban</label><RadioGroup options={['metro city', 'urban', 'semi urban rural', 'N/A']} value={formData.locality.urbanRural} onChange={v => updateSection('locality', 'urbanRural', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Locality Class</label><RadioGroup options={['high', 'middle', 'low', 'posh', 'N/A']} value={formData.locality.localityClass} onChange={v => updateSection('locality', 'localityClass', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Land Tenure</label><RadioGroup options={['freehold', 'leasehold', 'N/A']} value={formData.locality.landTenure} onChange={v => updateSection('locality', 'landTenure', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Width of Road</label><RadioGroup options={['< 10ft', '< 20ft', '> 20ft']} value={formData.locality.widthOfRoad} onChange={v => updateSection('locality', 'widthOfRoad', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>No. of Stories</label><RadioGroup options={['1', '2', '3', '4', '5', '6', '7', '8', '9', 'vacant']} value={formData.locality.noOfStories} onChange={v => updateSection('locality', 'noOfStories', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Sanitary Fitting</label><RadioGroup options={['ordinary', 'good', 'superior', 'premium', 'excellent', 'under construction']} value={formData.locality.sanitaryFitting} onChange={v => updateSection('locality', 'sanitaryFitting', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Electrical Fitting</label><RadioGroup options={['ordinary', 'good', 'superior', 'premium', 'excellent', 'under construction']} value={formData.locality.electricalFitting} onChange={v => updateSection('locality', 'electricalFitting', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Townplan / MC / GP</label><RadioGroup options={['MC', 'townplanning', 'gram panchayat', 'outside Mc']} value={formData.locality.townplan} onChange={v => updateSection('locality', 'townplan', v)} /></div>
+//             </div>
+//             <NextSectionButton onClick={() => setActiveSection('property')} nextFocusId="property-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Property Details', 'property')}
+//         {activeSection === 'property' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/10">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles} id="property-first">Geo Location & Coordinates</label>
+//               <GeoCoordinatePicker 
+//                 onCoordinatesSubmit={(coords) => {
+//                   updateSection('property', 'boundaryCoordinates', coords);
+//                   if (coords.length > 0) {
+//                     updateSection('property', 'latitude', coords[0].lat.toString());
+//                     updateSection('property', 'longitude', coords[0].lng.toString());
+//                   }
+//                 }} 
+//               />
+//               <div className="flex gap-4 mt-4">
+//                 <input type="text" placeholder="Latitude" className={inputStyles} value={formData.property.latitude} readOnly />
+//                 <input type="text" placeholder="Longitude" className={inputStyles} value={formData.property.longitude} readOnly />
+//               </div>
+//             </div>
+            
+//             <div className="md:col-span-2"><label className={labelStyles}>Address</label><textarea rows={3} className={inputStyles} value={formData.property.address} onChange={e => updateSection('property', 'address', e.target.value)} /></div>
+            
+//             <div className="md:col-span-2"><label className={labelStyles}>Nature of Property</label><RadioGroup options={['Residential', 'Commercial', 'Industrial', 'Agriculture', 'mixed', 'institutional', 'N/A']} value={formData.property.natureOfProperty} onChange={v => updateSection('property', 'natureOfProperty', v)} /></div>
+//             <div className="md:col-span-1"><label className={labelStyles}>Vacant Plot?</label><RadioGroup options={['yes', 'NO']} value={formData.property.vacantPlot} onChange={v => updateSection('property', 'vacantPlot', v)} /></div>
+//             <div className="md:col-span-1"><label className={labelStyles}>Width of Road</label><RadioGroup options={['< 10ft', '< 20ft', '> 20ft']} value={formData.property.widthOfRoad} onChange={v => updateSection('property', 'widthOfRoad', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Plot Shape</label><RadioGroup options={['Rectangle', 'square', 'triangle', 'irregular', 'polygon']} value={formData.property.plotShape} onChange={v => updateSection('property', 'plotShape', v)} /></div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-gray-200 bg-white rounded-xl">
+//               <div className="md:col-span-3"><label className={labelStyles}>Dimension Unit</label><RadioGroup options={['ft', 'm', 'inch']} value={formData.property.dimensionUnit} onChange={v => updateSection('property', 'dimensionUnit', v)} /></div>
+//               <div><label className={labelStyles}>Length</label><input type="number" className={inputStyles} value={formData.property.length} onChange={e => { updateSection('property', 'length', e.target.value); const b = parseFloat(formData.property.breadth) || 0; updateSection('property', 'calculatedArea', (parseFloat(e.target.value || '0') * b).toString()); }} /></div>
+//               <div><label className={labelStyles}>Breadth</label><input type="number" className={inputStyles} value={formData.property.breadth} onChange={e => { updateSection('property', 'breadth', e.target.value); const l = parseFloat(formData.property.length) || 0; updateSection('property', 'calculatedArea', (parseFloat(e.target.value || '0') * l).toString()); }} /></div>
+//               <div className="md:col-span-3 border-t border-gray-100 pt-4 mt-2"><label className={labelStyles}>Conversion Unit</label><RadioGroup options={['sq ft', 'sq yd', 'sq mt', 'Acre', 'Hectare', 'Guntas']} value={formData.property.conversionUnit} onChange={v => updateSection('property', 'conversionUnit', v)} /></div>
+//               <div className="md:col-span-3"><label className={labelStyles}>Calculated Area (Dimensions converted to selected unit)</label><input type="text" className={`${inputStyles} bg-gray-50`} readOnly value={formData.property.calculatedArea} /></div>
+//             </div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-200 bg-white rounded-xl">
+//               <div className="md:col-span-2"><label className={labelStyles}>Wall Unit</label><RadioGroup options={['ft', 'm', 'inch']} value={formData.property.wallUnit} onChange={v => updateSection('property', 'wallUnit', v)} /></div>
+//               <div><label className={labelStyles}>Wall Length</label><input type="number" className={inputStyles} value={formData.property.wallLength} onChange={e => updateSection('property', 'wallLength', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Wall Height</label><input type="number" className={inputStyles} value={formData.property.wallHeight} onChange={e => updateSection('property', 'wallHeight', e.target.value)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Walls on Side</label><RadioGroup options={['1', '2', '3', '4']} value={formData.property.wallsOnSide} onChange={v => updateSection('property', 'wallsOnSide', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Type of Brick</label><RadioGroup options={['brick work', 'Rcc', 'pacca offset / pavement']} value={formData.property.brickType} onChange={v => updateSection('property', 'brickType', v)} /></div>
+//             </div>
+
+//             <NextSectionButton onClick={() => setActiveSection('boundaries')} nextFocusId="boundaries-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Boundaries & Negative Points', 'boundaries')}
+//         {activeSection === 'boundaries' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10 space-y-6">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles} id="boundaries-first">Boundary Unit</label>
+//               <RadioGroup options={['length', 'feet', 'meters', 'inchs']} value={formData.boundaries.unit} onChange={v => updateSection('boundaries', 'unit', v)} />
+//             </div>
+            
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               {(['north', 'south', 'east', 'west'] as const).map(dir => (
+//                 <div key={dir} className="flex gap-2">
+//                   <div className="flex-1">
+//                     <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (As per Document)</label>
+//                     <input type="text" className={inputStyles} value={(formData.boundaries as any)[`${dir}Doc`]} onChange={e => updateSection('boundaries', `${dir}Doc`, e.target.value)} />
+//                   </div>
+//                   <div className="flex-1">
+//                     <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Actual)</label>
+//                     <input type="text" className={inputStyles} value={(formData.boundaries as any)[`${dir}Act`]} onChange={e => updateSection('boundaries', `${dir}Act`, e.target.value)} />
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+
+//             <div className="border-t border-gray-200 pt-6 mt-6">
+//               <label className={labelStyles}>Property Negative Points</label>
+//               <MultiSelectGroup 
+//                 options={['HT line Over building', 'transformer in front', 'sub division of property', 'community dominace', 'common stair for separate units', 'near rail way track', 'near drain', 'near banquet hall']} 
+//                 selected={formData.negativePoints} 
+//                 onChange={v => setFormData((prev: AppState) => ({ ...prev, negativePoints: v }))} 
+//               />
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//     </div>
+//   );
+// }
+
+// function Step2Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const [activeSection, setActiveSection] = useState<string>('floors');
+//   const [activeFloorId, setActiveFloorId] = useState<string>('');
+
+//   useEffect(() => {
+//     if (formData.floors.length > 0 && !activeFloorId) setActiveFloorId(formData.floors[0].id);
+//   }, [formData.floors]);
+
+//   const handleAddFloor = (floorName: string) => {
+//     if (!floorName) return;
+//     const existing = formData.floors.find((f: FloorDetail) => f.floorName === floorName);
+//     if (existing) {
+//       setActiveFloorId(existing.id);
+//     } else {
+//       const newFloor: FloorDetail = {
+//         id: Math.random().toString(36).substr(2, 9),
+//         floorName, possessionWith: '', unit: '', length: '', breadth: '', conversionUnit: '', coveredArea: '', condition: '', structure: '', flooring: '', accommodation: '', doorsWindows: '', floorRemarks: ''
+//       };
+//       setFormData((prev: AppState) => ({ ...prev, floors: [...prev.floors, newFloor] }));
+//       setActiveFloorId(newFloor.id);
+//     }
+//   };
+
+//   const updateFloor = (id: string, field: keyof FloorDetail, value: string) => {
+//     setFormData((prev: AppState) => ({
+//       ...prev,
+//       floors: prev.floors.map(f => {
+//         if (f.id === id) {
+//           const newF = { ...f, [field]: value };
+//           if (field === 'length' || field === 'breadth') {
+//             const l = parseFloat(newF.length) || 0;
+//             const b = parseFloat(newF.breadth) || 0;
+//             newF.coveredArea = (l * b).toString();
+//           }
+//           return newF;
+//         }
+//         return f;
+//       })
+//     }));
+//   };
+
+//   const removeFloor = (id: string) => {
+//     setFormData((prev: AppState) => {
+//       const newFloors = prev.floors.filter(f => f.id !== id);
+//       if (activeFloorId === id) setActiveFloorId(newFloors.length > 0 ? newFloors[0].id : '');
+//       return { ...prev, floors: newFloors };
+//     });
+//   };
+
+//   const updateMarket = (field: string, value: any) => {
+//     setFormData((prev: AppState) => ({ ...prev, market: { ...prev.market, [field]: value } }));
+//   };
+
+//   const renderSectionHeader = (title: string, id: string) => (
+//     <div className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'}`} onClick={() => setActiveSection(activeSection === id ? '' : id)}>
+//       <h3 className="font-bold md:text-[15px] text-[#00a0ef]">{title}</h3>
+//       <ChevronDown className={`w-5 h-5 text-[#00a0ef] transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+      
+//       <div>
+//         {renderSectionHeader('Building Details (Per Floor)', 'floors')}
+//         {activeSection === 'floors' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10">
+//             <div className="mb-6">
+//               <label className={labelStyles}>Select or Add Floor Details</label>
+//               <RadioGroup options={['basement', 'stilt', 'GF', 'FF', 'SF', 'TF', '4th', 'multistorey']} value="" onChange={v => handleAddFloor(v)} />
+//             </div>
+
+//             {formData.floors.length > 0 && (
+//               <div className="flex flex-col md:flex-row gap-4">
+//                 <div className="md:w-48 shrink-0 flex flex-col gap-2">
+//                   {formData.floors.map(f => (
+//                     <div key={f.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${activeFloorId === f.id ? 'bg-[#00a0ef] border-[#00a0ef] text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`} onClick={() => setActiveFloorId(f.id)}>
+//                       <span className="font-semibold text-[13px]">{f.floorName}</span>
+//                       <button type="button" onClick={(e) => { e.stopPropagation(); removeFloor(f.id); }} className={`p-1 rounded hover:bg-black/10 ${activeFloorId === f.id ? 'text-white' : 'text-gray-400 hover:text-red-500'}`}><Trash2 size={14} /></button>
+//                     </div>
+//                   ))}
+//                 </div>
+                
+//                 <div className="flex-1 bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
+//                   {formData.floors.filter(f => f.id === activeFloorId).map(activeFloor => (
+//                     <div key={activeFloor.id} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//                       <div className="md:col-span-2 pb-3 border-b border-gray-100 mb-2">
+//                         <h4 className="font-bold text-[#00a0ef] text-[15px]">{activeFloor.floorName} Details</h4>
+//                       </div>
+
+//                       <div className="md:col-span-2"><label className={labelStyles}>Possession With</label><RadioGroup options={['owner', 'tenant']} value={activeFloor.possessionWith} onChange={v => updateFloor(activeFloor.id, 'possessionWith', v)} /></div>
+
+//                       <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+//                         <div><label className={labelStyles}>Unit</label><RadioGroup options={['feet', 'inch', 'meter']} value={activeFloor.unit} onChange={v => updateFloor(activeFloor.id, 'unit', v)} /></div>
+//                         <div><label className={labelStyles}>Length</label><input type="number" className={inputStyles} value={activeFloor.length} onChange={e => updateFloor(activeFloor.id, 'length', e.target.value)} /></div>
+//                         <div><label className={labelStyles}>Breadth</label><input type="number" className={inputStyles} value={activeFloor.breadth} onChange={e => updateFloor(activeFloor.id, 'breadth', e.target.value)} /></div>
+//                         <div className="md:col-span-3 border-t border-gray-50 pt-4"><label className={labelStyles}>Conversion Unit</label><RadioGroup options={['sq ft', 'sq yd', 'sq mt', 'Acre', 'Hectare', 'Guntas']} value={activeFloor.conversionUnit} onChange={v => updateFloor(activeFloor.id, 'conversionUnit', v)} /></div>
+//                         <div className="md:col-span-3"><label className={labelStyles}>Covered Area</label><input type="text" className={`${inputStyles} bg-gray-50`} readOnly value={activeFloor.coveredArea} /></div>
+//                       </div>
+
+//                       <div className="md:col-span-2"><label className={labelStyles}>Condition</label><RadioGroup options={['excellent', 'good', 'avg', 'poor', 'under construction', 'under finishing', 'others']} value={activeFloor.condition} onChange={v => updateFloor(activeFloor.id, 'condition', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Structure</label><RadioGroup options={['Rcc framed', 'load bearing', 'composite Structure', 'Peb/shed']} value={activeFloor.structure} onChange={v => updateFloor(activeFloor.id, 'structure', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Flooring</label><RadioGroup options={['tiles', 'marble', 'wood', 'cement', 'pending', 'other']} value={activeFloor.flooring} onChange={v => updateFloor(activeFloor.id, 'flooring', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Accommodation</label><RadioGroup options={['storage', 'shop', 'office space', '1BHK', '1.5BHK', '2BHK', '2.5BHK', '3BHK', '3.5BHK', '4BHK', '4.5BHK', '5BHK', '5.5BHK', '6BHK', 'studio', 'penthouse']} value={activeFloor.accommodation} onChange={v => updateFloor(activeFloor.id, 'accommodation', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Doors / Windows</label><RadioGroup options={['wooden', 'aluminium', 'glass', 'upvc', 'pending', 'N/A']} value={activeFloor.doorsWindows} onChange={v => updateFloor(activeFloor.id, 'doorsWindows', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Floor Remarks</label><textarea rows={3} className={inputStyles} value={activeFloor.floorRemarks} onChange={e => updateFloor(activeFloor.id, 'floorRemarks', e.target.value)}></textarea></div>
+//                     </div>
+//                   ))}
+//                 </div>
+//               </div>
+//             )}
+            
+//             <NextSectionButton onClick={() => setActiveSection('market')} nextFocusId="market-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Building-Shared / Market', 'market')}
+//         {activeSection === 'market' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles} id="market-first">Year of Construction</label><input type="text" className={inputStyles} value={formData.market.yearOfConstruction} onChange={e => updateMarket('yearOfConstruction', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Renovation</label><RadioGroup options={['yes', 'no']} value={formData.market.renovation} onChange={v => updateMarket('renovation', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Parking</label><RadioGroup options={['covered', 'notpresent', 'open', 'N/A']} value={formData.market.parking} onChange={v => updateMarket('parking', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Lift</label><RadioGroup options={['yes', 'No', 'N/A']} value={formData.market.lift} onChange={v => updateMarket('lift', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Kitchen Type</label><RadioGroup options={['modular', 'semi modular', 'odinary', 'N/A', 'other']} value={formData.market.kitchenType} onChange={v => updateMarket('kitchenType', v)} /></div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               <div className="md:col-span-3 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Rental Income</h4></div>
+//               <div><label className={labelStyles}>Minimum</label><input type="number" className={inputStyles} value={formData.market.rentalMin} onChange={e => updateMarket('rentalMin', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Maximum</label><input type="number" className={inputStyles} value={formData.market.rentalMax} onChange={e => updateMarket('rentalMax', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Unit</label><RadioGroup options={['hundred', 'thousand', 'lakh', 'crore']} value={formData.market.rentalUnit} onChange={v => updateMarket('rentalUnit', v)} /></div>
+//             </div>
+
+//             {['Client', 'Dealer', 'Market'].map((type) => {
+//               const minField = `market${type}Min` as keyof AppState['market'];
+//               const maxField = `market${type}Max` as keyof AppState['market'];
+//               const unitField = `market${type}Unit` as keyof AppState['market'];
+//               return (
+//                 <div key={type} className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//                   <div className="md:col-span-3 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Market Rate ({type === 'Market' ? 'As per market' : type})</h4></div>
+//                   <div><label className={labelStyles}>Minimum</label><input type="number" className={inputStyles} value={formData.market[minField] as string} onChange={e => updateMarket(minField, e.target.value)} /></div>
+//                   <div><label className={labelStyles}>Maximum</label><input type="number" className={inputStyles} value={formData.market[maxField] as string} onChange={e => updateMarket(maxField, e.target.value)} /></div>
+//                   <div><label className={labelStyles}>Unit</label><RadioGroup options={['hundred', 'thousand', 'lakh', 'crore']} value={formData.market[unitField] as string} onChange={v => updateMarket(unitField, v)} /></div>
+//                 </div>
+//               );
+//             })}
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               <div className="md:col-span-2 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Dealer Details</h4></div>
+//               <div><label className={labelStyles}>Dealer Name</label><input type="text" className={inputStyles} value={formData.market.dealerName} onChange={e => updateMarket('dealerName', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Mobile Number</label><input type="tel" className={inputStyles} value={formData.market.dealerMobile} onChange={e => updateMarket('dealerMobile', e.target.value)} /></div>
+//             </div>
+
+//             <div className="md:col-span-2 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+//               <div className="flex items-center justify-between mb-3">
+//                 <label className={labelStyles}>Additional Details</label>
+//                 <button type="button" onClick={() => updateMarket('additionalDetails', [...formData.market.additionalDetails, { key: '', value: '' }])} className="text-[13px] font-semibold text-[#00a0ef] hover:underline flex items-center gap-1"><Plus size={14} /> Add Detail</button>
+//               </div>
+//               <div className="space-y-3">
+//                 {formData.market.additionalDetails.map((pair, idx) => (
+//                   <div key={idx} className="flex gap-3">
+//                     <input type="text" placeholder="Key" className={inputStyles} value={pair.key} onChange={e => {
+//                       const newArr = [...formData.market.additionalDetails];
+//                       newArr[idx].key = e.target.value;
+//                       updateMarket('additionalDetails', newArr);
+//                     }} />
+//                     <input type="text" placeholder="Value" className={inputStyles} value={pair.value} onChange={e => {
+//                       const newArr = [...formData.market.additionalDetails];
+//                       newArr[idx].value = e.target.value;
+//                       updateMarket('additionalDetails', newArr);
+//                     }} />
+//                     <button type="button" onClick={() => {
+//                       const newArr = formData.market.additionalDetails.filter((_, i) => i !== idx);
+//                       updateMarket('additionalDetails', newArr);
+//                     }} className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Step3Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const photoInputRef = useRef<HTMLInputElement>(null);
+//   const docInputRef = useRef<HTMLInputElement>(null);
+
+//   const handleFileUpload = (type: 'photos' | 'documents', e: React.ChangeEvent<HTMLInputElement>) => {
+//     if (e.target.files) {
+//       setFormData((prev: AppState) => ({ ...prev, uploads: { ...prev.uploads, [type]: [...prev.uploads[type], ...Array.from(e.target.files!)] } }));
+//     }
+//   };
+
+//   const removeFile = (type: 'photos' | 'documents', idx: number) => {
+//     setFormData((prev: AppState) => ({ ...prev, uploads: { ...prev.uploads, [type]: prev.uploads[type].filter((_, i) => i !== idx) } }));
+//   };
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm p-4 md:p-6 space-y-8">
+//       <div>
+//         <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Site Photos</h3>
+//         <div onClick={() => photoInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+//           <input type="file" multiple accept="image/*" className="hidden" ref={photoInputRef} onChange={(e) => handleFileUpload('photos', e)} />
+//           <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
+//           <p className="text-sm text-gray-600 text-center">Click to <span className="text-[#00a0ef] font-medium">browse photos</span></p>
+//         </div>
+//         {formData.uploads.photos.length > 0 && (
+//           <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4">
+//             {formData.uploads.photos.map((file, idx) => (
+//               <div key={idx} className="relative aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center group">
+//                 <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover transition-opacity group-hover:opacity-75" />
+//                 <button type="button" onClick={(e) => { e.stopPropagation(); removeFile('photos', idx); }} className="absolute top-1 right-1 bg-white/90 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 text-red-500"><X size={14} /></button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+
+//       <div className="border-t border-gray-100 pt-8">
+//         <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Documents</h3>
+//         <div onClick={() => docInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+//           <input type="file" multiple className="hidden" ref={docInputRef} onChange={(e) => handleFileUpload('documents', e)} />
+//           <FileText className="w-8 h-8 text-gray-400 mb-2" />
+//           <p className="text-sm text-gray-600 text-center">Click to <span className="text-[#00a0ef] font-medium">browse documents</span></p>
+//         </div>
+//         {formData.uploads.documents.length > 0 && (
+//           <div className="space-y-3 mt-4">
+//             {formData.uploads.documents.map((file, idx) => (
+//               <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-xl">
+//                 <div className="flex items-center gap-3"><div className="w-10 h-10 bg-[#e6f5fd] rounded-lg flex items-center justify-center text-[#00a0ef]"><FileText className="w-5 h-5" /></div><div><p className="text-[13px] font-medium text-gray-900 line-clamp-1">{file.name}</p><p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(1)} MB</p></div></div>
+//                 <button type="button" onClick={() => removeFile('documents', idx)} className="text-[13px] text-red-500 font-medium px-2 py-1">Remove</button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Step4Form({ formData, onEditStep, isConfirmed, setIsConfirmed }: { formData: AppState; onEditStep: (step: number) => void; isConfirmed: boolean; setIsConfirmed: (v: boolean) => void }) {
+//   const MainCategory = ({ title, icon: Icon, children }: any) => (
+//     <div className="mb-8 px-1"><div className="flex items-center gap-2 mb-4"><div className="w-5 h-5 flex items-center justify-center text-[#00a0ef]"><Icon className="w-5 h-5 fill-current opacity-20" strokeWidth={2} /></div><h3 className="text-[15px] font-bold text-gray-900">{title}</h3></div><div className="bg-white px-2">{children}</div></div>
+//   );
+//   const SubCategory = ({ title, stepNum, children }: any) => (
+//     <div className="py-4 border-b border-gray-200 last:border-0 first:pt-0"><div className="flex items-center justify-between mb-4"><h4 className="text-[13px] font-bold text-gray-800">{title}</h4><button type="button" onClick={() => onEditStep(stepNum)} className="text-[#00a0ef] hover:bg-blue-50 p-1.5 rounded transition-colors"><Edit2 className="w-3.5 h-3.5" /></button></div><div className="grid grid-cols-2 gap-y-4 gap-x-4">{children}</div></div>
+//   );
+//   const DataField = ({ label, value }: any) => (
+//     <div><p className="text-[11px] text-gray-500 font-medium mb-1">{label}</p><div className="text-[13px] font-medium text-gray-900 break-words">{value || '—'}</div></div>
+//   );
+
+//   return (
+//     <div className="max-w-3xl bg-white mx-auto md:px-4 pb-8">
+//       <div className="py-6 px-2"><h2 className="text-[18px] font-bold text-[#00a0ef]">Review & Submit</h2></div>
+
+//       <MainCategory title="Client, Owner & Property" icon={Landmark}>
+//         <SubCategory title="Bank Details" stepNum={1}>
+//           <DataField label="IFSC Code" value={formData.clientBank.ifsc} />
+//           <DataField label="Bank Name" value={formData.clientBank.bankName} />
+//           <DataField label="Branch" value={formData.clientBank.branch} />
+//           <DataField label="Email" value={formData.clientBank.email} />
+//           <DataField label="POC" value={`${formData.clientBank.contactPersonName} / ${formData.clientBank.contactPersonNumber}`} />
+//           <DataField label="Dates" value={`${formData.clientBank.dateOfInspection} / ${formData.clientBank.dateOfValuation}`} />
+//           <DataField label="Type of Property" value={formData.clientBank.propertyType} />
+//           <DataField label="Purpose" value={formData.clientBank.purposeOfValuation} />
+//         </SubCategory>
+//         <SubCategory title="Owner Details & Locality" stepNum={1}>
+//           <DataField label="Name" value={`${formData.owner.prefix} ${formData.owner.ownerName}`} />
+//           <DataField label="Relation" value={`${formData.owner.relation} ${formData.owner.relationName}`} />
+//           <DataField label="Phone" value={`${formData.owner.phone1} / ${formData.owner.phone2}`} />
+//           <DataField label="Urban/Rural" value={formData.locality.urbanRural} />
+//           <DataField label="Class" value={formData.locality.localityClass} />
+//           <DataField label="Tenure" value={formData.locality.landTenure} />
+//         </SubCategory>
+//         <SubCategory title="Property Settings" stepNum={1}>
+//           <DataField label="Address" value={formData.property.address} />
+//           <DataField label="Nature" value={formData.property.natureOfProperty} />
+//           <DataField label="Shape" value={formData.property.plotShape} />
+//           <DataField label="Calculated Area" value={`${formData.property.calculatedArea} ${formData.property.conversionUnit}`} />
+//           <DataField label="Wall Setup" value={`${formData.property.wallLength}x${formData.property.wallHeight} ${formData.property.wallUnit}`} />
+//           <DataField label="Negative Points" value={formData.negativePoints.join(', ')} />
+//         </SubCategory>
+//         <SubCategory title="Boundaries" stepNum={1}>
+//           <DataField label="Unit" value={formData.boundaries.unit} />
+//           <DataField label="North (Doc/Act)" value={`${formData.boundaries.northDoc} / ${formData.boundaries.northAct}`} />
+//           <DataField label="South (Doc/Act)" value={`${formData.boundaries.southDoc} / ${formData.boundaries.southAct}`} />
+//           <DataField label="East (Doc/Act)" value={`${formData.boundaries.eastDoc} / ${formData.boundaries.eastAct}`} />
+//           <DataField label="West (Doc/Act)" value={`${formData.boundaries.westDoc} / ${formData.boundaries.westAct}`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <MainCategory title="Building & Market Details" icon={Building}>
+//         {formData.floors.map((floor) => (
+//           <SubCategory key={floor.id} title={`Floor: ${floor.floorName}`} stepNum={2}>
+//             <DataField label="Possession" value={floor.possessionWith} />
+//             <DataField label="Covered Area" value={`${floor.coveredArea} ${floor.conversionUnit}`} />
+//             <DataField label="Condition" value={floor.condition} />
+//             <DataField label="Structure" value={floor.structure} />
+//             <DataField label="Flooring" value={floor.flooring} />
+//             <DataField label="Accommodation" value={floor.accommodation} />
+//             <DataField label="Doors/Windows" value={floor.doorsWindows} />
+//             <DataField label="Remarks" value={floor.floorRemarks} />
+//           </SubCategory>
+//         ))}
+//         <SubCategory title="Market & Shared Details" stepNum={2}>
+//           <DataField label="Year Constructed" value={formData.market.yearOfConstruction} />
+//           <DataField label="Renovation" value={formData.market.renovation} />
+//           <DataField label="Parking" value={formData.market.parking} />
+//           <DataField label="Rental Income" value={`${formData.market.rentalMin} - ${formData.market.rentalMax} ${formData.market.rentalUnit}`} />
+//           <DataField label="Client Rate" value={`${formData.market.marketClientMin} - ${formData.market.marketClientMax} ${formData.market.marketClientUnit}`} />
+//           <DataField label="Dealer Rate" value={`${formData.market.marketDealerMin} - ${formData.market.marketDealerMax} ${formData.market.marketDealerUnit}`} />
+//           <DataField label="Market Rate" value={`${formData.market.marketMarketMin} - ${formData.market.marketMarketMax} ${formData.market.marketMarketUnit}`} />
+//           <DataField label="Dealer Details" value={`${formData.market.dealerName} / ${formData.market.dealerMobile}`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <MainCategory title="Uploads" icon={UploadCloud}>
+//         <SubCategory title="Files Overview" stepNum={3}>
+//           <DataField label="Photos" value={`${formData.uploads.photos.length} uploaded`} />
+//           <DataField label="Documents" value={`${formData.uploads.documents.length} uploaded`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <div className="mt-8 p-4 bg-[#f8fafc] border border-gray-200 rounded-xl flex items-start gap-3">
+//         <div className="pt-0.5"><input type="checkbox" id="final-confirm" checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]" /></div>
+//         <label htmlFor="final-confirm" className="text-[13px] text-gray-700 leading-relaxed select-none cursor-pointer">I confirm that all information provided above is correct.</label>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default function App() {
+//   const [currentStep, setCurrentStep] = useState(1);
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const [isConfirmed, setIsConfirmed] = useState(false);
+//   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
+
+//   const [formData, setFormData] = useState<AppState>({
+//     customer: '',
+//     clientBank: { ifsc: '', bankName: '', branch: '', email: '', contactPersonName: '', contactPersonNumber: '', dateOfInspection: '', dateOfValuation: '', propertyType: '', purposeOfValuation: '' },
+//     owner: { prefix: 'Shri', ownerName: '', relation: 'S/o', relationName: '', occupation: '', phone1: '', phone2: '' },
+//     locality: { urbanRural: '', localityClass: '', landTenure: '', widthOfRoad: '', noOfStories: '', sanitaryFitting: '', electricalFitting: '', townplan: '' },
+//     property: { address: '', natureOfProperty: '', vacantPlot: '', widthOfRoad: '', latitude: '', longitude: '', boundaryCoordinates: [], plotShape: '', dimensionUnit: '', length: '', breadth: '', conversionUnit: '', calculatedArea: '', wallUnit: '', wallLength: '', wallHeight: '', wallsOnSide: '', brickType: '' },
+//     boundaries: { unit: '', northDoc: '', northAct: '', southDoc: '', southAct: '', eastDoc: '', eastAct: '', westDoc: '', westAct: '' },
+//     floors: [],
+//     market: { yearOfConstruction: '', renovation: '', parking: '', lift: '', rentalMin: '', rentalMax: '', rentalUnit: '', kitchenType: '', marketClientMin: '', marketClientMax: '', marketClientUnit: '', marketDealerMin: '', marketDealerMax: '', marketDealerUnit: '', marketMarketMin: '', marketMarketMax: '', marketMarketUnit: '', dealerName: '', dealerMobile: '', additionalDetails: [] },
+//     negativePoints: [],
+//     uploads: { photos: [], documents: [] }
+//   });
+
+//   const handleStepContinue = () => {
+//     if (currentStep < 4) { setCurrentStep(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+//     else { handleSubmit(); }
+//   };
+
+//   const handleStepBack = () => {
+//     if (currentStep > 1) { setCurrentStep(prev => prev - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!isConfirmed) { alert('Please check the confirmation box to submit.'); return; }
+//     setIsSubmitting(true);
+    
+//     try {
+//       // Note: The API expects URLs (strings) for uploads, but the UI state holds File[].
+//       // Map files to mock URLs here. Implement actual file upload to bucket before this step if needed.
+//       const uploadedPhotosUrls = 'formData.uploads.photos.map(file => `https://your-storage-bucket.com/${file.name}`);'
+//       const uploadedDocumentsUrls = 'formData.uploads.documents.map(file => `https://your-storage-bucket.com/${file.name}`);'
+
+//       // Construct payload mimicking the exact shape of AppState (which matches the API)
+//       const payload = {
+//         customer: formData.customer,
+//         clientBank: formData.clientBank,
+//         owner: formData.owner,
+//         locality: formData.locality,
+//         property: formData.property,
+//         boundaries: formData.boundaries,
+//         floors: formData.floors,
+//         market: formData.market,
+//         negativePoints: formData.negativePoints,
+//         uploads: { 
+//           photos: uploadedPhotosUrls, 
+//           documents: uploadedDocumentsUrls 
+//         }
+//       };
+
+//       console.log("Submitted Data Payload:", JSON.stringify(payload, null, 2));
+
+//       await api.createValuationRecord(payload);
+//       setIsSubmittedSuccessfully(true);
+
+//     } catch (e) { 
+//       console.error("Failed to submit report:", e); 
+//       alert("An error occurred while submitting the report.");
+//     } finally { 
+//       setIsSubmitting(false); 
+//     }
+//   };
+
+//   if (isSubmittedSuccessfully) {
+//     return (
+//       <div className="flex flex-col flex-1 w-full relative min-h-screen md:min-h-0 bg-white overflow-hidden items-center justify-center p-6">
+//         <div className="w-[88px] h-[88px] rounded-full flex items-center justify-center bg-[#f0f8fd] mb-6">
+//           <div className="w-[60px] h-[60px] rounded-full bg-white flex items-center justify-center shadow-sm">
+//             <div className="w-[32px] h-[32px] bg-[#00a0ef] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white" strokeWidth={3.5} /></div>
+//           </div>
+//         </div>
+//         <h2 className="text-[20px] lg:text-[24px] font-bold text-gray-900 mb-3 text-center">Report submitted successfully.</h2>
+//         <p className="text-[#8A94A6] text-[14px] md:text-[15px] mb-8 text-center max-w-sm">Data has been logged to the console.</p>
+//         <button onClick={() => window.location.reload()} className="px-8 py-3 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white font-medium transition-colors">Start New Report</button>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col md:py-8">
+//       <div className="flex-1 flex flex-col w-full md:max-w-4xl md:mx-auto bg-white border-x md:border border-gray-200 md:rounded-xl md:shadow-sm overflow-hidden">
+        
+//         <div className="px-4 md:px-6 py-4 border-b border-gray-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+//           <h1 className="text-lg md:text-xl font-medium text-gray-900">Submit New Report</h1>
+//           <div className="relative w-full md:w-64">
+//             <select className={`${inputStyles} appearance-none bg-blue-50/30 border-[#00a0ef]/30 font-medium`} value={formData.customer} onChange={e => setFormData({ ...formData, customer: e.target.value })}>
+//               <option value="">Select Customer </option>
+//               <option value="cust_001">Customer A - John Doe</option>
+//               <option value="cust_002">Customer B - Acme Corp</option>
+//             </select>
+//             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//           </div>
+//         </div>
+
+//         <div className="px-6 pt-10 pb-6 md:pt-12 md:pb-8 border-b border-gray-200 bg-white shrink-0">
+//           <div className="max-w-xl mx-auto relative">
+//             <div className="flex items-center justify-between relative">
+//               <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gray-200" />
+//               {[1, 2, 3, 4].map((step) => {
+//                 const isCompleted = step < currentStep;
+//                 const isCurrent = step === currentStep;
+//                 return (
+//                   <div key={step} className="relative z-10 flex flex-col items-center">
+//                     <span className={`absolute -top-7 whitespace-nowrap text-xs font-semibold tracking-wide ${isCompleted || isCurrent ? 'text-[#00a0ef]' : 'text-gray-400'}`}>STEP {step}</span>
+//                     <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-white ${isCompleted ? 'border-2 border-[#00a0ef] bg-[#00a0ef]' : isCurrent ? 'border-2 border-[#00a0ef]' : 'border-2 border-gray-300'}`}>
+//                       {isCompleted && <CircleCheck color='white' fill='#00a0ef' />}
+//                       {isCurrent && <div className="w-4 h-4 bg-[#00a0ef] rounded-full" />}
+//                     </div>
+//                   </div>
+//                 );
+//               })}
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="flex-1 overflow-y-auto bg-gray-50 md:p-6">
+//           {currentStep === 1 && <Step1Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 2 && <Step2Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 3 && <Step3Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 4 && <Step4Form formData={formData} onEditStep={setCurrentStep} isConfirmed={isConfirmed} setIsConfirmed={setIsConfirmed} />}
+//         </div>
+        
+//         <div className="p-4 md:px-6 md:py-5 bg-white border-t border-gray-200 flex items-center justify-between mt-auto shrink-0">
+//           <button onClick={handleStepBack} className={`flex items-center px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 text-[13px] font-medium hover:bg-gray-50 transition-colors ${currentStep === 1 ? 'invisible' : ''}`}>
+//             <ArrowLeft className="w-4 h-4 mr-2" /> Back
+//           </button>
+//           <button onClick={handleStepContinue} disabled={isSubmitting} className="flex items-center px-6 py-2.5 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white text-[13px] font-medium transition-shadow shadow-sm hover:shadow-md disabled:opacity-60">
+//             {isSubmitting ? 'Submitting...' : currentStep === 4 ? 'Submit Report' : `Continue to Step ${currentStep + 1}`}
+//             {!isSubmitting && currentStep !== 4 && <ArrowRight className="w-4 h-4 ml-2" />}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// 'use client';
+
+// import React, { useState, useEffect, useCallback, useRef } from 'react';
+// import { Building, Landmark, CheckCircle2, UploadCloud, X, FileText, Edit2, CircleCheck, Plus, Trash2, Check, RotateCcw, ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
+// import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+// import { api } from '@/app/lib/userApis';
+
+// type Coord = { lat: number; lng: number };
+// type Pin = { id: number; coord: Coord };
+// type Mode = "picking" | "submitted";
+
+// const MAX = 10;
+// const LABELS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10"];
+// const COLORS = ["#00a0ef", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#14b8a6", "#f97316", "#6366f1"];
+
+// export interface FloorDetail {
+//   id: string;
+//   floorName: string;
+//   possessionWith: string;
+//   unit: string;
+//   length: string;
+//   breadth: string;
+//   conversionUnit: string;
+//   coveredArea: string;
+//   condition: string;
+//   structure: string;
+//   flooring: string;
+//   accommodation: string;
+//   doorsWindows: string;
+//   floorRemarks: string;
+// }
+
+// interface AppState {
+//   customer: string;
+//   clientBank: { ifsc: string; bankName: string; branch: string; email: string; contactPersonName: string; contactPersonNumber: string; dateOfInspection: string; dateOfValuation: string; propertyType: string; purposeOfValuation: string; };
+//   owner: { prefix: string; ownerName: string; relation: string; relationName: string; occupation: string; phone1: string; phone2: string; };
+//   locality: { urbanRural: string; localityClass: string; landTenure: string; widthOfRoad: string; noOfStories: string; sanitaryFitting: string; electricalFitting: string; townplan: string; };
+//   property: { address: string; natureOfProperty: string; vacantPlot: string; widthOfRoad: string; latitude: string; longitude: string; boundaryCoordinates: Coord[]; plotShape: string; dimensionUnit: string; length: string; breadth: string; conversionUnit: string; calculatedArea: string; wallUnit: string; wallLength: string; wallHeight: string; wallsOnSide: string; brickType: string; };
+//   boundaries: { unit: string; northDoc: string; northAct: string; southDoc: string; southAct: string; eastDoc: string; eastAct: string; westDoc: string; westAct: string; };
+//   floors: FloorDetail[];
+//   market: { yearOfConstruction: string; renovation: string; parking: string; lift: string; rentalMin: string; rentalMax: string; rentalUnit: string; kitchenType: string; marketClientMin: string; marketClientMax: string; marketClientUnit: string; marketDealerMin: string; marketDealerMax: string; marketDealerUnit: string; marketMarketMin: string; marketMarketMax: string; marketMarketUnit: string; dealerName: string; dealerMobile: string; additionalDetails: { key: string; value: string }[]; };
+//   negativePoints: string[];
+//   uploads: { photos: File[]; documents: File[]; };
+// }
+
+// const inputStyles = "w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] focus:ring-1 focus:ring-[#00a0ef] text-[13px] text-gray-900 bg-white shadow-sm transition-shadow";
+// const labelStyles = "block text-[13px] font-semibold text-gray-700 mb-2";
+
+// const RadioGroup = ({ options, value, onChange }: { options: string[], value: string, onChange: (val: string) => void }) => {
+//   const isCustom = value !== '' && !options.includes(value);
+//   const [showCustom, setShowCustom] = useState(isCustom);
+
+//   return (
+//     <div className="flex flex-wrap gap-2 items-center">
+//       {options.map(opt => (
+//         <button key={opt} type="button" onClick={() => { setShowCustom(false); onChange(opt); }}
+//           className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border ${!showCustom && value === opt ? 'bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+//           {opt}
+//         </button>
+//       ))}
+//       <div className="flex items-center gap-2">
+//         {!showCustom && (
+//           <button type="button" onClick={() => { setShowCustom(true); onChange(''); }}
+//             className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border bg-white border-gray-200 text-gray-600 hover:bg-gray-50`}>
+//             Other / Add Option
+//           </button>
+//         )}
+//         {showCustom && (
+//           <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg pr-1 shadow-sm focus-within:border-[#00a0ef] focus-within:ring-1 focus-within:ring-[#00a0ef]">
+//             <input type="text" placeholder="Type custom option..." className="px-3 py-2 text-[13px] rounded-l-lg focus:outline-none border-none w-40" value={value} onChange={e => onChange(e.target.value)} autoFocus />
+//             <button type="button" onClick={() => { setShowCustom(false); onChange(''); }} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+//               <X size={14} />
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// const MultiSelectGroup = ({ options, selected, onChange }: { options: string[], selected: string[], onChange: (val: string[]) => void }) => {
+//   const toggle = (opt: string) => selected.includes(opt) ? onChange(selected.filter(i => i !== opt)) : onChange([...selected, opt]);
+//   const customValues = selected.filter(val => !options.includes(val));
+//   const [customInput, setCustomInput] = useState('');
+
+//   const handleAddCustom = () => {
+//     if (customInput.trim() && !selected.includes(customInput.trim())) {
+//       onChange([...selected, customInput.trim()]);
+//       setCustomInput('');
+//     }
+//   };
+
+//   return (
+//     <div className="flex flex-col gap-3">
+//       <div className="flex flex-wrap gap-2">
+//         {options.map(opt => (
+//           <button key={opt} type="button" onClick={() => toggle(opt)}
+//             className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border ${selected.includes(opt) ? 'bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+//             {opt}
+//           </button>
+//         ))}
+//         {customValues.map(opt => (
+//           <button key={opt} type="button" onClick={() => toggle(opt)}
+//             className="px-3 py-2 rounded-lg text-[13px] font-medium transition-all border bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm flex items-center gap-2">
+//             {opt} <X className="w-3 h-3" />
+//           </button>
+//         ))}
+//       </div>
+//       <div className="flex items-center gap-2">
+//         <input type="text" placeholder="Add custom option..." className="px-3 py-2 text-[13px] border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] w-48 shadow-sm" value={customInput} onChange={e => setCustomInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustom(); } }} />
+//         <button type="button" onClick={handleAddCustom} className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-[13px] font-medium hover:bg-gray-200 transition-colors">Add</button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// function NextSectionButton({ onClick, nextFocusId }: { onClick: () => void, nextFocusId: string }) {
+//   const handleAction = (e: React.MouseEvent | React.KeyboardEvent) => {
+//     e.preventDefault();
+//     onClick();
+//     setTimeout(() => document.getElementById(nextFocusId)?.focus(), 50);
+//   };
+//   return (
+//     <div className="md:col-span-full flex justify-end mt-4 border-t border-gray-200/50 pt-4">
+//       <button type="button" onClick={handleAction} onKeyDown={(e) => { if (e.key === 'Tab' && !e.shiftKey) { handleAction(e); } }} className="text-[#00a0ef] text-[13px] font-bold hover:underline flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#00a0ef] focus:ring-offset-2 rounded px-3 py-1.5 transition-colors">
+//         Next Section <ArrowRight className="w-4 h-4" />
+//       </button>
+//     </div>
+//   );
+// }
+
+// function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (coords: Coord[]) => void }) {
+//   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+//   const [center, setCenter] = useState<Coord>({ lat: 20, lng: 78 });
+//   const [zoom, setZoom] = useState(4);
+//   const [mode, setMode] = useState<Mode>("picking");
+//   const [pins, setPins] = useState<Pin[]>([]);
+//   const [nextId, setNextId] = useState(0);
+//   const [submitted, setSubmitted] = useState<Pin[]>([]);
+//   const [editTarget, setEditTarget] = useState<number | null>(null);
+//   const [userLocation, setUserLocation] = useState<Coord | null>(null);
+
+//   useEffect(() => {
+//     if ("geolocation" in navigator) {
+//       navigator.geolocation.getCurrentPosition(
+//         (position) => {
+//           const userLoc = { lat: position.coords.latitude, lng: position.coords.longitude };
+//           setUserLocation(userLoc); setCenter(userLoc); setZoom(18);
+//         },
+//         (error) => console.error("Error getting user location:", error),
+//         { enableHighAccuracy: true }
+//       );
+//     }
+//   }, []);
+
+//   const handleMapClick = useCallback((coord: Coord) => {
+//     if (mode === "picking") {
+//       if (pins.length >= MAX) return;
+//       setPins((prev) => [...prev, { id: nextId, coord }]);
+//       setNextId((n) => n + 1); return;
+//     }
+//     if (mode === "submitted" && editTarget !== null) {
+//       setSubmitted((prev) => prev.map((p, i) => (i === editTarget ? { ...p, coord } : p)));
+//       setEditTarget(null);
+//     }
+//   }, [mode, pins.length, nextId, editTarget]);
+
+//   const handleSubmit = () => {
+//     if (pins.length === 0) return;
+//     setSubmitted([...pins]); setMode("submitted"); setEditTarget(null);
+//     onCoordinatesSubmit(pins.map(p => p.coord));
+//   };
+
+//   return (
+//     <div className="flex flex-col w-full bg-white border border-gray-300 rounded-xl overflow-hidden shadow-sm">
+//       <div className="relative w-full h-64 md:h-80 bg-gray-100">
+//         <APIProvider apiKey={apiKey}>
+//           <Map mapId="geo-picker-form" center={center} zoom={zoom} mapTypeId="satellite"
+//             onCameraChanged={(ev) => { setCenter(ev.detail.center); setZoom(ev.detail.zoom); }}
+//             gestureHandling="greedy" colorScheme="LIGHT" mapTypeControl={true} zoomControl={true} fullscreenControl={true} streetViewControl={true}
+//             style={{ width: "100%", height: "100%" }}>
+//             {userLocation && (
+//               <AdvancedMarker position={userLocation}>
+//                 <div className="relative"><div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg" /><div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-ping opacity-40" /></div>
+//               </AdvancedMarker>
+//             )}
+//             <ClickHandler onClick={handleMapClick} />
+//             {(mode === "picking" ? pins : submitted).map((pin, i) => (
+//               <AdvancedMarker key={pin.id} position={pin.coord} zIndex={editTarget === i ? 100 : i}>
+//                 <button type="button" onClick={(e) => { e.stopPropagation(); if (mode === "submitted") setEditTarget(editTarget === i ? null : i); }}
+//                   className={`flex items-center justify-center rounded-full font-bold text-white text-xs shadow-md transition-all ${editTarget === i ? "w-10 h-10 ring-4 ring-white scale-110" : "w-8 h-8 ring-2 ring-white/80 scale-100"} ${mode === "submitted" ? "cursor-pointer" : "cursor-default"}`}
+//                   style={{ backgroundColor: COLORS[i] }}>{LABELS[i]}</button>
+//               </AdvancedMarker>
+//             ))}
+//           </Map>
+//         </APIProvider>
+//       </div>
+//       <div className="p-4 bg-gray-50 border-t border-gray-200">
+//         {mode === "picking" ? (
+//           <button type="button" onClick={handleSubmit} disabled={pins.length === 0}
+//             className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${pins.length > 0 ? "bg-[#00a0ef] text-white hover:bg-[#008bd1] shadow-sm" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+//             {pins.length > 0 ? <><CheckCircle2 className="w-4 h-4" /> Confirm Boundaries</> : "Place at least 1 point"}
+//           </button>
+//         ) : (
+//           <button type="button" onClick={() => { setPins([]); setSubmitted([]); setMode("picking"); setEditTarget(null); setNextId(0); }}
+//             className="w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100">
+//             <RotateCcw className="w-4 h-4" /> Reset Boundaries
+//           </button>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function ClickHandler({ onClick }: { onClick: (c: Coord) => void }) {
+//   const map = useMap();
+//   useEffect(() => {
+//     if (!map) return;
+//     const listener = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+//       if (e.latLng) onClick({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+//     });
+//     return () => { google.maps.event.removeListener(listener); };
+//   }, [map, onClick]);
+//   return null;
+// }
+
+// function Step1Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const [activeSection, setActiveSection] = useState<string>('clientBank');
+
+//   const updateSection = (section: keyof AppState, field: string, value: any) => {
+//     setFormData((prev: AppState) => ({ ...prev, [section]: { ...(prev[section] as any), [field]: value } }));
+//   };
+
+//   const renderSectionHeader = (title: string, id: string) => (
+//     <div className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'}`} onClick={() => setActiveSection(activeSection === id ? '' : id)}>
+//       <h3 className="font-bold md:text-[15px] text-[#00a0ef]">{title}</h3>
+//       <ChevronDown className={`w-5 h-5 text-[#00a0ef] transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+      
+//       <div>
+//         {renderSectionHeader('Client / Bank Details', 'clientBank')}
+//         {activeSection === 'clientBank' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles}>IFSC Code</label><input id="clientBank-first" type="text" className={inputStyles} value={formData.clientBank.ifsc} onChange={e => updateSection('clientBank', 'ifsc', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Bank Name</label><input type="text" className={inputStyles} value={formData.clientBank.bankName} onChange={e => updateSection('clientBank', 'bankName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Branch</label><input type="text" className={inputStyles} value={formData.clientBank.branch} onChange={e => updateSection('clientBank', 'branch', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Email ID</label><input type="email" className={inputStyles} value={formData.clientBank.email} onChange={e => updateSection('clientBank', 'email', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Point of Contact Name</label><input type="text" className={inputStyles} value={formData.clientBank.contactPersonName} onChange={e => updateSection('clientBank', 'contactPersonName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Point of Contact Number</label><input type="tel" className={inputStyles} value={formData.clientBank.contactPersonNumber} onChange={e => updateSection('clientBank', 'contactPersonNumber', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Date of Inspection</label><input type="date" className={inputStyles} value={formData.clientBank.dateOfInspection} onChange={e => updateSection('clientBank', 'dateOfInspection', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Date Valuation</label><input type="date" className={inputStyles} value={formData.clientBank.dateOfValuation} onChange={e => updateSection('clientBank', 'dateOfValuation', e.target.value)} /></div>
+            
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Type of Property</label>
+//               <RadioGroup options={['Vacant Land - Residential', 'Existing Building - Residential', 'Open Piece of Land', 'Residential Flat', 'Agri Land', 'Residential Villa', 'Industrial Shed']} value={formData.clientBank.propertyType} onChange={v => updateSection('clientBank', 'propertyType', v)} />
+//             </div>
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Purpose of Valuation (Loan Type)</label>
+//               <RadioGroup options={['Home Loan', 'Mortgage Loan', 'Education Loan', 'Collateral Security', 'For Bank Loan / Mortgage Purpose']} value={formData.clientBank.purposeOfValuation} onChange={v => updateSection('clientBank', 'purposeOfValuation', v)} />
+//             </div>
+//             <NextSectionButton onClick={() => setActiveSection('ownerLocality')} nextFocusId="owner-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Owner Details & Locality Classification', 'ownerLocality')}
+//         {activeSection === 'ownerLocality' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10">
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-b border-gray-200 pb-6 mb-6">
+//               <div className="md:col-span-2 flex gap-3">
+//                 <div className="w-1/3 md:w-1/4">
+//                   <label className={labelStyles}>Prefix</label>
+//                   <div className="relative">
+//                     <select id="owner-first" className={`${inputStyles} appearance-none bg-white`} value={formData.owner.prefix} onChange={e => {
+//                       const val = e.target.value;
+//                       updateSection('owner', 'prefix', val);
+//                       if (val === 'Smt' || val === 'Mrs') updateSection('owner', 'relation', 'W/o');
+//                       else if (val === 'Shri' || val === 'Mr') updateSection('owner', 'relation', 'S/o');
+//                     }}>
+//                       <option value="Shri">Shri</option>
+//                       <option value="Smt">Smt</option>
+//                       <option value="Mr">Mr</option>
+//                       <option value="Mrs">Mrs</option>
+//                     </select>
+//                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                   </div>
+//                 </div>
+//                 <div className="flex-1"><label className={labelStyles}>Owner Name</label><input type="text" className={inputStyles} value={formData.owner.ownerName} onChange={e => updateSection('owner', 'ownerName', e.target.value)} /></div>
+//               </div>
+//               <div className="md:col-span-2 flex gap-3">
+//                 <div className="w-1/3 md:w-1/4">
+//                   <label className={labelStyles}>Relation</label>
+//                   <div className="relative">
+//                     <select className={`${inputStyles} appearance-none bg-white`} value={formData.owner.relation} onChange={e => updateSection('owner', 'relation', e.target.value)}>
+//                       <option value="S/o">S/o</option>
+//                       <option value="D/o">D/o</option>
+//                       <option value="W/o">W/o</option>
+//                       <option value="F/o">F/o</option>
+//                     </select>
+//                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                   </div>
+//                 </div>
+//                 <div className="flex-1"><label className={labelStyles}>Relative's Name</label><input type="text" className={inputStyles} value={formData.owner.relationName} onChange={e => updateSection('owner', 'relationName', e.target.value)} /></div>
+//               </div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Occupation</label><input type="text" className={inputStyles} value={formData.owner.occupation} onChange={e => updateSection('owner', 'occupation', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Phone Number 1</label><input type="tel" className={inputStyles} value={formData.owner.phone1} onChange={e => updateSection('owner', 'phone1', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Phone Number 2</label><input type="tel" className={inputStyles} value={formData.owner.phone2} onChange={e => updateSection('owner', 'phone2', e.target.value)} /></div>
+//             </div>
+
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//               <div className="md:col-span-2"><label className={labelStyles}>Rural / Urban</label><RadioGroup options={['metro city', 'urban', 'semi urban rural', 'N/A']} value={formData.locality.urbanRural} onChange={v => updateSection('locality', 'urbanRural', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Locality Class</label><RadioGroup options={['high', 'middle', 'low', 'posh', 'N/A']} value={formData.locality.localityClass} onChange={v => updateSection('locality', 'localityClass', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Land Tenure</label><RadioGroup options={['freehold', 'leasehold', 'N/A']} value={formData.locality.landTenure} onChange={v => updateSection('locality', 'landTenure', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Width of Road</label><RadioGroup options={['< 10ft', '< 20ft', '> 20ft']} value={formData.locality.widthOfRoad} onChange={v => updateSection('locality', 'widthOfRoad', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>No. of Stories</label><RadioGroup options={['1', '2', '3', '4', '5', '6', '7', '8', '9', 'vacant']} value={formData.locality.noOfStories} onChange={v => updateSection('locality', 'noOfStories', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Sanitary Fitting</label><RadioGroup options={['ordinary', 'good', 'superior', 'premium', 'excellent', 'under construction']} value={formData.locality.sanitaryFitting} onChange={v => updateSection('locality', 'sanitaryFitting', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Electrical Fitting</label><RadioGroup options={['ordinary', 'good', 'superior', 'premium', 'excellent', 'under construction']} value={formData.locality.electricalFitting} onChange={v => updateSection('locality', 'electricalFitting', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Townplan / MC / GP</label><RadioGroup options={['MC', 'townplanning', 'gram panchayat', 'outside Mc']} value={formData.locality.townplan} onChange={v => updateSection('locality', 'townplan', v)} /></div>
+//             </div>
+//             <NextSectionButton onClick={() => setActiveSection('property')} nextFocusId="property-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Property Details', 'property')}
+//         {activeSection === 'property' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/10">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles} id="property-first">Geo Location & Coordinates</label>
+//               <GeoCoordinatePicker 
+//                 onCoordinatesSubmit={(coords) => {
+//                   updateSection('property', 'boundaryCoordinates', coords);
+//                   if (coords.length > 0) {
+//                     updateSection('property', 'latitude', coords[0].lat.toString());
+//                     updateSection('property', 'longitude', coords[0].lng.toString());
+//                   }
+//                 }} 
+//               />
+//               <div className="flex gap-4 mt-4">
+//                 <input type="text" placeholder="Latitude" className={inputStyles} value={formData.property.latitude} readOnly />
+//                 <input type="text" placeholder="Longitude" className={inputStyles} value={formData.property.longitude} readOnly />
+//               </div>
+//             </div>
+            
+//             <div className="md:col-span-2"><label className={labelStyles}>Address</label><textarea rows={3} className={inputStyles} value={formData.property.address} onChange={e => updateSection('property', 'address', e.target.value)} /></div>
+            
+//             <div className="md:col-span-2"><label className={labelStyles}>Nature of Property</label><RadioGroup options={['Residential', 'Commercial', 'Industrial', 'Agriculture', 'mixed', 'institutional', 'N/A']} value={formData.property.natureOfProperty} onChange={v => updateSection('property', 'natureOfProperty', v)} /></div>
+//             <div className="md:col-span-1"><label className={labelStyles}>Vacant Plot?</label><RadioGroup options={['yes', 'NO']} value={formData.property.vacantPlot} onChange={v => updateSection('property', 'vacantPlot', v)} /></div>
+//             <div className="md:col-span-1"><label className={labelStyles}>Width of Road</label><RadioGroup options={['< 10ft', '< 20ft', '> 20ft']} value={formData.property.widthOfRoad} onChange={v => updateSection('property', 'widthOfRoad', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Plot Shape</label><RadioGroup options={['Rectangle', 'square', 'triangle', 'irregular', 'polygon']} value={formData.property.plotShape} onChange={v => updateSection('property', 'plotShape', v)} /></div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-gray-200 bg-white rounded-xl">
+//               <div className="md:col-span-3"><label className={labelStyles}>Dimension Unit</label><RadioGroup options={['ft', 'm', 'inch']} value={formData.property.dimensionUnit} onChange={v => updateSection('property', 'dimensionUnit', v)} /></div>
+//               <div><label className={labelStyles}>Length</label><input type="number" className={inputStyles} value={formData.property.length} onChange={e => { updateSection('property', 'length', e.target.value); const b = parseFloat(formData.property.breadth) || 0; updateSection('property', 'calculatedArea', (parseFloat(e.target.value || '0') * b).toString()); }} /></div>
+//               <div><label className={labelStyles}>Breadth</label><input type="number" className={inputStyles} value={formData.property.breadth} onChange={e => { updateSection('property', 'breadth', e.target.value); const l = parseFloat(formData.property.length) || 0; updateSection('property', 'calculatedArea', (parseFloat(e.target.value || '0') * l).toString()); }} /></div>
+//               <div className="md:col-span-3 border-t border-gray-100 pt-4 mt-2"><label className={labelStyles}>Conversion Unit</label><RadioGroup options={['sq ft', 'sq yd', 'sq mt', 'Acre', 'Hectare', 'Guntas']} value={formData.property.conversionUnit} onChange={v => updateSection('property', 'conversionUnit', v)} /></div>
+//               <div className="md:col-span-3"><label className={labelStyles}>Calculated Area (Dimensions converted to selected unit)</label><input type="text" className={`${inputStyles} bg-gray-50`} readOnly value={formData.property.calculatedArea} /></div>
+//             </div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-200 bg-white rounded-xl">
+//               <div className="md:col-span-2"><label className={labelStyles}>Wall Unit</label><RadioGroup options={['ft', 'm', 'inch']} value={formData.property.wallUnit} onChange={v => updateSection('property', 'wallUnit', v)} /></div>
+//               <div><label className={labelStyles}>Wall Length</label><input type="number" className={inputStyles} value={formData.property.wallLength} onChange={e => updateSection('property', 'wallLength', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Wall Height</label><input type="number" className={inputStyles} value={formData.property.wallHeight} onChange={e => updateSection('property', 'wallHeight', e.target.value)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Walls on Side</label><RadioGroup options={['1', '2', '3', '4']} value={formData.property.wallsOnSide} onChange={v => updateSection('property', 'wallsOnSide', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Type of Brick</label><RadioGroup options={['brick work', 'Rcc', 'pacca offset / pavement']} value={formData.property.brickType} onChange={v => updateSection('property', 'brickType', v)} /></div>
+//             </div>
+
+//             <NextSectionButton onClick={() => setActiveSection('boundaries')} nextFocusId="boundaries-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Boundaries & Negative Points', 'boundaries')}
+//         {activeSection === 'boundaries' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10 space-y-6">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles} id="boundaries-first">Boundary Unit</label>
+//               <RadioGroup options={['length', 'feet', 'meters', 'inchs']} value={formData.boundaries.unit} onChange={v => updateSection('boundaries', 'unit', v)} />
+//             </div>
+            
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               {(['north', 'south', 'east', 'west'] as const).map(dir => (
+//                 <div key={dir} className="flex gap-2">
+//                   <div className="flex-1">
+//                     <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (As per Document)</label>
+//                     <input type="text" className={inputStyles} value={(formData.boundaries as any)[`${dir}Doc`]} onChange={e => updateSection('boundaries', `${dir}Doc`, e.target.value)} />
+//                   </div>
+//                   <div className="flex-1">
+//                     <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Actual)</label>
+//                     <input type="text" className={inputStyles} value={(formData.boundaries as any)[`${dir}Act`]} onChange={e => updateSection('boundaries', `${dir}Act`, e.target.value)} />
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+
+//             <div className="border-t border-gray-200 pt-6 mt-6">
+//               <label className={labelStyles}>Property Negative Points</label>
+//               <MultiSelectGroup 
+//                 options={['HT line Over building', 'transformer in front', 'sub division of property', 'community dominace', 'common stair for separate units', 'near rail way track', 'near drain', 'near banquet hall']} 
+//                 selected={formData.negativePoints} 
+//                 onChange={v => setFormData((prev: AppState) => ({ ...prev, negativePoints: v }))} 
+//               />
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//     </div>
+//   );
+// }
+
+// function Step2Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const [activeSection, setActiveSection] = useState<string>('floors');
+//   const [activeFloorId, setActiveFloorId] = useState<string>('');
+
+//   useEffect(() => {
+//     if (formData.floors.length > 0 && !activeFloorId) setActiveFloorId(formData.floors[0].id);
+//   }, [formData.floors]);
+
+//   const handleAddFloor = (floorName: string) => {
+//     if (!floorName) return;
+//     const existing = formData.floors.find((f: FloorDetail) => f.floorName === floorName);
+//     if (existing) {
+//       setActiveFloorId(existing.id);
+//     } else {
+//       const newFloor: FloorDetail = {
+//         id: Math.random().toString(36).substr(2, 9),
+//         floorName, possessionWith: '', unit: '', length: '', breadth: '', conversionUnit: '', coveredArea: '', condition: '', structure: '', flooring: '', accommodation: '', doorsWindows: '', floorRemarks: ''
+//       };
+//       setFormData((prev: AppState) => ({ ...prev, floors: [...prev.floors, newFloor] }));
+//       setActiveFloorId(newFloor.id);
+//     }
+//   };
+
+//   const updateFloor = (id: string, field: keyof FloorDetail, value: string) => {
+//     setFormData((prev: AppState) => ({
+//       ...prev,
+//       floors: prev.floors.map(f => {
+//         if (f.id === id) {
+//           const newF = { ...f, [field]: value };
+//           if (field === 'length' || field === 'breadth') {
+//             const l = parseFloat(newF.length) || 0;
+//             const b = parseFloat(newF.breadth) || 0;
+//             newF.coveredArea = (l * b).toString();
+//           }
+//           return newF;
+//         }
+//         return f;
+//       })
+//     }));
+//   };
+
+//   const removeFloor = (id: string) => {
+//     setFormData((prev: AppState) => {
+//       const newFloors = prev.floors.filter(f => f.id !== id);
+//       if (activeFloorId === id) setActiveFloorId(newFloors.length > 0 ? newFloors[0].id : '');
+//       return { ...prev, floors: newFloors };
+//     });
+//   };
+
+//   const updateMarket = (field: string, value: any) => {
+//     setFormData((prev: AppState) => ({ ...prev, market: { ...prev.market, [field]: value } }));
+//   };
+
+//   const renderSectionHeader = (title: string, id: string) => (
+//     <div className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'}`} onClick={() => setActiveSection(activeSection === id ? '' : id)}>
+//       <h3 className="font-bold md:text-[15px] text-[#00a0ef]">{title}</h3>
+//       <ChevronDown className={`w-5 h-5 text-[#00a0ef] transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+      
+//       <div>
+//         {renderSectionHeader('Building Details (Per Floor)', 'floors')}
+//         {activeSection === 'floors' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10">
+//             <div className="mb-6">
+//               <label className={labelStyles}>Select or Add Floor Details</label>
+//               <RadioGroup options={['basement', 'stilt', 'GF', 'FF', 'SF', 'TF', '4th', 'multistorey']} value="" onChange={v => handleAddFloor(v)} />
+//             </div>
+
+//             {formData.floors.length > 0 && (
+//               <div className="flex flex-col md:flex-row gap-4">
+//                 <div className="md:w-48 shrink-0 flex flex-col gap-2">
+//                   {formData.floors.map(f => (
+//                     <div key={f.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${activeFloorId === f.id ? 'bg-[#00a0ef] border-[#00a0ef] text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`} onClick={() => setActiveFloorId(f.id)}>
+//                       <span className="font-semibold text-[13px]">{f.floorName}</span>
+//                       <button type="button" onClick={(e) => { e.stopPropagation(); removeFloor(f.id); }} className={`p-1 rounded hover:bg-black/10 ${activeFloorId === f.id ? 'text-white' : 'text-gray-400 hover:text-red-500'}`}><Trash2 size={14} /></button>
+//                     </div>
+//                   ))}
+//                 </div>
+                
+//                 <div className="flex-1 bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
+//                   {formData.floors.filter(f => f.id === activeFloorId).map(activeFloor => (
+//                     <div key={activeFloor.id} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//                       <div className="md:col-span-2 pb-3 border-b border-gray-100 mb-2">
+//                         <h4 className="font-bold text-[#00a0ef] text-[15px]">{activeFloor.floorName} Details</h4>
+//                       </div>
+
+//                       <div className="md:col-span-2"><label className={labelStyles}>Possession With</label><RadioGroup options={['owner', 'tenant']} value={activeFloor.possessionWith} onChange={v => updateFloor(activeFloor.id, 'possessionWith', v)} /></div>
+
+//                       <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+//                         <div><label className={labelStyles}>Unit</label><RadioGroup options={['feet', 'inch', 'meter']} value={activeFloor.unit} onChange={v => updateFloor(activeFloor.id, 'unit', v)} /></div>
+//                         <div><label className={labelStyles}>Length</label><input type="number" className={inputStyles} value={activeFloor.length} onChange={e => updateFloor(activeFloor.id, 'length', e.target.value)} /></div>
+//                         <div><label className={labelStyles}>Breadth</label><input type="number" className={inputStyles} value={activeFloor.breadth} onChange={e => updateFloor(activeFloor.id, 'breadth', e.target.value)} /></div>
+//                         <div className="md:col-span-3 border-t border-gray-50 pt-4"><label className={labelStyles}>Conversion Unit</label><RadioGroup options={['sq ft', 'sq yd', 'sq mt', 'Acre', 'Hectare', 'Guntas']} value={activeFloor.conversionUnit} onChange={v => updateFloor(activeFloor.id, 'conversionUnit', v)} /></div>
+//                         <div className="md:col-span-3"><label className={labelStyles}>Covered Area</label><input type="text" className={`${inputStyles} bg-gray-50`} readOnly value={activeFloor.coveredArea} /></div>
+//                       </div>
+
+//                       <div className="md:col-span-2"><label className={labelStyles}>Condition</label><RadioGroup options={['excellent', 'good', 'avg', 'poor', 'under construction', 'under finishing', 'others']} value={activeFloor.condition} onChange={v => updateFloor(activeFloor.id, 'condition', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Structure</label><RadioGroup options={['Rcc framed', 'load bearing', 'composite Structure', 'Peb/shed']} value={activeFloor.structure} onChange={v => updateFloor(activeFloor.id, 'structure', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Flooring</label><RadioGroup options={['tiles', 'marble', 'wood', 'cement', 'pending', 'other']} value={activeFloor.flooring} onChange={v => updateFloor(activeFloor.id, 'flooring', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Accommodation</label><RadioGroup options={['storage', 'shop', 'office space', '1BHK', '1.5BHK', '2BHK', '2.5BHK', '3BHK', '3.5BHK', '4BHK', '4.5BHK', '5BHK', '5.5BHK', '6BHK', 'studio', 'penthouse']} value={activeFloor.accommodation} onChange={v => updateFloor(activeFloor.id, 'accommodation', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Doors / Windows</label><RadioGroup options={['wooden', 'aluminium', 'glass', 'upvc', 'pending', 'N/A']} value={activeFloor.doorsWindows} onChange={v => updateFloor(activeFloor.id, 'doorsWindows', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Floor Remarks</label><textarea rows={3} className={inputStyles} value={activeFloor.floorRemarks} onChange={e => updateFloor(activeFloor.id, 'floorRemarks', e.target.value)}></textarea></div>
+//                     </div>
+//                   ))}
+//                 </div>
+//               </div>
+//             )}
+            
+//             <NextSectionButton onClick={() => setActiveSection('market')} nextFocusId="market-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Building-Shared / Market', 'market')}
+//         {activeSection === 'market' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles} id="market-first">Year of Construction</label><input type="text" className={inputStyles} value={formData.market.yearOfConstruction} onChange={e => updateMarket('yearOfConstruction', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Renovation</label><RadioGroup options={['yes', 'no']} value={formData.market.renovation} onChange={v => updateMarket('renovation', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Parking</label><RadioGroup options={['covered', 'notpresent', 'open', 'N/A']} value={formData.market.parking} onChange={v => updateMarket('parking', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Lift</label><RadioGroup options={['yes', 'No', 'N/A']} value={formData.market.lift} onChange={v => updateMarket('lift', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Kitchen Type</label><RadioGroup options={['modular', 'semi modular', 'odinary', 'N/A', 'other']} value={formData.market.kitchenType} onChange={v => updateMarket('kitchenType', v)} /></div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               <div className="md:col-span-3 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Rental Income</h4></div>
+//               <div><label className={labelStyles}>Minimum</label><input type="number" className={inputStyles} value={formData.market.rentalMin} onChange={e => updateMarket('rentalMin', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Maximum</label><input type="number" className={inputStyles} value={formData.market.rentalMax} onChange={e => updateMarket('rentalMax', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Unit</label><RadioGroup options={['hundred', 'thousand', 'lakh', 'crore']} value={formData.market.rentalUnit} onChange={v => updateMarket('rentalUnit', v)} /></div>
+//             </div>
+
+//             {['Client', 'Dealer', 'Market'].map((type) => {
+//               const minField = `market${type}Min` as keyof AppState['market'];
+//               const maxField = `market${type}Max` as keyof AppState['market'];
+//               const unitField = `market${type}Unit` as keyof AppState['market'];
+//               return (
+//                 <div key={type} className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//                   <div className="md:col-span-3 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Market Rate ({type === 'Market' ? 'As per market' : type})</h4></div>
+//                   <div><label className={labelStyles}>Minimum</label><input type="number" className={inputStyles} value={formData.market[minField] as string} onChange={e => updateMarket(minField, e.target.value)} /></div>
+//                   <div><label className={labelStyles}>Maximum</label><input type="number" className={inputStyles} value={formData.market[maxField] as string} onChange={e => updateMarket(maxField, e.target.value)} /></div>
+//                   <div><label className={labelStyles}>Unit</label><RadioGroup options={['hundred', 'thousand', 'lakh', 'crore']} value={formData.market[unitField] as string} onChange={v => updateMarket(unitField, v)} /></div>
+//                 </div>
+//               );
+//             })}
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               <div className="md:col-span-2 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Dealer Details</h4></div>
+//               <div><label className={labelStyles}>Dealer Name</label><input type="text" className={inputStyles} value={formData.market.dealerName} onChange={e => updateMarket('dealerName', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Mobile Number</label><input type="tel" className={inputStyles} value={formData.market.dealerMobile} onChange={e => updateMarket('dealerMobile', e.target.value)} /></div>
+//             </div>
+
+//             <div className="md:col-span-2 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+//               <div className="flex items-center justify-between mb-3">
+//                 <label className={labelStyles}>Additional Details</label>
+//                 <button type="button" onClick={() => updateMarket('additionalDetails', [...formData.market.additionalDetails, { key: '', value: '' }])} className="text-[13px] font-semibold text-[#00a0ef] hover:underline flex items-center gap-1"><Plus size={14} /> Add Detail</button>
+//               </div>
+//               <div className="space-y-3">
+//                 {formData.market.additionalDetails.map((pair, idx) => (
+//                   <div key={idx} className="flex gap-3">
+//                     <input type="text" placeholder="Key" className={inputStyles} value={pair.key} onChange={e => {
+//                       const newArr = [...formData.market.additionalDetails];
+//                       newArr[idx].key = e.target.value;
+//                       updateMarket('additionalDetails', newArr);
+//                     }} />
+//                     <input type="text" placeholder="Value" className={inputStyles} value={pair.value} onChange={e => {
+//                       const newArr = [...formData.market.additionalDetails];
+//                       newArr[idx].value = e.target.value;
+//                       updateMarket('additionalDetails', newArr);
+//                     }} />
+//                     <button type="button" onClick={() => {
+//                       const newArr = formData.market.additionalDetails.filter((_, i) => i !== idx);
+//                       updateMarket('additionalDetails', newArr);
+//                     }} className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Step3Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const photoInputRef = useRef<HTMLInputElement>(null);
+//   const docInputRef = useRef<HTMLInputElement>(null);
+
+//   const handleFileUpload = (type: 'photos' | 'documents', e: React.ChangeEvent<HTMLInputElement>) => {
+//     if (e.target.files) {
+//       setFormData((prev: AppState) => ({ ...prev, uploads: { ...prev.uploads, [type]: [...prev.uploads[type], ...Array.from(e.target.files!)] } }));
+//     }
+//   };
+
+//   const removeFile = (type: 'photos' | 'documents', idx: number) => {
+//     setFormData((prev: AppState) => ({ ...prev, uploads: { ...prev.uploads, [type]: prev.uploads[type].filter((_, i) => i !== idx) } }));
+//   };
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm p-4 md:p-6 space-y-8">
+//       <div>
+//         <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Site Photos</h3>
+//         <div onClick={() => photoInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+//           <input type="file" multiple accept="image/*" className="hidden" ref={photoInputRef} onChange={(e) => handleFileUpload('photos', e)} />
+//           <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
+//           <p className="text-sm text-gray-600 text-center">Click to <span className="text-[#00a0ef] font-medium">browse photos</span></p>
+//         </div>
+//         {formData.uploads.photos.length > 0 && (
+//           <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4">
+//             {formData.uploads.photos.map((file, idx) => (
+//               <div key={idx} className="relative aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center group">
+//                 <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover transition-opacity group-hover:opacity-75" />
+//                 <button type="button" onClick={(e) => { e.stopPropagation(); removeFile('photos', idx); }} className="absolute top-1 right-1 bg-white/90 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 text-red-500"><X size={14} /></button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+
+//       <div className="border-t border-gray-100 pt-8">
+//         <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Documents</h3>
+//         <div onClick={() => docInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+//           <input type="file" multiple className="hidden" ref={docInputRef} onChange={(e) => handleFileUpload('documents', e)} />
+//           <FileText className="w-8 h-8 text-gray-400 mb-2" />
+//           <p className="text-sm text-gray-600 text-center">Click to <span className="text-[#00a0ef] font-medium">browse documents</span></p>
+//         </div>
+//         {formData.uploads.documents.length > 0 && (
+//           <div className="space-y-3 mt-4">
+//             {formData.uploads.documents.map((file, idx) => (
+//               <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-xl">
+//                 <div className="flex items-center gap-3"><div className="w-10 h-10 bg-[#e6f5fd] rounded-lg flex items-center justify-center text-[#00a0ef]"><FileText className="w-5 h-5" /></div><div><p className="text-[13px] font-medium text-gray-900 line-clamp-1">{file.name}</p><p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(1)} MB</p></div></div>
+//                 <button type="button" onClick={() => removeFile('documents', idx)} className="text-[13px] text-red-500 font-medium px-2 py-1">Remove</button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Step4Form({ formData, onEditStep, isConfirmed, setIsConfirmed }: { formData: AppState; onEditStep: (step: number) => void; isConfirmed: boolean; setIsConfirmed: (v: boolean) => void }) {
+//   const MainCategory = ({ title, icon: Icon, children }: any) => (
+//     <div className="mb-8 px-1"><div className="flex items-center gap-2 mb-4"><div className="w-5 h-5 flex items-center justify-center text-[#00a0ef]"><Icon className="w-5 h-5 fill-current opacity-20" strokeWidth={2} /></div><h3 className="text-[15px] font-bold text-gray-900">{title}</h3></div><div className="bg-white px-2">{children}</div></div>
+//   );
+//   const SubCategory = ({ title, stepNum, children }: any) => (
+//     <div className="py-4 border-b border-gray-200 last:border-0 first:pt-0"><div className="flex items-center justify-between mb-4"><h4 className="text-[13px] font-bold text-gray-800">{title}</h4><button type="button" onClick={() => onEditStep(stepNum)} className="text-[#00a0ef] hover:bg-blue-50 p-1.5 rounded transition-colors"><Edit2 className="w-3.5 h-3.5" /></button></div><div className="grid grid-cols-2 gap-y-4 gap-x-4">{children}</div></div>
+//   );
+//   const DataField = ({ label, value }: any) => (
+//     <div><p className="text-[11px] text-gray-500 font-medium mb-1">{label}</p><div className="text-[13px] font-medium text-gray-900 break-words">{value || '—'}</div></div>
+//   );
+
+//   return (
+//     <div className="max-w-3xl bg-white mx-auto md:px-4 pb-8">
+//       <div className="py-6 px-2"><h2 className="text-[18px] font-bold text-[#00a0ef]">Review & Submit</h2></div>
+
+//       <MainCategory title="Client, Owner & Property" icon={Landmark}>
+//         <SubCategory title="Bank Details" stepNum={1}>
+//           <DataField label="IFSC Code" value={formData.clientBank.ifsc} />
+//           <DataField label="Bank Name" value={formData.clientBank.bankName} />
+//           <DataField label="Branch" value={formData.clientBank.branch} />
+//           <DataField label="Email" value={formData.clientBank.email} />
+//           <DataField label="POC" value={`${formData.clientBank.contactPersonName} / ${formData.clientBank.contactPersonNumber}`} />
+//           <DataField label="Dates" value={`${formData.clientBank.dateOfInspection} / ${formData.clientBank.dateOfValuation}`} />
+//           <DataField label="Type of Property" value={formData.clientBank.propertyType} />
+//           <DataField label="Purpose" value={formData.clientBank.purposeOfValuation} />
+//         </SubCategory>
+//         <SubCategory title="Owner Details & Locality" stepNum={1}>
+//           <DataField label="Name" value={`${formData.owner.prefix} ${formData.owner.ownerName}`} />
+//           <DataField label="Relation" value={`${formData.owner.relation} ${formData.owner.relationName}`} />
+//           <DataField label="Phone" value={`${formData.owner.phone1} / ${formData.owner.phone2}`} />
+//           <DataField label="Urban/Rural" value={formData.locality.urbanRural} />
+//           <DataField label="Class" value={formData.locality.localityClass} />
+//           <DataField label="Tenure" value={formData.locality.landTenure} />
+//         </SubCategory>
+//         <SubCategory title="Property Settings" stepNum={1}>
+//           <DataField label="Address" value={formData.property.address} />
+//           <DataField label="Nature" value={formData.property.natureOfProperty} />
+//           <DataField label="Shape" value={formData.property.plotShape} />
+//           <DataField label="Calculated Area" value={`${formData.property.calculatedArea} ${formData.property.conversionUnit}`} />
+//           <DataField label="Wall Setup" value={`${formData.property.wallLength}x${formData.property.wallHeight} ${formData.property.wallUnit}`} />
+//           <DataField label="Negative Points" value={formData.negativePoints.join(', ')} />
+//         </SubCategory>
+//         <SubCategory title="Boundaries" stepNum={1}>
+//           <DataField label="Unit" value={formData.boundaries.unit} />
+//           <DataField label="North (Doc/Act)" value={`${formData.boundaries.northDoc} / ${formData.boundaries.northAct}`} />
+//           <DataField label="South (Doc/Act)" value={`${formData.boundaries.southDoc} / ${formData.boundaries.southAct}`} />
+//           <DataField label="East (Doc/Act)" value={`${formData.boundaries.eastDoc} / ${formData.boundaries.eastAct}`} />
+//           <DataField label="West (Doc/Act)" value={`${formData.boundaries.westDoc} / ${formData.boundaries.westAct}`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <MainCategory title="Building & Market Details" icon={Building}>
+//         {formData.floors.map((floor) => (
+//           <SubCategory key={floor.id} title={`Floor: ${floor.floorName}`} stepNum={2}>
+//             <DataField label="Possession" value={floor.possessionWith} />
+//             <DataField label="Covered Area" value={`${floor.coveredArea} ${floor.conversionUnit}`} />
+//             <DataField label="Condition" value={floor.condition} />
+//             <DataField label="Structure" value={floor.structure} />
+//             <DataField label="Flooring" value={floor.flooring} />
+//             <DataField label="Accommodation" value={floor.accommodation} />
+//             <DataField label="Doors/Windows" value={floor.doorsWindows} />
+//             <DataField label="Remarks" value={floor.floorRemarks} />
+//           </SubCategory>
+//         ))}
+//         <SubCategory title="Market & Shared Details" stepNum={2}>
+//           <DataField label="Year Constructed" value={formData.market.yearOfConstruction} />
+//           <DataField label="Renovation" value={formData.market.renovation} />
+//           <DataField label="Parking" value={formData.market.parking} />
+//           <DataField label="Rental Income" value={`${formData.market.rentalMin} - ${formData.market.rentalMax} ${formData.market.rentalUnit}`} />
+//           <DataField label="Client Rate" value={`${formData.market.marketClientMin} - ${formData.market.marketClientMax} ${formData.market.marketClientUnit}`} />
+//           <DataField label="Dealer Rate" value={`${formData.market.marketDealerMin} - ${formData.market.marketDealerMax} ${formData.market.marketDealerUnit}`} />
+//           <DataField label="Market Rate" value={`${formData.market.marketMarketMin} - ${formData.market.marketMarketMax} ${formData.market.marketMarketUnit}`} />
+//           <DataField label="Dealer Details" value={`${formData.market.dealerName} / ${formData.market.dealerMobile}`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <MainCategory title="Uploads" icon={UploadCloud}>
+//         <SubCategory title="Files Overview" stepNum={3}>
+//           <DataField label="Photos" value={`${formData.uploads.photos.length} uploaded`} />
+//           <DataField label="Documents" value={`${formData.uploads.documents.length} uploaded`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <div className="mt-8 p-4 bg-[#f8fafc] border border-gray-200 rounded-xl flex items-start gap-3">
+//         <div className="pt-0.5"><input type="checkbox" id="final-confirm" checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]" /></div>
+//         <label htmlFor="final-confirm" className="text-[13px] text-gray-700 leading-relaxed select-none cursor-pointer">I confirm that all information provided above is correct.</label>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default function App() {
+//   const [currentStep, setCurrentStep] = useState(1);
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const [isConfirmed, setIsConfirmed] = useState(false);
+//   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
+
+//   const [customers, setCustomers] = useState<any[]>([]);
+//   const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
+
+//   const [formData, setFormData] = useState<AppState>({
+//     customer: '',
+//     clientBank: { ifsc: '', bankName: '', branch: '', email: '', contactPersonName: '', contactPersonNumber: '', dateOfInspection: '', dateOfValuation: '', propertyType: '', purposeOfValuation: '' },
+//     owner: { prefix: 'Shri', ownerName: '', relation: 'S/o', relationName: '', occupation: '', phone1: '', phone2: '' },
+//     locality: { urbanRural: '', localityClass: '', landTenure: '', widthOfRoad: '', noOfStories: '', sanitaryFitting: '', electricalFitting: '', townplan: '' },
+//     property: { address: '', natureOfProperty: '', vacantPlot: '', widthOfRoad: '', latitude: '', longitude: '', boundaryCoordinates: [], plotShape: '', dimensionUnit: '', length: '', breadth: '', conversionUnit: '', calculatedArea: '', wallUnit: '', wallLength: '', wallHeight: '', wallsOnSide: '', brickType: '' },
+//     boundaries: { unit: '', northDoc: '', northAct: '', southDoc: '', southAct: '', eastDoc: '', eastAct: '', westDoc: '', westAct: '' },
+//     floors: [],
+//     market: { yearOfConstruction: '', renovation: '', parking: '', lift: '', rentalMin: '', rentalMax: '', rentalUnit: '', kitchenType: '', marketClientMin: '', marketClientMax: '', marketClientUnit: '', marketDealerMin: '', marketDealerMax: '', marketDealerUnit: '', marketMarketMin: '', marketMarketMax: '', marketMarketUnit: '', dealerName: '', dealerMobile: '', additionalDetails: [] },
+//     negativePoints: [],
+//     uploads: { photos: [], documents: [] }
+//   });
+
+//   useEffect(() => {
+//     const fetchCustomers = async () => {
+//       try {
+//         const data = await api.getCustomerProfiles();
+//         setCustomers(data);
+//       } catch (error) {
+//         console.error("Failed to fetch customers:", error);
+//       } finally {
+//         setIsLoadingCustomers(false);
+//       }
+//     };
+//     fetchCustomers();
+//   }, []);
+
+//   const handleCustomerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+//     const selectedId = e.target.value;
+//     const selectedCustomer = customers.find(c => c.id === selectedId);
+
+//     if (selectedCustomer) {
+//       setFormData(prev => ({
+//         ...prev,
+//         customer: selectedId,
+//         clientBank: { ...prev.clientBank, ...selectedCustomer.clientBank },
+//         owner: { ...prev.owner, ...selectedCustomer.owner }
+//       }));
+//     } else {
+//       setFormData(prev => ({ ...prev, customer: '' }));
+//     }
+//   };
+
+//   const handleStepContinue = () => {
+//     if (currentStep < 4) { setCurrentStep(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+//     else { handleSubmit(); }
+//   };
+
+//   const handleStepBack = () => {
+//     if (currentStep > 1) { setCurrentStep(prev => prev - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!isConfirmed) { alert('Please check the confirmation box to submit.'); return; }
+//     setIsSubmitting(true);
+    
+//     try {
+//       const uploadedPhotosUrls = formData.uploads.photos.map(file => `https://your-storage-bucket.com/${file.name}`);
+//       const uploadedDocumentsUrls = formData.uploads.documents.map(file => `https://your-storage-bucket.com/${file.name}`);
+
+//       const payload = {
+//         customer: formData.customer,
+//         clientBank: formData.clientBank,
+//         owner: formData.owner,
+//         locality: formData.locality,
+//         property: formData.property,
+//         boundaries: formData.boundaries,
+//         floors: formData.floors,
+//         market: formData.market,
+//         negativePoints: formData.negativePoints,
+//         uploads: { 
+//           photos: uploadedPhotosUrls, 
+//           documents: uploadedDocumentsUrls 
+//         }
+//       };
+
+//       await api.createValuationRecord(payload);
+//       setIsSubmittedSuccessfully(true);
+
+//     } catch (e) { 
+//       console.error("Failed to submit report:", e); 
+//       alert("An error occurred while submitting the report.");
+//     } finally { 
+//       setIsSubmitting(false); 
+//     }
+//   };
+
+//   if (isSubmittedSuccessfully) {
+//     return (
+//       <div className="flex flex-col flex-1 w-full relative min-h-screen md:min-h-0 bg-white overflow-hidden items-center justify-center p-6">
+//         <div className="w-[88px] h-[88px] rounded-full flex items-center justify-center bg-[#f0f8fd] mb-6">
+//           <div className="w-[60px] h-[60px] rounded-full bg-white flex items-center justify-center shadow-sm">
+//             <div className="w-[32px] h-[32px] bg-[#00a0ef] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white" strokeWidth={3.5} /></div>
+//           </div>
+//         </div>
+//         <h2 className="text-[20px] lg:text-[24px] font-bold text-gray-900 mb-3 text-center">Report submitted successfully.</h2>
+//         <p className="text-[#8A94A6] text-[14px] md:text-[15px] mb-8 text-center max-w-sm">Data has been logged to the console.</p>
+//         <button onClick={() => window.location.reload()} className="px-8 py-3 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white font-medium transition-colors">Start New Report</button>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col md:py-8">
+//       <div className="flex-1 flex flex-col w-full md:max-w-4xl md:mx-auto bg-white border-x md:border border-gray-200 md:rounded-xl md:shadow-sm overflow-hidden">
+        
+//         <div className="px-4 md:px-6 py-4 border-b border-gray-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+//           <h1 className="text-lg md:text-xl font-medium text-gray-900">Submit New Report</h1>
+//           <div className="relative w-full md:w-64">
+//             <select 
+//               className={`${inputStyles} appearance-none bg-blue-50/30 border-[#00a0ef]/30 font-medium disabled:opacity-50 disabled:cursor-not-allowed`} 
+//               value={formData.customer} 
+//               onChange={handleCustomerSelect}
+//               disabled={isLoadingCustomers}
+//             >
+//               <option value="">
+//                 {isLoadingCustomers ? 'Loading Customers...' : 'Select Customer (Prefill)...'}
+//               </option>
+              
+//               {customers.map((c) => (
+//                 <option key={c.id} value={c.id}>
+//                   {c.profileReference || `${c.owner?.ownerName || 'Unknown'} - ${c.clientBank?.bankName || 'Unknown Bank'}`}
+//                 </option>
+//               ))}
+//             </select>
+//             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//           </div>
+//         </div>
+
+//         <div className="px-6 pt-10 pb-6 md:pt-12 md:pb-8 border-b border-gray-200 bg-white shrink-0">
+//           <div className="max-w-xl mx-auto relative">
+//             <div className="flex items-center justify-between relative">
+//               <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gray-200" />
+//               {[1, 2, 3, 4].map((step) => {
+//                 const isCompleted = step < currentStep;
+//                 const isCurrent = step === currentStep;
+//                 return (
+//                   <div key={step} className="relative z-10 flex flex-col items-center">
+//                     <span className={`absolute -top-7 whitespace-nowrap text-xs font-semibold tracking-wide ${isCompleted || isCurrent ? 'text-[#00a0ef]' : 'text-gray-400'}`}>STEP {step}</span>
+//                     <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-white ${isCompleted ? 'border-2 border-[#00a0ef] bg-[#00a0ef]' : isCurrent ? 'border-2 border-[#00a0ef]' : 'border-2 border-gray-300'}`}>
+//                       {isCompleted && <CircleCheck color='white' fill='#00a0ef' />}
+//                       {isCurrent && <div className="w-4 h-4 bg-[#00a0ef] rounded-full" />}
+//                     </div>
+//                   </div>
+//                 );
+//               })}
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="flex-1 overflow-y-auto bg-gray-50 md:p-6">
+//           {currentStep === 1 && <Step1Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 2 && <Step2Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 3 && <Step3Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 4 && <Step4Form formData={formData} onEditStep={setCurrentStep} isConfirmed={isConfirmed} setIsConfirmed={setIsConfirmed} />}
+//         </div>
+        
+//         <div className="p-4 md:px-6 md:py-5 bg-white border-t border-gray-200 flex items-center justify-between mt-auto shrink-0">
+//           <button onClick={handleStepBack} className={`flex items-center px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 text-[13px] font-medium hover:bg-gray-50 transition-colors ${currentStep === 1 ? 'invisible' : ''}`}>
+//             <ArrowLeft className="w-4 h-4 mr-2" /> Back
+//           </button>
+//           <button onClick={handleStepContinue} disabled={isSubmitting} className="flex items-center px-6 py-2.5 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white text-[13px] font-medium transition-shadow shadow-sm hover:shadow-md disabled:opacity-60">
+//             {isSubmitting ? 'Submitting...' : currentStep === 4 ? 'Submit Report' : `Continue to Step ${currentStep + 1}`}
+//             {!isSubmitting && currentStep !== 4 && <ArrowRight className="w-4 h-4 ml-2" />}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// // }
+// 'use client';
+
+// import React, { useState, useEffect, useCallback, useRef } from 'react';
+// import { Building, Landmark, CheckCircle2, UploadCloud, X, FileText, Edit2, CircleCheck, Plus, Trash2, Check, RotateCcw, ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
+// import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+// import { api } from '@/app/lib/userApis';
+// import { uploadFile } from "@/app/lib/firebase/storageUtils"; // <-- Added Storage Import
+
+// type Coord = { lat: number; lng: number };
+// type Pin = { id: number; coord: Coord };
+// type Mode = "picking" | "submitted";
+
+// const MAX = 10;
+// const LABELS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10"];
+// const COLORS = ["#00a0ef", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#14b8a6", "#f97316", "#6366f1"];
+
+// export interface FloorDetail {
+//   id: string;
+//   floorName: string;
+//   possessionWith: string;
+//   unit: string;
+//   length: string;
+//   breadth: string;
+//   conversionUnit: string;
+//   coveredArea: string;
+//   condition: string;
+//   structure: string;
+//   flooring: string;
+//   accommodation: string;
+//   doorsWindows: string;
+//   floorRemarks: string;
+// }
+
+// interface AppState {
+//   customer: string;
+//   clientBank: { ifsc: string; bankName: string; branch: string; email: string; contactPersonName: string; contactPersonNumber: string; dateOfInspection: string; dateOfValuation: string; propertyType: string; purposeOfValuation: string; };
+//   owner: { prefix: string; ownerName: string; relation: string; relationName: string; occupation: string; phone1: string; phone2: string; };
+//   locality: { urbanRural: string; localityClass: string; landTenure: string; widthOfRoad: string; noOfStories: string; sanitaryFitting: string; electricalFitting: string; townplan: string; };
+//   property: { address: string; natureOfProperty: string; vacantPlot: string; widthOfRoad: string; latitude: string; longitude: string; boundaryCoordinates: Coord[]; plotShape: string; dimensionUnit: string; length: string; breadth: string; conversionUnit: string; calculatedArea: string; wallUnit: string; wallLength: string; wallHeight: string; wallsOnSide: string; brickType: string; };
+//   boundaries: { 
+//     unit: string; northDoc: string; northAct: string; southDoc: string; southAct: string; eastDoc: string; eastAct: string; westDoc: string; westAct: string; 
+//     dimensionsMatch: boolean; // <-- New checkbox state for dimensions
+//   boundariesMatch: boolean; // <-- Checkbox state
+//   northDeedDim: string; southDeedDim: string; eastDeedDim: string; westDeedDim: string; // <-- Updated Keys
+//   northActualDim: string; southActualDim: string; eastActualDim: string; westActualDim: string; // <-- Updated Keys
+//     northBoundaryDeed: string; southBoundaryDeed: string; eastBoundaryDeed: string; westBoundaryDeed: string; // <-- New textual boundaries
+//     northBoundaryActual: string; southBoundaryActual: string; eastBoundaryActual: string; westBoundaryActual: string;
+//   };
+//   floors: FloorDetail[];
+//   market: { yearOfConstruction: string; renovation: string; parking: string; lift: string; rentalMin: string; rentalMax: string; rentalUnit: string; kitchenType: string; marketClientMin: string; marketClientMax: string; marketClientUnit: string; marketDealerMin: string; marketDealerMax: string; marketDealerUnit: string; marketMarketMin: string; marketMarketMax: string; marketMarketUnit: string; dealerName: string; dealerMobile: string; additionalDetails: { key: string; value: string }[]; };
+//   negativePoints: string[];
+//   uploads: { photos: File[]; documents: File[]; };
+// }
+
+// const inputStyles = "w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] focus:ring-1 focus:ring-[#00a0ef] text-[13px] text-gray-900 bg-white shadow-sm transition-shadow";
+// const labelStyles = "block text-[13px] font-semibold text-gray-700 mb-2";
+
+// const RadioGroup = ({ options, value, onChange }: { options: string[], value: string, onChange: (val: string) => void }) => {
+//   const isCustom = value !== '' && !options.includes(value);
+//   const [showCustom, setShowCustom] = useState(isCustom);
+
+//   return (
+//     <div className="flex flex-wrap gap-2 items-center">
+//       {options.map(opt => (
+//         <button key={opt} type="button" onClick={() => { setShowCustom(false); onChange(opt); }}
+//           className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border ${!showCustom && value === opt ? 'bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+//           {opt}
+//         </button>
+//       ))}
+//       <div className="flex items-center gap-2">
+//         {!showCustom && (
+//           <button type="button" onClick={() => { setShowCustom(true); onChange(''); }}
+//             className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border bg-white border-gray-200 text-gray-600 hover:bg-gray-50`}>
+//             Other / Add Option
+//           </button>
+//         )}
+//         {showCustom && (
+//           <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg pr-1 shadow-sm focus-within:border-[#00a0ef] focus-within:ring-1 focus-within:ring-[#00a0ef]">
+//             <input type="text" placeholder="Type custom option..." className="px-3 py-2 text-[13px] rounded-l-lg focus:outline-none border-none w-40" value={value} onChange={e => onChange(e.target.value)} autoFocus />
+//             <button type="button" onClick={() => { setShowCustom(false); onChange(''); }} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+//               <X size={14} />
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// const MultiSelectGroup = ({ options, selected, onChange }: { options: string[], selected: string[], onChange: (val: string[]) => void }) => {
+//   const toggle = (opt: string) => selected.includes(opt) ? onChange(selected.filter(i => i !== opt)) : onChange([...selected, opt]);
+//   const customValues = selected.filter(val => !options.includes(val));
+//   const [customInput, setCustomInput] = useState('');
+
+//   const handleAddCustom = () => {
+//     if (customInput.trim() && !selected.includes(customInput.trim())) {
+//       onChange([...selected, customInput.trim()]);
+//       setCustomInput('');
+//     }
+//   };
+
+//   return (
+//     <div className="flex flex-col gap-3">
+//       <div className="flex flex-wrap gap-2">
+//         {options.map(opt => (
+//           <button key={opt} type="button" onClick={() => toggle(opt)}
+//             className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border ${selected.includes(opt) ? 'bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+//             {opt}
+//           </button>
+//         ))}
+//         {customValues.map(opt => (
+//           <button key={opt} type="button" onClick={() => toggle(opt)}
+//             className="px-3 py-2 rounded-lg text-[13px] font-medium transition-all border bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm flex items-center gap-2">
+//             {opt} <X className="w-3 h-3" />
+//           </button>
+//         ))}
+//       </div>
+//       <div className="flex items-center gap-2">
+//         <input type="text" placeholder="Add custom option..." className="px-3 py-2 text-[13px] border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] w-48 shadow-sm" value={customInput} onChange={e => setCustomInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustom(); } }} />
+//         <button type="button" onClick={handleAddCustom} className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-[13px] font-medium hover:bg-gray-200 transition-colors">Add</button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// function NextSectionButton({ onClick, nextFocusId }: { onClick: () => void, nextFocusId: string }) {
+//   const handleAction = (e: React.MouseEvent | React.KeyboardEvent) => {
+//     e.preventDefault();
+//     onClick();
+//     setTimeout(() => document.getElementById(nextFocusId)?.focus(), 50);
+//   };
+//   return (
+//     <div className="md:col-span-full flex justify-end mt-4 border-t border-gray-200/50 pt-4">
+//       <button type="button" onClick={handleAction} onKeyDown={(e) => { if (e.key === 'Tab' && !e.shiftKey) { handleAction(e); } }} className="text-[#00a0ef] text-[13px] font-bold hover:underline flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#00a0ef] focus:ring-offset-2 rounded px-3 py-1.5 transition-colors">
+//         Next Section <ArrowRight className="w-4 h-4" />
+//       </button>
+//     </div>
+//   );
+// }
+
+// function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (coords: Coord[]) => void }) {
+//   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+//   const [center, setCenter] = useState<Coord>({ lat: 20, lng: 78 });
+//   const [zoom, setZoom] = useState(4);
+//   const [mode, setMode] = useState<Mode>("picking");
+//   const [pins, setPins] = useState<Pin[]>([]);
+//   const [nextId, setNextId] = useState(0);
+//   const [submitted, setSubmitted] = useState<Pin[]>([]);
+//   const [editTarget, setEditTarget] = useState<number | null>(null);
+//   const [userLocation, setUserLocation] = useState<Coord | null>(null);
+
+//   useEffect(() => {
+//     if ("geolocation" in navigator) {
+//       navigator.geolocation.getCurrentPosition(
+//         (position) => {
+//           const userLoc = { lat: position.coords.latitude, lng: position.coords.longitude };
+//           setUserLocation(userLoc); setCenter(userLoc); setZoom(18);
+//         },
+//         (error) => console.error("Error getting user location:", error),
+//         { enableHighAccuracy: true }
+//       );
+//     }
+//   }, []);
+
+//   const handleMapClick = useCallback((coord: Coord) => {
+//     if (mode === "picking") {
+//       if (pins.length >= MAX) return;
+//       setPins((prev) => [...prev, { id: nextId, coord }]);
+//       setNextId((n) => n + 1); return;
+//     }
+//     if (mode === "submitted" && editTarget !== null) {
+//       setSubmitted((prev) => prev.map((p, i) => (i === editTarget ? { ...p, coord } : p)));
+//       setEditTarget(null);
+//     }
+//   }, [mode, pins.length, nextId, editTarget]);
+
+//   const handleSubmit = () => {
+//     if (pins.length === 0) return;
+//     setSubmitted([...pins]); setMode("submitted"); setEditTarget(null);
+//     onCoordinatesSubmit(pins.map(p => p.coord));
+//   };
+
+//   return (
+//     <div className="flex flex-col w-full bg-white border border-gray-300 rounded-xl overflow-hidden shadow-sm">
+//       <div className="relative w-full h-64 md:h-80 bg-gray-100">
+//         <APIProvider apiKey={apiKey}>
+//           <Map mapId="geo-picker-form" center={center} zoom={zoom} mapTypeId="satellite"
+//             onCameraChanged={(ev) => { setCenter(ev.detail.center); setZoom(ev.detail.zoom); }}
+//             gestureHandling="greedy" colorScheme="LIGHT" mapTypeControl={true} zoomControl={true} fullscreenControl={true} streetViewControl={true}
+//             style={{ width: "100%", height: "100%" }}>
+//             {userLocation && (
+//               <AdvancedMarker position={userLocation}>
+//                 <div className="relative"><div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg" /><div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-ping opacity-40" /></div>
+//               </AdvancedMarker>
+//             )}
+//             <ClickHandler onClick={handleMapClick} />
+//             {(mode === "picking" ? pins : submitted).map((pin, i) => (
+//               <AdvancedMarker key={pin.id} position={pin.coord} zIndex={editTarget === i ? 100 : i}>
+//                 <button type="button" onClick={(e) => { e.stopPropagation(); if (mode === "submitted") setEditTarget(editTarget === i ? null : i); }}
+//                   className={`flex items-center justify-center rounded-full font-bold text-white text-xs shadow-md transition-all ${editTarget === i ? "w-10 h-10 ring-4 ring-white scale-110" : "w-8 h-8 ring-2 ring-white/80 scale-100"} ${mode === "submitted" ? "cursor-pointer" : "cursor-default"}`}
+//                   style={{ backgroundColor: COLORS[i] }}>{LABELS[i]}</button>
+//               </AdvancedMarker>
+//             ))}
+//           </Map>
+//         </APIProvider>
+//       </div>
+//       <div className="p-4 bg-gray-50 border-t border-gray-200">
+//         {mode === "picking" ? (
+//           <button type="button" onClick={handleSubmit} disabled={pins.length === 0}
+//             className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${pins.length > 0 ? "bg-[#00a0ef] text-white hover:bg-[#008bd1] shadow-sm" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+//             {pins.length > 0 ? <><CheckCircle2 className="w-4 h-4" /> Confirm Boundaries</> : "Place at least 1 point"}
+//           </button>
+//         ) : (
+//           <button type="button" onClick={() => { setPins([]); setSubmitted([]); setMode("picking"); setEditTarget(null); setNextId(0); }}
+//             className="w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100">
+//             <RotateCcw className="w-4 h-4" /> Reset Boundaries
+//           </button>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function ClickHandler({ onClick }: { onClick: (c: Coord) => void }) {
+//   const map = useMap();
+//   useEffect(() => {
+//     if (!map) return;
+//     const listener = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+//       if (e.latLng) onClick({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+//     });
+//     return () => { google.maps.event.removeListener(listener); };
+//   }, [map, onClick]);
+//   return null;
+// }
+
+// function Step1Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const [activeSection, setActiveSection] = useState<string>('clientBank');
+
+//   const updateSection = (section: keyof AppState, field: string, value: any) => {
+//     setFormData((prev: AppState) => ({ ...prev, [section]: { ...(prev[section] as any), [field]: value } }));
+//   };
+//   const handleDimensionChange = (dir: string, type: 'DeedDim' | 'ActualDim', value: string) => {
+//     const key = `${dir}${type}`;
+//     updateSection('boundaries', key, value);
+
+//     if (type === 'DeedDim' && formData.boundaries.dimensionsMatch) {
+//       updateSection('boundaries', `${dir}ActualDim`, value);
+//     }
+//   };
+//   const handleTextBoundaryChange = (dir: string, type: 'Deed' | 'Actual', value: string) => {
+//     const key = `${dir}Boundary${type}`;
+//     updateSection('boundaries', key, value);
+
+//     // Auto-sync actual if checkbox is ticked
+//     if (type === 'Deed' && formData.boundaries.boundariesMatch) {
+//       updateSection('boundaries', `${dir}BoundaryActual`, value);
+//     }
+//   };
+
+//   const renderSectionHeader = (title: string, id: string) => (
+//     <div className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'}`} onClick={() => setActiveSection(activeSection === id ? '' : id)}>
+//       <h3 className="font-bold md:text-[15px] text-[#00a0ef]">{title}</h3>
+//       <ChevronDown className={`w-5 h-5 text-[#00a0ef] transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+      
+//       <div>
+//         {renderSectionHeader('Client / Bank Details', 'clientBank')}
+//         {activeSection === 'clientBank' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles}>IFSC Code</label><input id="clientBank-first" type="text" className={inputStyles} value={formData.clientBank.ifsc} onChange={e => updateSection('clientBank', 'ifsc', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Bank Name</label><input type="text" className={inputStyles} value={formData.clientBank.bankName} onChange={e => updateSection('clientBank', 'bankName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Branch</label><input type="text" className={inputStyles} value={formData.clientBank.branch} onChange={e => updateSection('clientBank', 'branch', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Email ID</label><input type="email" className={inputStyles} value={formData.clientBank.email} onChange={e => updateSection('clientBank', 'email', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Point of Contact Name</label><input type="text" className={inputStyles} value={formData.clientBank.contactPersonName} onChange={e => updateSection('clientBank', 'contactPersonName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Point of Contact Number</label><input type="tel" className={inputStyles} value={formData.clientBank.contactPersonNumber} onChange={e => updateSection('clientBank', 'contactPersonNumber', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Date of Inspection</label><input type="date" className={inputStyles} value={formData.clientBank.dateOfInspection} onChange={e => updateSection('clientBank', 'dateOfInspection', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Date Valuation</label><input type="date" className={inputStyles} value={formData.clientBank.dateOfValuation} onChange={e => updateSection('clientBank', 'dateOfValuation', e.target.value)} /></div>
+            
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Type of Property</label>
+//               <RadioGroup options={['Vacant Land - Residential', 'Existing Building - Residential', 'Open Piece of Land', 'Residential Flat', 'Agri Land', 'Residential Villa', 'Industrial Shed']} value={formData.clientBank.propertyType} onChange={v => updateSection('clientBank', 'propertyType', v)} />
+//             </div>
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Purpose of Valuation (Loan Type)</label>
+//               <RadioGroup options={['Home Loan', 'Mortgage Loan', 'Education Loan', 'Collateral Security', 'For Bank Loan / Mortgage Purpose']} value={formData.clientBank.purposeOfValuation} onChange={v => updateSection('clientBank', 'purposeOfValuation', v)} />
+//             </div>
+//             <NextSectionButton onClick={() => setActiveSection('ownerLocality')} nextFocusId="owner-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Owner Details & Locality Classification', 'ownerLocality')}
+//         {activeSection === 'ownerLocality' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10">
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-b border-gray-200 pb-6 mb-6">
+//               <div className="md:col-span-2 flex gap-3">
+//                 <div className="w-1/3 md:w-1/4">
+//                   <label className={labelStyles}>Prefix</label>
+//                   <div className="relative">
+//                     <select id="owner-first" className={`${inputStyles} appearance-none bg-white`} value={formData.owner.prefix} onChange={e => {
+//                       const val = e.target.value;
+//                       updateSection('owner', 'prefix', val);
+//                       if (val === 'Smt' || val === 'Mrs') updateSection('owner', 'relation', 'W/o');
+//                       else if (val === 'Shri' || val === 'Mr') updateSection('owner', 'relation', 'S/o');
+//                     }}>
+//                       <option value="Shri">Shri</option>
+//                       <option value="Smt">Smt</option>
+//                       <option value="Mr">Mr</option>
+//                       <option value="Mrs">Mrs</option>
+//                     </select>
+//                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                   </div>
+//                 </div>
+//                 <div className="flex-1"><label className={labelStyles}>Owner Name</label><input type="text" className={inputStyles} value={formData.owner.ownerName} onChange={e => updateSection('owner', 'ownerName', e.target.value)} /></div>
+//               </div>
+//               <div className="md:col-span-2 flex gap-3">
+//                 <div className="w-1/3 md:w-1/4">
+//                   <label className={labelStyles}>Relation</label>
+//                   <div className="relative">
+//                     <select className={`${inputStyles} appearance-none bg-white`} value={formData.owner.relation} onChange={e => updateSection('owner', 'relation', e.target.value)}>
+//                       <option value="S/o">S/o</option>
+//                       <option value="D/o">D/o</option>
+//                       <option value="W/o">W/o</option>
+//                       <option value="F/o">F/o</option>
+//                     </select>
+//                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                   </div>
+//                 </div>
+//                 <div className="flex-1"><label className={labelStyles}>Relative's Name</label><input type="text" className={inputStyles} value={formData.owner.relationName} onChange={e => updateSection('owner', 'relationName', e.target.value)} /></div>
+//               </div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Occupation</label><input type="text" className={inputStyles} value={formData.owner.occupation} onChange={e => updateSection('owner', 'occupation', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Phone Number 1</label><input type="tel" className={inputStyles} value={formData.owner.phone1} onChange={e => updateSection('owner', 'phone1', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Phone Number 2</label><input type="tel" className={inputStyles} value={formData.owner.phone2} onChange={e => updateSection('owner', 'phone2', e.target.value)} /></div>
+//             </div>
+
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//               <div className="md:col-span-2"><label className={labelStyles}>Rural / Urban</label><RadioGroup options={['metro city', 'urban', 'semi urban rural', 'N/A']} value={formData.locality.urbanRural} onChange={v => updateSection('locality', 'urbanRural', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Locality Class</label><RadioGroup options={['high', 'middle', 'low', 'posh', 'N/A']} value={formData.locality.localityClass} onChange={v => updateSection('locality', 'localityClass', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Land Tenure</label><RadioGroup options={['freehold', 'leasehold', 'N/A']} value={formData.locality.landTenure} onChange={v => updateSection('locality', 'landTenure', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Width of Road</label><RadioGroup options={['< 10ft', '< 20ft', '> 20ft']} value={formData.locality.widthOfRoad} onChange={v => updateSection('locality', 'widthOfRoad', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>No. of Stories</label><RadioGroup options={['1', '2', '3', '4', '5', '6', '7', '8', '9', 'vacant']} value={formData.locality.noOfStories} onChange={v => updateSection('locality', 'noOfStories', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Sanitary Fitting</label><RadioGroup options={['ordinary', 'good', 'superior', 'premium', 'excellent', 'under construction']} value={formData.locality.sanitaryFitting} onChange={v => updateSection('locality', 'sanitaryFitting', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Electrical Fitting</label><RadioGroup options={['ordinary', 'good', 'superior', 'premium', 'excellent', 'under construction']} value={formData.locality.electricalFitting} onChange={v => updateSection('locality', 'electricalFitting', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Townplan / MC / GP</label><RadioGroup options={['MC', 'townplanning', 'gram panchayat', 'outside Mc']} value={formData.locality.townplan} onChange={v => updateSection('locality', 'townplan', v)} /></div>
+//             </div>
+//             <NextSectionButton onClick={() => setActiveSection('property')} nextFocusId="property-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Property Details', 'property')}
+//         {activeSection === 'property' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/10">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles} id="property-first">Geo Location & Coordinates</label>
+//               <GeoCoordinatePicker 
+//                 onCoordinatesSubmit={(coords) => {
+//                   updateSection('property', 'boundaryCoordinates', coords);
+//                   if (coords.length > 0) {
+//                     updateSection('property', 'latitude', coords[0].lat.toString());
+//                     updateSection('property', 'longitude', coords[0].lng.toString());
+//                   }
+//                 }} 
+//               />
+//               <div className="flex gap-4 mt-4">
+//                 <input type="text" placeholder="Latitude" className={inputStyles} value={formData.property.latitude} readOnly />
+//                 <input type="text" placeholder="Longitude" className={inputStyles} value={formData.property.longitude} readOnly />
+//               </div>
+//             </div>
+            
+//             <div className="md:col-span-2"><label className={labelStyles}>Address</label><textarea rows={3} className={inputStyles} value={formData.property.address} onChange={e => updateSection('property', 'address', e.target.value)} /></div>
+            
+//             <div className="md:col-span-2"><label className={labelStyles}>Nature of Property</label><RadioGroup options={['Residential', 'Commercial', 'Industrial', 'Agriculture', 'mixed', 'institutional', 'N/A']} value={formData.property.natureOfProperty} onChange={v => updateSection('property', 'natureOfProperty', v)} /></div>
+//             <div className="md:col-span-1"><label className={labelStyles}>Vacant Plot?</label><RadioGroup options={['yes', 'NO']} value={formData.property.vacantPlot} onChange={v => updateSection('property', 'vacantPlot', v)} /></div>
+//             <div className="md:col-span-1"><label className={labelStyles}>Width of Road</label><RadioGroup options={['< 10ft', '< 20ft', '> 20ft']} value={formData.property.widthOfRoad} onChange={v => updateSection('property', 'widthOfRoad', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Plot Shape</label><RadioGroup options={['Rectangle', 'square', 'triangle', 'irregular', 'polygon']} value={formData.property.plotShape} onChange={v => updateSection('property', 'plotShape', v)} /></div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-gray-200 bg-white rounded-xl">
+//               <div className="md:col-span-3"><label className={labelStyles}>Dimension Unit</label><RadioGroup options={['ft', 'm', 'inch']} value={formData.property.dimensionUnit} onChange={v => updateSection('property', 'dimensionUnit', v)} /></div>
+//               <div><label className={labelStyles}>Length</label><input type="number" className={inputStyles} value={formData.property.length} onChange={e => { updateSection('property', 'length', e.target.value); const b = parseFloat(formData.property.breadth) || 0; updateSection('property', 'calculatedArea', (parseFloat(e.target.value || '0') * b).toString()); }} /></div>
+//               <div><label className={labelStyles}>Breadth</label><input type="number" className={inputStyles} value={formData.property.breadth} onChange={e => { updateSection('property', 'breadth', e.target.value); const l = parseFloat(formData.property.length) || 0; updateSection('property', 'calculatedArea', (parseFloat(e.target.value || '0') * l).toString()); }} /></div>
+//               <div className="md:col-span-3 border-t border-gray-100 pt-4 mt-2"><label className={labelStyles}>Conversion Unit</label><RadioGroup options={['sq ft', 'sq yd', 'sq mt', 'Acre', 'Hectare', 'Guntas']} value={formData.property.conversionUnit} onChange={v => updateSection('property', 'conversionUnit', v)} /></div>
+//               <div className="md:col-span-3"><label className={labelStyles}>Calculated Area (Dimensions converted to selected unit)</label><input type="text" className={`${inputStyles} bg-gray-50`} readOnly value={formData.property.calculatedArea} /></div>
+//             </div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-200 bg-white rounded-xl">
+//               <div className="md:col-span-2"><label className={labelStyles}>Wall Unit</label><RadioGroup options={['ft', 'm', 'inch']} value={formData.property.wallUnit} onChange={v => updateSection('property', 'wallUnit', v)} /></div>
+//               <div><label className={labelStyles}>Wall Length</label><input type="number" className={inputStyles} value={formData.property.wallLength} onChange={e => updateSection('property', 'wallLength', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Wall Height</label><input type="number" className={inputStyles} value={formData.property.wallHeight} onChange={e => updateSection('property', 'wallHeight', e.target.value)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Walls on Side</label><RadioGroup options={['1', '2', '3', '4']} value={formData.property.wallsOnSide} onChange={v => updateSection('property', 'wallsOnSide', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Type of Brick</label><RadioGroup options={['brick work', 'Rcc', 'pacca offset / pavement']} value={formData.property.brickType} onChange={v => updateSection('property', 'brickType', v)} /></div>
+//             </div>
+
+//             <NextSectionButton onClick={() => setActiveSection('boundaries')} nextFocusId="boundaries-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Boundaries & Negative Points', 'boundaries')}
+//         {activeSection === 'boundaries' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10 space-y-8">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles} id="boundaries-first">Boundary Unit</label>
+//               <RadioGroup options={['length', 'feet', 'meters', 'inchs']} value={formData.boundaries.unit} onChange={v => updateSection('boundaries', 'unit', v)} />
+//             </div>
+            
+//             {/* 1. Boundary Dimensions (Numbers) */}
+//             <div>
+//               <div className="flex items-center justify-between mb-3">
+//                 <h4 className="text-[13px] font-bold text-[#00a0ef]">Boundary Dimensions</h4>
+//                 <label className="flex items-center gap-2 text-[12px] font-semibold text-gray-700 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+//                   <input 
+//                     type="checkbox" 
+//                     className="w-4 h-4 text-[#00a0ef] rounded border-gray-300 focus:ring-[#00a0ef]"
+//                     checked={formData.boundaries.dimensionsMatch} 
+//                     onChange={(e) => {
+//                       const checked = e.target.checked;
+//                       updateSection('boundaries', 'dimensionsMatch', checked);
+//                       if (checked) {
+//                         // Auto-sync Deed to Actual immediately
+//                         updateSection('boundaries', 'northActualDim', formData.boundaries.northDeedDim);
+//                         updateSection('boundaries', 'southActualDim', formData.boundaries.southDeedDim);
+//                         updateSection('boundaries', 'eastActualDim', formData.boundaries.eastDeedDim);
+//                         updateSection('boundaries', 'westActualDim', formData.boundaries.westDeedDim);
+//                       }
+//                     }} 
+//                   />
+//                   Actual dimensions match document
+//                 </label>
+//               </div>
+
+//               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//                 {(['north', 'south', 'east', 'west'] as const).map(dir => (
+//                   <div key={`${dir}Dim`} className="flex gap-2">
+//                     <div className="flex-1">
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Deed)</label>
+//                       <input 
+//                         type="text" 
+//                         className={inputStyles} 
+//                         value={(formData.boundaries as any)[`${dir}DeedDim`]} 
+//                         onChange={e => handleDimensionChange(dir, 'DeedDim', e.target.value)} 
+//                       />
+//                     </div>
+//                     <div className="flex-1">
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Actual)</label>
+//                       <input 
+//                         type="text" 
+//                         className={`${inputStyles} ${formData.boundaries.dimensionsMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+//                         value={(formData.boundaries as any)[`${dir}ActualDim`]} 
+//                         onChange={e => handleDimensionChange(dir, 'ActualDim', e.target.value)} 
+//                         disabled={formData.boundaries.dimensionsMatch}
+//                       />
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+
+//             {/* 2. Textual Boundaries (Neighbors, Properties, etc.) */}
+//             <div>
+//               <div className="flex items-center justify-between mb-3">
+//                 <h4 className="text-[13px] font-bold text-[#00a0ef]">Boundary Descriptions (Neighbors)</h4>
+//                 <label className="flex items-center gap-2 text-[12px] font-semibold text-gray-700 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+//                   <input 
+//                     type="checkbox" 
+//                     className="w-4 h-4 text-[#00a0ef] rounded border-gray-300 focus:ring-[#00a0ef]"
+//                     checked={formData.boundaries.boundariesMatch} 
+//                     onChange={(e) => {
+//                       const checked = e.target.checked;
+//                       updateSection('boundaries', 'boundariesMatch', checked);
+//                       if (checked) {
+//                         // Auto-sync Deed to Actual immediately
+//                         updateSection('boundaries', 'northBoundaryActual', formData.boundaries.northBoundaryDeed);
+//                         updateSection('boundaries', 'southBoundaryActual', formData.boundaries.southBoundaryDeed);
+//                         updateSection('boundaries', 'eastBoundaryActual', formData.boundaries.eastBoundaryDeed);
+//                         updateSection('boundaries', 'westBoundaryActual', formData.boundaries.westBoundaryDeed);
+//                       }
+//                     }} 
+//                   />
+//                   Actual neighbors match document
+//                 </label>
+//               </div>
+
+//               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//                 {(['north', 'south', 'east', 'west'] as const).map(dir => (
+//                   <div key={`${dir}Text`} className="flex gap-2">
+//                     <div className="flex-1">
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} Neighbor (Deed)</label>
+//                       <input 
+//                         type="text" 
+//                         placeholder="e.g. H.No 2-1-206"
+//                         className={inputStyles} 
+//                         value={(formData.boundaries as any)[`${dir}BoundaryDeed`]} 
+//                         onChange={e => handleTextBoundaryChange(dir, 'Deed', e.target.value)} 
+//                       />
+//                     </div>
+//                     <div className="flex-1">
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} Neighbor (Actual)</label>
+//                       <input 
+//                         type="text" 
+//                         placeholder="e.g. H.No 2-1-206"
+//                         className={`${inputStyles} ${formData.boundaries.boundariesMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+//                         value={(formData.boundaries as any)[`${dir}BoundaryActual`]} 
+//                         onChange={e => handleTextBoundaryChange(dir, 'Actual', e.target.value)} 
+//                         disabled={formData.boundaries.boundariesMatch}
+//                       />
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+
+//             <div className="border-t border-gray-200 pt-6 mt-6">
+//               <label className={labelStyles}>Property Negative Points</label>
+//               <MultiSelectGroup 
+//                 options={['HT line Over building', 'transformer in front', 'sub division of property', 'community dominace', 'common stair for separate units', 'near rail way track', 'near drain', 'near banquet hall']} 
+//                 selected={formData.negativePoints} 
+//                 onChange={v => setFormData((prev: AppState) => ({ ...prev, negativePoints: v }))} 
+//               />
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//     </div>
+//   );
+// }
+
+// function Step2Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const [activeSection, setActiveSection] = useState<string>('floors');
+//   const [activeFloorId, setActiveFloorId] = useState<string>('');
+
+//   useEffect(() => {
+//     if (formData.floors.length > 0 && !activeFloorId) setActiveFloorId(formData.floors[0].id);
+//   }, [formData.floors]);
+
+//   const handleAddFloor = (floorName: string) => {
+//     if (!floorName) return;
+//     const existing = formData.floors.find((f: FloorDetail) => f.floorName === floorName);
+//     if (existing) {
+//       setActiveFloorId(existing.id);
+//     } else {
+//       const newFloor: FloorDetail = {
+//         id: Math.random().toString(36).substr(2, 9),
+//         floorName, possessionWith: '', unit: '', length: '', breadth: '', conversionUnit: '', coveredArea: '', condition: '', structure: '', flooring: '', accommodation: '', doorsWindows: '', floorRemarks: ''
+//       };
+//       setFormData((prev: AppState) => ({ ...prev, floors: [...prev.floors, newFloor] }));
+//       setActiveFloorId(newFloor.id);
+//     }
+//   };
+
+//   const updateFloor = (id: string, field: keyof FloorDetail, value: string) => {
+//     setFormData((prev: AppState) => ({
+//       ...prev,
+//       floors: prev.floors.map(f => {
+//         if (f.id === id) {
+//           const newF = { ...f, [field]: value };
+//           if (field === 'length' || field === 'breadth') {
+//             const l = parseFloat(newF.length) || 0;
+//             const b = parseFloat(newF.breadth) || 0;
+//             newF.coveredArea = (l * b).toString();
+//           }
+//           return newF;
+//         }
+//         return f;
+//       })
+//     }));
+//   };
+
+//   const removeFloor = (id: string) => {
+//     setFormData((prev: AppState) => {
+//       const newFloors = prev.floors.filter(f => f.id !== id);
+//       if (activeFloorId === id) setActiveFloorId(newFloors.length > 0 ? newFloors[0].id : '');
+//       return { ...prev, floors: newFloors };
+//     });
+//   };
+
+//   const updateMarket = (field: string, value: any) => {
+//     setFormData((prev: AppState) => ({ ...prev, market: { ...prev.market, [field]: value } }));
+//   };
+
+//   const renderSectionHeader = (title: string, id: string) => (
+//     <div className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'}`} onClick={() => setActiveSection(activeSection === id ? '' : id)}>
+//       <h3 className="font-bold md:text-[15px] text-[#00a0ef]">{title}</h3>
+//       <ChevronDown className={`w-5 h-5 text-[#00a0ef] transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+      
+//       <div>
+//         {renderSectionHeader('Building Details (Per Floor)', 'floors')}
+//         {activeSection === 'floors' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10">
+//             <div className="mb-6">
+//               <label className={labelStyles}>Select or Add Floor Details</label>
+//               <RadioGroup options={['basement', 'stilt', 'GF', 'FF', 'SF', 'TF', '4th', 'multistorey']} value="" onChange={v => handleAddFloor(v)} />
+//             </div>
+
+//             {formData.floors.length > 0 && (
+//               <div className="flex flex-col md:flex-row gap-4">
+//                 <div className="md:w-48 shrink-0 flex flex-col gap-2">
+//                   {formData.floors.map(f => (
+//                     <div key={f.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${activeFloorId === f.id ? 'bg-[#00a0ef] border-[#00a0ef] text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`} onClick={() => setActiveFloorId(f.id)}>
+//                       <span className="font-semibold text-[13px]">{f.floorName}</span>
+//                       <button type="button" onClick={(e) => { e.stopPropagation(); removeFloor(f.id); }} className={`p-1 rounded hover:bg-black/10 ${activeFloorId === f.id ? 'text-white' : 'text-gray-400 hover:text-red-500'}`}><Trash2 size={14} /></button>
+//                     </div>
+//                   ))}
+//                 </div>
+                
+//                 <div className="flex-1 bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
+//                   {formData.floors.filter(f => f.id === activeFloorId).map(activeFloor => (
+//                     <div key={activeFloor.id} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//                       <div className="md:col-span-2 pb-3 border-b border-gray-100 mb-2">
+//                         <h4 className="font-bold text-[#00a0ef] text-[15px]">{activeFloor.floorName} Details</h4>
+//                       </div>
+
+//                       <div className="md:col-span-2"><label className={labelStyles}>Possession With</label><RadioGroup options={['owner', 'tenant']} value={activeFloor.possessionWith} onChange={v => updateFloor(activeFloor.id, 'possessionWith', v)} /></div>
+
+//                       <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+//                         <div><label className={labelStyles}>Unit</label><RadioGroup options={['feet', 'inch', 'meter']} value={activeFloor.unit} onChange={v => updateFloor(activeFloor.id, 'unit', v)} /></div>
+//                         <div><label className={labelStyles}>Length</label><input type="number" className={inputStyles} value={activeFloor.length} onChange={e => updateFloor(activeFloor.id, 'length', e.target.value)} /></div>
+//                         <div><label className={labelStyles}>Breadth</label><input type="number" className={inputStyles} value={activeFloor.breadth} onChange={e => updateFloor(activeFloor.id, 'breadth', e.target.value)} /></div>
+//                         <div className="md:col-span-3 border-t border-gray-50 pt-4"><label className={labelStyles}>Conversion Unit</label><RadioGroup options={['sq ft', 'sq yd', 'sq mt', 'Acre', 'Hectare', 'Guntas']} value={activeFloor.conversionUnit} onChange={v => updateFloor(activeFloor.id, 'conversionUnit', v)} /></div>
+//                         <div className="md:col-span-3"><label className={labelStyles}>Covered Area</label><input type="text" className={`${inputStyles} bg-gray-50`} readOnly value={activeFloor.coveredArea} /></div>
+//                       </div>
+
+//                       <div className="md:col-span-2"><label className={labelStyles}>Condition</label><RadioGroup options={['excellent', 'good', 'avg', 'poor', 'under construction', 'under finishing', 'others']} value={activeFloor.condition} onChange={v => updateFloor(activeFloor.id, 'condition', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Structure</label><RadioGroup options={['Rcc framed', 'load bearing', 'composite Structure', 'Peb/shed']} value={activeFloor.structure} onChange={v => updateFloor(activeFloor.id, 'structure', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Flooring</label><RadioGroup options={['tiles', 'marble', 'wood', 'cement', 'pending', 'other']} value={activeFloor.flooring} onChange={v => updateFloor(activeFloor.id, 'flooring', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Accommodation</label><RadioGroup options={['storage', 'shop', 'office space', '1BHK', '1.5BHK', '2BHK', '2.5BHK', '3BHK', '3.5BHK', '4BHK', '4.5BHK', '5BHK', '5.5BHK', '6BHK', 'studio', 'penthouse']} value={activeFloor.accommodation} onChange={v => updateFloor(activeFloor.id, 'accommodation', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Doors / Windows</label><RadioGroup options={['wooden', 'aluminium', 'glass', 'upvc', 'pending', 'N/A']} value={activeFloor.doorsWindows} onChange={v => updateFloor(activeFloor.id, 'doorsWindows', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Floor Remarks</label><textarea rows={3} className={inputStyles} value={activeFloor.floorRemarks} onChange={e => updateFloor(activeFloor.id, 'floorRemarks', e.target.value)}></textarea></div>
+//                     </div>
+//                   ))}
+//                 </div>
+//               </div>
+//             )}
+            
+//             <NextSectionButton onClick={() => setActiveSection('market')} nextFocusId="market-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Building-Shared / Market', 'market')}
+//         {activeSection === 'market' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles} id="market-first">Year of Construction</label><input type="text" className={inputStyles} value={formData.market.yearOfConstruction} onChange={e => updateMarket('yearOfConstruction', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Renovation</label><RadioGroup options={['yes', 'no']} value={formData.market.renovation} onChange={v => updateMarket('renovation', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Parking</label><RadioGroup options={['covered', 'notpresent', 'open', 'N/A']} value={formData.market.parking} onChange={v => updateMarket('parking', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Lift</label><RadioGroup options={['yes', 'No', 'N/A']} value={formData.market.lift} onChange={v => updateMarket('lift', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Kitchen Type</label><RadioGroup options={['modular', 'semi modular', 'odinary', 'N/A', 'other']} value={formData.market.kitchenType} onChange={v => updateMarket('kitchenType', v)} /></div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               <div className="md:col-span-3 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Rental Income</h4></div>
+//               <div><label className={labelStyles}>Minimum</label><input type="number" className={inputStyles} value={formData.market.rentalMin} onChange={e => updateMarket('rentalMin', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Maximum</label><input type="number" className={inputStyles} value={formData.market.rentalMax} onChange={e => updateMarket('rentalMax', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Unit</label><RadioGroup options={['hundred', 'thousand', 'lakh', 'crore']} value={formData.market.rentalUnit} onChange={v => updateMarket('rentalUnit', v)} /></div>
+//             </div>
+
+//             {['Client', 'Dealer', 'Market'].map((type) => {
+//               const minField = `market${type}Min` as keyof AppState['market'];
+//               const maxField = `market${type}Max` as keyof AppState['market'];
+//               const unitField = `market${type}Unit` as keyof AppState['market'];
+//               return (
+//                 <div key={type} className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//                   <div className="md:col-span-3 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Market Rate ({type === 'Market' ? 'As per market' : type})</h4></div>
+//                   <div><label className={labelStyles}>Minimum</label><input type="number" className={inputStyles} value={formData.market[minField] as string} onChange={e => updateMarket(minField, e.target.value)} /></div>
+//                   <div><label className={labelStyles}>Maximum</label><input type="number" className={inputStyles} value={formData.market[maxField] as string} onChange={e => updateMarket(maxField, e.target.value)} /></div>
+//                   <div><label className={labelStyles}>Unit</label><RadioGroup options={['hundred', 'thousand', 'lakh', 'crore']} value={formData.market[unitField] as string} onChange={v => updateMarket(unitField, v)} /></div>
+//                 </div>
+//               );
+//             })}
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               <div className="md:col-span-2 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Dealer Details</h4></div>
+//               <div><label className={labelStyles}>Dealer Name</label><input type="text" className={inputStyles} value={formData.market.dealerName} onChange={e => updateMarket('dealerName', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Mobile Number</label><input type="tel" className={inputStyles} value={formData.market.dealerMobile} onChange={e => updateMarket('dealerMobile', e.target.value)} /></div>
+//             </div>
+
+//             <div className="md:col-span-2 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+//               <div className="flex items-center justify-between mb-3">
+//                 <label className={labelStyles}>Additional Details</label>
+//                 <button type="button" onClick={() => updateMarket('additionalDetails', [...formData.market.additionalDetails, { key: '', value: '' }])} className="text-[13px] font-semibold text-[#00a0ef] hover:underline flex items-center gap-1"><Plus size={14} /> Add Detail</button>
+//               </div>
+//               <div className="space-y-3">
+//                 {formData.market.additionalDetails.map((pair, idx) => (
+//                   <div key={idx} className="flex gap-3">
+//                     <input type="text" placeholder="Key" className={inputStyles} value={pair.key} onChange={e => {
+//                       const newArr = [...formData.market.additionalDetails];
+//                       newArr[idx].key = e.target.value;
+//                       updateMarket('additionalDetails', newArr);
+//                     }} />
+//                     <input type="text" placeholder="Value" className={inputStyles} value={pair.value} onChange={e => {
+//                       const newArr = [...formData.market.additionalDetails];
+//                       newArr[idx].value = e.target.value;
+//                       updateMarket('additionalDetails', newArr);
+//                     }} />
+//                     <button type="button" onClick={() => {
+//                       const newArr = formData.market.additionalDetails.filter((_, i) => i !== idx);
+//                       updateMarket('additionalDetails', newArr);
+//                     }} className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Step3Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const photoInputRef = useRef<HTMLInputElement>(null);
+//   const docInputRef = useRef<HTMLInputElement>(null);
+
+//   const handleFileUpload = (type: 'photos' | 'documents', e: React.ChangeEvent<HTMLInputElement>) => {
+//     if (e.target.files) {
+//       setFormData((prev: AppState) => ({ ...prev, uploads: { ...prev.uploads, [type]: [...prev.uploads[type], ...Array.from(e.target.files!)] } }));
+//     }
+//   };
+
+//   const removeFile = (type: 'photos' | 'documents', idx: number) => {
+//     setFormData((prev: AppState) => ({ ...prev, uploads: { ...prev.uploads, [type]: prev.uploads[type].filter((_, i) => i !== idx) } }));
+//   };
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm p-4 md:p-6 space-y-8">
+//       <div>
+//         <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Site Photos <span className="text-red-500">*</span></h3>
+//         <div onClick={() => photoInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+//           <input type="file" multiple accept="image/*" className="hidden" ref={photoInputRef} onChange={(e) => handleFileUpload('photos', e)} />
+//           <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
+//           <p className="text-sm text-gray-600 text-center">Click to <span className="text-[#00a0ef] font-medium">browse photos</span></p>
+//         </div>
+//         {formData.uploads.photos.length > 0 && (
+//           <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4">
+//             {formData.uploads.photos.map((file, idx) => (
+//               <div key={idx} className="relative aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center group">
+//                 <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover transition-opacity group-hover:opacity-75" />
+//                 <button type="button" onClick={(e) => { e.stopPropagation(); removeFile('photos', idx); }} className="absolute top-1 right-1 bg-white/90 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 text-red-500"><X size={14} /></button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+
+//       <div className="border-t border-gray-100 pt-8">
+//         <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Documents <span className="text-red-500">*</span></h3>
+//         <div onClick={() => docInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+//           <input type="file" multiple className="hidden" ref={docInputRef} onChange={(e) => handleFileUpload('documents', e)} />
+//           <FileText className="w-8 h-8 text-gray-400 mb-2" />
+//           <p className="text-sm text-gray-600 text-center">Click to <span className="text-[#00a0ef] font-medium">browse documents</span></p>
+//         </div>
+//         {formData.uploads.documents.length > 0 && (
+//           <div className="space-y-3 mt-4">
+//             {formData.uploads.documents.map((file, idx) => (
+//               <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-xl">
+//                 <div className="flex items-center gap-3"><div className="w-10 h-10 bg-[#e6f5fd] rounded-lg flex items-center justify-center text-[#00a0ef]"><FileText className="w-5 h-5" /></div><div><p className="text-[13px] font-medium text-gray-900 line-clamp-1">{file.name}</p><p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(1)} MB</p></div></div>
+//                 <button type="button" onClick={() => removeFile('documents', idx)} className="text-[13px] text-red-500 font-medium px-2 py-1">Remove</button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Step4Form({ formData, onEditStep, isConfirmed, setIsConfirmed }: { formData: AppState; onEditStep: (step: number) => void; isConfirmed: boolean; setIsConfirmed: (v: boolean) => void }) {
+//   const MainCategory = ({ title, icon: Icon, children }: any) => (
+//     <div className="mb-8 px-1"><div className="flex items-center gap-2 mb-4"><div className="w-5 h-5 flex items-center justify-center text-[#00a0ef]"><Icon className="w-5 h-5 fill-current opacity-20" strokeWidth={2} /></div><h3 className="text-[15px] font-bold text-gray-900">{title}</h3></div><div className="bg-white px-2">{children}</div></div>
+//   );
+//   const SubCategory = ({ title, stepNum, children }: any) => (
+//     <div className="py-4 border-b border-gray-200 last:border-0 first:pt-0"><div className="flex items-center justify-between mb-4"><h4 className="text-[13px] font-bold text-gray-800">{title}</h4><button type="button" onClick={() => onEditStep(stepNum)} className="text-[#00a0ef] hover:bg-blue-50 p-1.5 rounded transition-colors"><Edit2 className="w-3.5 h-3.5" /></button></div><div className="grid grid-cols-2 gap-y-4 gap-x-4">{children}</div></div>
+//   );
+//   const DataField = ({ label, value }: any) => (
+//     <div><p className="text-[11px] text-gray-500 font-medium mb-1">{label}</p><div className="text-[13px] font-medium text-gray-900 break-words">{value || '—'}</div></div>
+//   );
+
+//   return (
+//     <div className="max-w-3xl bg-white mx-auto md:px-4 pb-8">
+//       <div className="py-6 px-2"><h2 className="text-[18px] font-bold text-[#00a0ef]">Review & Submit</h2></div>
+
+//       <MainCategory title="Client, Owner & Property" icon={Landmark}>
+//         <SubCategory title="Bank Details" stepNum={1}>
+//           <DataField label="IFSC Code" value={formData.clientBank.ifsc} />
+//           <DataField label="Bank Name" value={formData.clientBank.bankName} />
+//           <DataField label="Branch" value={formData.clientBank.branch} />
+//           <DataField label="Email" value={formData.clientBank.email} />
+//           <DataField label="POC" value={`${formData.clientBank.contactPersonName} / ${formData.clientBank.contactPersonNumber}`} />
+//           <DataField label="Dates" value={`${formData.clientBank.dateOfInspection} / ${formData.clientBank.dateOfValuation}`} />
+//           <DataField label="Type of Property" value={formData.clientBank.propertyType} />
+//           <DataField label="Purpose" value={formData.clientBank.purposeOfValuation} />
+//         </SubCategory>
+//         <SubCategory title="Owner Details & Locality" stepNum={1}>
+//           <DataField label="Name" value={`${formData.owner.prefix} ${formData.owner.ownerName}`} />
+//           <DataField label="Relation" value={`${formData.owner.relation} ${formData.owner.relationName}`} />
+//           <DataField label="Phone" value={`${formData.owner.phone1} / ${formData.owner.phone2}`} />
+//           <DataField label="Urban/Rural" value={formData.locality.urbanRural} />
+//           <DataField label="Class" value={formData.locality.localityClass} />
+//           <DataField label="Tenure" value={formData.locality.landTenure} />
+//         </SubCategory>
+//         <SubCategory title="Property Settings" stepNum={1}>
+//           <DataField label="Address" value={formData.property.address} />
+//           <DataField label="Nature" value={formData.property.natureOfProperty} />
+//           <DataField label="Shape" value={formData.property.plotShape} />
+//           <DataField label="Calculated Area" value={`${formData.property.calculatedArea} ${formData.property.conversionUnit}`} />
+//           <DataField label="Wall Setup" value={`${formData.property.wallLength}x${formData.property.wallHeight} ${formData.property.wallUnit}`} />
+//           <DataField label="Negative Points" value={formData.negativePoints.join(', ')} />
+//         </SubCategory>
+//         <SubCategory title="Boundaries" stepNum={1}>
+//           <DataField label="Unit" value={formData.boundaries.unit} />
+//           <DataField label="North (Doc/Act)" value={`${formData.boundaries.northDoc} / ${formData.boundaries.northAct}`} />
+//           <DataField label="South (Doc/Act)" value={`${formData.boundaries.southDoc} / ${formData.boundaries.southAct}`} />
+//           <DataField label="East (Doc/Act)" value={`${formData.boundaries.eastDoc} / ${formData.boundaries.eastAct}`} />
+//           <DataField label="West (Doc/Act)" value={`${formData.boundaries.westDoc} / ${formData.boundaries.westAct}`} />
+//         </SubCategory>
+//         <SubCategory title="Boundary Descriptions" stepNum={1}>
+//           <DataField label="Match Status" value={formData.boundaries.boundariesMatch ? "Deed and Actual Match" : "Differing Details"} />
+//           <DataField label="North (Doc/Act)" value={`${formData.boundaries.northBoundaryDeed || 'N/A'} / ${formData.boundaries.northBoundaryActual || 'N/A'}`} />
+//           <DataField label="South (Doc/Act)" value={`${formData.boundaries.southBoundaryDeed || 'N/A'} / ${formData.boundaries.southBoundaryActual || 'N/A'}`} />
+//           <DataField label="East (Doc/Act)" value={`${formData.boundaries.eastBoundaryDeed || 'N/A'} / ${formData.boundaries.eastBoundaryActual || 'N/A'}`} />
+//           <DataField label="West (Doc/Act)" value={`${formData.boundaries.westBoundaryDeed || 'N/A'} / ${formData.boundaries.westBoundaryActual || 'N/A'}`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <MainCategory title="Building & Market Details" icon={Building}>
+//         {formData.floors.map((floor) => (
+//           <SubCategory key={floor.id} title={`Floor: ${floor.floorName}`} stepNum={2}>
+//             <DataField label="Possession" value={floor.possessionWith} />
+//             <DataField label="Covered Area" value={`${floor.coveredArea} ${floor.conversionUnit}`} />
+//             <DataField label="Condition" value={floor.condition} />
+//             <DataField label="Structure" value={floor.structure} />
+//             <DataField label="Flooring" value={floor.flooring} />
+//             <DataField label="Accommodation" value={floor.accommodation} />
+//             <DataField label="Doors/Windows" value={floor.doorsWindows} />
+//             <DataField label="Remarks" value={floor.floorRemarks} />
+//           </SubCategory>
+//         ))}
+//         <SubCategory title="Market & Shared Details" stepNum={2}>
+//           <DataField label="Year Constructed" value={formData.market.yearOfConstruction} />
+//           <DataField label="Renovation" value={formData.market.renovation} />
+//           <DataField label="Parking" value={formData.market.parking} />
+//           <DataField label="Rental Income" value={`${formData.market.rentalMin} - ${formData.market.rentalMax} ${formData.market.rentalUnit}`} />
+//           <DataField label="Client Rate" value={`${formData.market.marketClientMin} - ${formData.market.marketClientMax} ${formData.market.marketClientUnit}`} />
+//           <DataField label="Dealer Rate" value={`${formData.market.marketDealerMin} - ${formData.market.marketDealerMax} ${formData.market.marketDealerUnit}`} />
+//           <DataField label="Market Rate" value={`${formData.market.marketMarketMin} - ${formData.market.marketMarketMax} ${formData.market.marketMarketUnit}`} />
+//           <DataField label="Dealer Details" value={`${formData.market.dealerName} / ${formData.market.dealerMobile}`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <MainCategory title="Uploads" icon={UploadCloud}>
+//         <SubCategory title="Files Overview" stepNum={3}>
+//           <DataField label="Photos" value={`${formData.uploads.photos.length} uploaded`} />
+//           <DataField label="Documents" value={`${formData.uploads.documents.length} uploaded`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <div className="mt-8 p-4 bg-[#f8fafc] border border-gray-200 rounded-xl flex flex-col gap-2">
+//         <div className="flex items-start gap-3">
+//           <div className="pt-0.5"><input type="checkbox" id="final-confirm" checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]" /></div>
+//           <label htmlFor="final-confirm" className="text-[13px] text-gray-700 leading-relaxed select-none cursor-pointer">I confirm that all information provided above is correct.</label>
+//         </div>
+//         {(!formData.uploads.photos.length || !formData.uploads.documents.length) && (
+//           <p className="text-red-500 text-[12px] font-medium mt-1">Please ensure at least one photo and one document is uploaded in Step 3 before submitting.</p>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default function App() {
+//   const [currentStep, setCurrentStep] = useState(1);
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const [isConfirmed, setIsConfirmed] = useState(false);
+//   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
+
+//   const [customers, setCustomers] = useState<any[]>([]);
+//   const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
+
+//   const [formData, setFormData] = useState<AppState>({
+//     customer: '',
+//     clientBank: { ifsc: '', bankName: '', branch: '', email: '', contactPersonName: '', contactPersonNumber: '', dateOfInspection: '', dateOfValuation: '', propertyType: '', purposeOfValuation: '' },
+//     owner: { prefix: 'Shri', ownerName: '', relation: 'S/o', relationName: '', occupation: '', phone1: '', phone2: '' },
+//     locality: { urbanRural: '', localityClass: '', landTenure: '', widthOfRoad: '', noOfStories: '', sanitaryFitting: '', electricalFitting: '', townplan: '' },
+//     property: { address: '', natureOfProperty: '', vacantPlot: '', widthOfRoad: '', latitude: '', longitude: '', boundaryCoordinates: [], plotShape: '', dimensionUnit: '', length: '', breadth: '', conversionUnit: '', calculatedArea: '', wallUnit: '', wallLength: '', wallHeight: '', wallsOnSide: '', brickType: '' },
+//     boundaries: { 
+//       unit: '', 
+//       dimensionsMatch: false,
+//       boundariesMatch: false,
+//       northDeedDim: '', southDeedDim: '', eastDeedDim: '', westDeedDim: '',
+//       northActualDim: '', southActualDim: '', eastActualDim: '', westActualDim: '',
+//       northBoundaryDeed: '', southBoundaryDeed: '', eastBoundaryDeed: '', westBoundaryDeed: '',
+//       northBoundaryActual: '', southBoundaryActual: '', eastBoundaryActual: '', westBoundaryActual: ''
+//     },
+//     floors: [],
+//     market: { yearOfConstruction: '', renovation: '', parking: '', lift: '', rentalMin: '', rentalMax: '', rentalUnit: '', kitchenType: '', marketClientMin: '', marketClientMax: '', marketClientUnit: '', marketDealerMin: '', marketDealerMax: '', marketDealerUnit: '', marketMarketMin: '', marketMarketMax: '', marketMarketUnit: '', dealerName: '', dealerMobile: '', additionalDetails: [] },
+//     negativePoints: [],
+//     uploads: { photos: [], documents: [] }
+//   });
+
+//   useEffect(() => {
+//     const fetchCustomers = async () => {
+//       try {
+//         const data = await api.getCustomerProfiles();
+//         setCustomers(data);
+//       } catch (error) {
+//         console.error("Failed to fetch customers:", error);
+//       } finally {
+//         setIsLoadingCustomers(false);
+//       }
+//     };
+//     fetchCustomers();
+//   }, []);
+
+//   const handleCustomerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+//     const selectedId = e.target.value;
+//     const selectedCustomer = customers.find(c => c.id === selectedId);
+
+//     if (selectedCustomer) {
+//       setFormData(prev => ({
+//         ...prev,
+//         customer: selectedId,
+//         clientBank: { ...prev.clientBank, ...selectedCustomer.clientBank },
+//         owner: { ...prev.owner, ...selectedCustomer.owner }
+//       }));
+//     } else {
+//       setFormData(prev => ({ ...prev, customer: '' }));
+//     }
+//   };
+
+//   const handleStepContinue = () => {
+//     if (currentStep < 4) { setCurrentStep(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+//     else { handleSubmit(); }
+//   };
+
+//   const handleStepBack = () => {
+//     if (currentStep > 1) { setCurrentStep(prev => prev - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!isConfirmed) { alert('Please check the confirmation box to submit.'); return; }
+//     setIsSubmitting(true);
+    
+//     try {
+//       // 1. Await Firebase Storage uploads to get actual remote URLs
+//       const customerIdPath = formData.customer || "unknown_customer";
+      
+//       const uploadedPhotosUrls = await Promise.all(
+//         formData.uploads.photos.map(file => 
+//           uploadFile(file, `valuation-records/${customerIdPath}/photos/${Date.now()}_${file.name}`)
+//         )
+//       );
+      
+//       const uploadedDocumentsUrls = await Promise.all(
+//         formData.uploads.documents.map(file => 
+//           uploadFile(file, `valuation-records/${customerIdPath}/documents/${Date.now()}_${file.name}`)
+//         )
+//       );
+
+//       // 2. Attach generated URLs to the final backend payload
+//       const payload = {
+//         customer: formData.customer,
+//         clientBank: formData.clientBank,
+//         owner: formData.owner,
+//         locality: formData.locality,
+//         property: formData.property,
+//         boundaries: formData.boundaries,
+//         floors: formData.floors,
+//         market: formData.market,
+//         negativePoints: formData.negativePoints,
+//         uploads: { 
+//           photos: uploadedPhotosUrls, 
+//           documents: uploadedDocumentsUrls 
+//         }
+//       };
+
+//       await api.createValuationRecord(payload);
+//       setIsSubmittedSuccessfully(true);
+
+//     } catch (e) { 
+//       console.error("Failed to submit report:", e); 
+//       alert("An error occurred while uploading files or submitting the report.");
+//     } finally { 
+//       setIsSubmitting(false); 
+//     }
+//   };
+
+//   if (isSubmittedSuccessfully) {
+//     return (
+//       <div className="flex flex-col flex-1 w-full relative min-h-screen md:min-h-0 bg-white overflow-hidden items-center justify-center p-6">
+//         <div className="w-[88px] h-[88px] rounded-full flex items-center justify-center bg-[#f0f8fd] mb-6">
+//           <div className="w-[60px] h-[60px] rounded-full bg-white flex items-center justify-center shadow-sm">
+//             <div className="w-[32px] h-[32px] bg-[#00a0ef] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white" strokeWidth={3.5} /></div>
+//           </div>
+//         </div>
+//         <h2 className="text-[20px] lg:text-[24px] font-bold text-gray-900 mb-3 text-center">Report submitted successfully.</h2>
+//         <p className="text-[#8A94A6] text-[14px] md:text-[15px] mb-8 text-center max-w-sm">Files uploaded and data verified.</p>
+//         <button onClick={() => window.location.reload()} className="px-8 py-3 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white font-medium transition-colors">Start New Report</button>
+//       </div>
+//     );
+//   }
+
+//   const isUploadsReady = formData.uploads.photos.length > 0 && formData.uploads.documents.length > 0;
+//   const isSubmitDisabled = isSubmitting || (currentStep === 4 && (!isConfirmed || !isUploadsReady));
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col md:py-8">
+//       <div className="flex-1 flex flex-col w-full md:max-w-4xl md:mx-auto bg-white border-x md:border border-gray-200 md:rounded-xl md:shadow-sm overflow-hidden">
+        
+//         <div className="px-4 md:px-6 py-4 border-b border-gray-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+//           <h1 className="text-lg md:text-xl font-medium text-gray-900">Submit New Report</h1>
+//           <div className="relative w-full md:w-64">
+//             <select 
+//               className={`${inputStyles} appearance-none bg-blue-50/30 border-[#00a0ef]/30 font-medium disabled:opacity-50 disabled:cursor-not-allowed`} 
+//               value={formData.customer} 
+//               onChange={handleCustomerSelect}
+//               disabled={isLoadingCustomers}
+//             >
+//               <option value="">
+//                 {isLoadingCustomers ? 'Loading Customers...' : 'Select Customer (Prefill)...'}
+//               </option>
+              
+//               {customers.map((c) => (
+//                 <option key={c.id} value={c.id}>
+//                   {c.profileReference || `${c.owner?.ownerName || 'Unknown'} - ${c.clientBank?.bankName || 'Unknown Bank'}`}
+//                 </option>
+//               ))}
+//             </select>
+//             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//           </div>
+//         </div>
+
+//         <div className="px-6 pt-10 pb-6 md:pt-12 md:pb-8 border-b border-gray-200 bg-white shrink-0">
+//           <div className="max-w-xl mx-auto relative">
+//             <div className="flex items-center justify-between relative">
+//               <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gray-200" />
+//               {[1, 2, 3, 4].map((step) => {
+//                 const isCompleted = step < currentStep;
+//                 const isCurrent = step === currentStep;
+//                 return (
+//                   <div key={step} className="relative z-10 flex flex-col items-center">
+//                     <span className={`absolute -top-7 whitespace-nowrap text-xs font-semibold tracking-wide ${isCompleted || isCurrent ? 'text-[#00a0ef]' : 'text-gray-400'}`}>STEP {step}</span>
+//                     <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-white ${isCompleted ? 'border-2 border-[#00a0ef] bg-[#00a0ef]' : isCurrent ? 'border-2 border-[#00a0ef]' : 'border-2 border-gray-300'}`}>
+//                       {isCompleted && <CircleCheck color='white' fill='#00a0ef' />}
+//                       {isCurrent && <div className="w-4 h-4 bg-[#00a0ef] rounded-full" />}
+//                     </div>
+//                   </div>
+//                 );
+//               })}
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="flex-1 overflow-y-auto bg-gray-50 md:p-6">
+//           {currentStep === 1 && <Step1Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 2 && <Step2Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 3 && <Step3Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 4 && <Step4Form formData={formData} onEditStep={setCurrentStep} isConfirmed={isConfirmed} setIsConfirmed={setIsConfirmed} />}
+//         </div>
+        
+//         <div className="p-4 md:px-6 md:py-5 bg-white border-t border-gray-200 flex items-center justify-between mt-auto shrink-0">
+//           <button onClick={handleStepBack} className={`flex items-center px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 text-[13px] font-medium hover:bg-gray-50 transition-colors ${currentStep === 1 ? 'invisible' : ''}`}>
+//             <ArrowLeft className="w-4 h-4 mr-2" /> Back
+//           </button>
+//           <button onClick={handleStepContinue} disabled={isSubmitDisabled} className="flex items-center px-6 py-2.5 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white text-[13px] font-medium transition-shadow shadow-sm hover:shadow-md disabled:opacity-60">
+//             {isSubmitting ? 'Uploading & Submitting...' : currentStep === 4 ? 'Submit Report' : `Continue to Step ${currentStep + 1}`}
+//             {!isSubmitting && currentStep !== 4 && <ArrowRight className="w-4 h-4 ml-2" />}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// 'use client';
+
+// import React, { useState, useEffect, useCallback, useRef } from 'react';
+// import { Building, Landmark, CheckCircle2, UploadCloud, X, FileText, Edit2, CircleCheck, Plus, Trash2, Check, RotateCcw, ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
+// import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+// import { api } from '@/app/lib/userApis';
+// import { uploadFile } from "@/app/lib/firebase/storageUtils";
+
+// type Coord = { lat: number; lng: number };
+// type Pin = { id: number; coord: Coord };
+// type Mode = "picking" | "submitted";
+
+// const MAX = 10;
+// const LABELS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10"];
+// const COLORS = ["#00a0ef", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#14b8a6", "#f97316", "#6366f1"];
+
+// export interface FloorDetail {
+//   id: string;
+//   floorName: string;
+//   possessionWith: string;
+//   unit: string;
+//   length: string;
+//   breadth: string;
+//   conversionUnit: string;
+//   coveredArea: string;
+//   condition: string;
+//   structure: string;
+//   flooring: string;
+//   accommodation: string;
+//   doorsWindows: string;
+//   floorRemarks: string;
+// }
+
+// // ─── FULLY UPDATED APP STATE ───
+// interface AppState {
+//   customer: string;
+//   clientBank: { ifsc: string; bankName: string; branch: string; email: string; contactPersonName: string; contactPersonNumber: string; dateOfInspection: string; dateOfValuation: string; propertyType: string; purposeOfValuation: string; };
+//   owner: { prefix: string; ownerName: string; relation: string; relationName: string; occupation: string; phone1: string; phone2: string; };
+//   locality: { urbanRural: string; localityClass: string; landTenure: string; widthOfRoad: string; noOfStories: string; sanitaryFitting: string; electricalFitting: string; townplan: string; };
+//   property: { address: string; natureOfProperty: string; vacantPlot: string; widthOfRoad: string; latitude: string; longitude: string; boundaryCoordinates: Coord[]; plotShape: string; dimensionUnit: string; length: string; breadth: string; conversionUnit: string; calculatedArea: string; wallUnit: string; wallLength: string; wallHeight: string; wallsOnSide: string; brickType: string; };
+//   boundaries: { 
+//     unit: string; 
+//     dimensionsMatch: boolean;
+//     boundariesMatch: boolean; 
+//     northDeedDim: string; southDeedDim: string; eastDeedDim: string; westDeedDim: string; 
+//     northActualDim: string; southActualDim: string; eastActualDim: string; westActualDim: string; 
+//     northBoundaryDeed: string; southBoundaryDeed: string; eastBoundaryDeed: string; westBoundaryDeed: string; 
+//     northBoundaryActual: string; southBoundaryActual: string; eastBoundaryActual: string; westBoundaryActual: string;
+//   };
+//   floors: FloorDetail[];
+//   market: { yearOfConstruction: string; renovation: string; parking: string; lift: string; rentalMin: string; rentalMax: string; rentalUnit: string; kitchenType: string; marketClientMin: string; marketClientMax: string; marketClientUnit: string; marketDealerMin: string; marketDealerMax: string; marketDealerUnit: string; marketMarketMin: string; marketMarketMax: string; marketMarketUnit: string; dealerName: string; dealerMobile: string; additionalDetails: { key: string; value: string }[]; };
+//   negativePoints: string[];
+//   uploads: { photos: File[]; documents: File[]; };
+// }
+
+// const inputStyles = "w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] focus:ring-1 focus:ring-[#00a0ef] text-[13px] text-gray-900 bg-white shadow-sm transition-shadow";
+// const labelStyles = "block text-[13px] font-semibold text-gray-700 mb-2";
+
+// const RadioGroup = ({ options, value, onChange }: { options: string[], value: string, onChange: (val: string) => void }) => {
+//   const isCustom = value !== '' && !options.includes(value);
+//   const [showCustom, setShowCustom] = useState(isCustom);
+
+//   return (
+//     <div className="flex flex-wrap gap-2 items-center">
+//       {options.map(opt => (
+//         <button key={opt} type="button" onClick={() => { setShowCustom(false); onChange(opt); }}
+//           className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border ${!showCustom && value === opt ? 'bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+//           {opt}
+//         </button>
+//       ))}
+//       <div className="flex items-center gap-2">
+//         {!showCustom && (
+//           <button type="button" onClick={() => { setShowCustom(true); onChange(''); }}
+//             className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border bg-white border-gray-200 text-gray-600 hover:bg-gray-50`}>
+//             Other / Add Option
+//           </button>
+//         )}
+//         {showCustom && (
+//           <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg pr-1 shadow-sm focus-within:border-[#00a0ef] focus-within:ring-1 focus-within:ring-[#00a0ef]">
+//             <input type="text" placeholder="Type custom option..." className="px-3 py-2 text-[13px] rounded-l-lg focus:outline-none border-none w-40" value={value} onChange={e => onChange(e.target.value)} autoFocus />
+//             <button type="button" onClick={() => { setShowCustom(false); onChange(''); }} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+//               <X size={14} />
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// const MultiSelectGroup = ({ options, selected, onChange }: { options: string[], selected: string[], onChange: (val: string[]) => void }) => {
+//   const toggle = (opt: string) => selected.includes(opt) ? onChange(selected.filter(i => i !== opt)) : onChange([...selected, opt]);
+//   const customValues = selected.filter(val => !options.includes(val));
+//   const [customInput, setCustomInput] = useState('');
+
+//   const handleAddCustom = () => {
+//     if (customInput.trim() && !selected.includes(customInput.trim())) {
+//       onChange([...selected, customInput.trim()]);
+//       setCustomInput('');
+//     }
+//   };
+
+//   return (
+//     <div className="flex flex-col gap-3">
+//       <div className="flex flex-wrap gap-2">
+//         {options.map(opt => (
+//           <button key={opt} type="button" onClick={() => toggle(opt)}
+//             className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all border ${selected.includes(opt) ? 'bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+//             {opt}
+//           </button>
+//         ))}
+//         {customValues.map(opt => (
+//           <button key={opt} type="button" onClick={() => toggle(opt)}
+//             className="px-3 py-2 rounded-lg text-[13px] font-medium transition-all border bg-blue-50 border-[#00a0ef] text-[#00a0ef] shadow-sm flex items-center gap-2">
+//             {opt} <X className="w-3 h-3" />
+//           </button>
+//         ))}
+//       </div>
+//       <div className="flex items-center gap-2">
+//         <input type="text" placeholder="Add custom option..." className="px-3 py-2 text-[13px] border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] w-48 shadow-sm" value={customInput} onChange={e => setCustomInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustom(); } }} />
+//         <button type="button" onClick={handleAddCustom} className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-[13px] font-medium hover:bg-gray-200 transition-colors">Add</button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// function NextSectionButton({ onClick, nextFocusId }: { onClick: () => void, nextFocusId: string }) {
+//   const handleAction = (e: React.MouseEvent | React.KeyboardEvent) => {
+//     e.preventDefault();
+//     onClick();
+//     setTimeout(() => document.getElementById(nextFocusId)?.focus(), 50);
+//   };
+//   return (
+//     <div className="md:col-span-full flex justify-end mt-4 border-t border-gray-200/50 pt-4">
+//       <button type="button" onClick={handleAction} onKeyDown={(e) => { if (e.key === 'Tab' && !e.shiftKey) { handleAction(e); } }} className="text-[#00a0ef] text-[13px] font-bold hover:underline flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#00a0ef] focus:ring-offset-2 rounded px-3 py-1.5 transition-colors">
+//         Next Section <ArrowRight className="w-4 h-4" />
+//       </button>
+//     </div>
+//   );
+// }
+
+// function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (coords: Coord[]) => void }) {
+//   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+//   const [center, setCenter] = useState<Coord>({ lat: 20, lng: 78 });
+//   const [zoom, setZoom] = useState(4);
+//   const [mode, setMode] = useState<Mode>("picking");
+//   const [pins, setPins] = useState<Pin[]>([]);
+//   const [nextId, setNextId] = useState(0);
+//   const [submitted, setSubmitted] = useState<Pin[]>([]);
+//   const [editTarget, setEditTarget] = useState<number | null>(null);
+//   const [userLocation, setUserLocation] = useState<Coord | null>(null);
+
+//   useEffect(() => {
+//     if ("geolocation" in navigator) {
+//       navigator.geolocation.getCurrentPosition(
+//         (position) => {
+//           const userLoc = { lat: position.coords.latitude, lng: position.coords.longitude };
+//           setUserLocation(userLoc); setCenter(userLoc); setZoom(18);
+//         },
+//         (error) => console.error("Error getting user location:", error),
+//         { enableHighAccuracy: true }
+//       );
+//     }
+//   }, []);
+
+//   const handleMapClick = useCallback((coord: Coord) => {
+//     if (mode === "picking") {
+//       if (pins.length >= MAX) return;
+//       setPins((prev) => [...prev, { id: nextId, coord }]);
+//       setNextId((n) => n + 1); return;
+//     }
+//     if (mode === "submitted" && editTarget !== null) {
+//       setSubmitted((prev) => prev.map((p, i) => (i === editTarget ? { ...p, coord } : p)));
+//       setEditTarget(null);
+//     }
+//   }, [mode, pins.length, nextId, editTarget]);
+
+//   const handleSubmit = () => {
+//     if (pins.length === 0) return;
+//     setSubmitted([...pins]); setMode("submitted"); setEditTarget(null);
+//     onCoordinatesSubmit(pins.map(p => p.coord));
+//   };
+
+//   return (
+//     <div className="flex flex-col w-full bg-white border border-gray-300 rounded-xl overflow-hidden shadow-sm">
+//       <div className="relative w-full h-64 md:h-80 bg-gray-100">
+//         <APIProvider apiKey={apiKey}>
+//           <Map mapId="geo-picker-form" center={center} zoom={zoom} mapTypeId="satellite"
+//             onCameraChanged={(ev) => { setCenter(ev.detail.center); setZoom(ev.detail.zoom); }}
+//             gestureHandling="greedy" colorScheme="LIGHT" mapTypeControl={true} zoomControl={true} fullscreenControl={true} streetViewControl={true}
+//             style={{ width: "100%", height: "100%" }}>
+//             {userLocation && (
+//               <AdvancedMarker position={userLocation}>
+//                 <div className="relative"><div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg" /><div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-ping opacity-40" /></div>
+//               </AdvancedMarker>
+//             )}
+//             <ClickHandler onClick={handleMapClick} />
+//             {(mode === "picking" ? pins : submitted).map((pin, i) => (
+//               <AdvancedMarker key={pin.id} position={pin.coord} zIndex={editTarget === i ? 100 : i}>
+//                 <button type="button" onClick={(e) => { e.stopPropagation(); if (mode === "submitted") setEditTarget(editTarget === i ? null : i); }}
+//                   className={`flex items-center justify-center rounded-full font-bold text-white text-xs shadow-md transition-all ${editTarget === i ? "w-10 h-10 ring-4 ring-white scale-110" : "w-8 h-8 ring-2 ring-white/80 scale-100"} ${mode === "submitted" ? "cursor-pointer" : "cursor-default"}`}
+//                   style={{ backgroundColor: COLORS[i] }}>{LABELS[i]}</button>
+//               </AdvancedMarker>
+//             ))}
+//           </Map>
+//         </APIProvider>
+//       </div>
+//       <div className="p-4 bg-gray-50 border-t border-gray-200">
+//         {mode === "picking" ? (
+//           <button type="button" onClick={handleSubmit} disabled={pins.length === 0}
+//             className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${pins.length > 0 ? "bg-[#00a0ef] text-white hover:bg-[#008bd1] shadow-sm" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+//             {pins.length > 0 ? <><CheckCircle2 className="w-4 h-4" /> Confirm Boundaries</> : "Place at least 1 point"}
+//           </button>
+//         ) : (
+//           <button type="button" onClick={() => { setPins([]); setSubmitted([]); setMode("picking"); setEditTarget(null); setNextId(0); }}
+//             className="w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100">
+//             <RotateCcw className="w-4 h-4" /> Reset Boundaries
+//           </button>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function ClickHandler({ onClick }: { onClick: (c: Coord) => void }) {
+//   const map = useMap();
+//   useEffect(() => {
+//     if (!map) return;
+//     const listener = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+//       if (e.latLng) onClick({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+//     });
+//     return () => { google.maps.event.removeListener(listener); };
+//   }, [map, onClick]);
+//   return null;
+// }
+
+// function Step1Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const [activeSection, setActiveSection] = useState<string>('clientBank');
+
+//   const updateSection = (section: keyof AppState, field: string, value: any) => {
+//     setFormData((prev: AppState) => ({ ...prev, [section]: { ...(prev[section] as any), [field]: value } }));
+//   };
+
+//   const handleDimensionChange = (dir: string, type: 'DeedDim' | 'ActualDim', value: string) => {
+//     const key = `${dir}${type}`;
+//     updateSection('boundaries', key, value);
+
+//     if (type === 'DeedDim' && formData.boundaries.dimensionsMatch) {
+//       updateSection('boundaries', `${dir}ActualDim`, value);
+//     }
+//   };
+
+//   const handleTextBoundaryChange = (dir: string, type: 'Deed' | 'Actual', value: string) => {
+//     const key = `${dir}Boundary${type}`;
+//     updateSection('boundaries', key, value);
+
+//     if (type === 'Deed' && formData.boundaries.boundariesMatch) {
+//       updateSection('boundaries', `${dir}BoundaryActual`, value);
+//     }
+//   };
+
+//   const renderSectionHeader = (title: string, id: string) => (
+//     <div className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'}`} onClick={() => setActiveSection(activeSection === id ? '' : id)}>
+//       <h3 className="font-bold md:text-[15px] text-[#00a0ef]">{title}</h3>
+//       <ChevronDown className={`w-5 h-5 text-[#00a0ef] transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+      
+//       <div>
+//         {renderSectionHeader('Client / Bank Details', 'clientBank')}
+//         {activeSection === 'clientBank' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles}>IFSC Code</label><input id="clientBank-first" type="text" className={inputStyles} value={formData.clientBank.ifsc} onChange={e => updateSection('clientBank', 'ifsc', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Bank Name</label><input type="text" className={inputStyles} value={formData.clientBank.bankName} onChange={e => updateSection('clientBank', 'bankName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Branch</label><input type="text" className={inputStyles} value={formData.clientBank.branch} onChange={e => updateSection('clientBank', 'branch', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Email ID</label><input type="email" className={inputStyles} value={formData.clientBank.email} onChange={e => updateSection('clientBank', 'email', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Point of Contact Name</label><input type="text" className={inputStyles} value={formData.clientBank.contactPersonName} onChange={e => updateSection('clientBank', 'contactPersonName', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Point of Contact Number</label><input type="tel" className={inputStyles} value={formData.clientBank.contactPersonNumber} onChange={e => updateSection('clientBank', 'contactPersonNumber', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Date of Inspection</label><input type="date" className={inputStyles} value={formData.clientBank.dateOfInspection} onChange={e => updateSection('clientBank', 'dateOfInspection', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Date Valuation</label><input type="date" className={inputStyles} value={formData.clientBank.dateOfValuation} onChange={e => updateSection('clientBank', 'dateOfValuation', e.target.value)} /></div>
+            
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Type of Property</label>
+//               <RadioGroup options={['Vacant Land - Residential', 'Existing Building - Residential', 'Open Piece of Land', 'Residential Flat', 'Agri Land', 'Residential Villa', 'Industrial Shed']} value={formData.clientBank.propertyType} onChange={v => updateSection('clientBank', 'propertyType', v)} />
+//             </div>
+//             <div className="md:col-span-2">
+//               <label className={labelStyles}>Purpose of Valuation (Loan Type)</label>
+//               <RadioGroup options={['Home Loan', 'Mortgage Loan', 'Education Loan', 'Collateral Security', 'For Bank Loan / Mortgage Purpose']} value={formData.clientBank.purposeOfValuation} onChange={v => updateSection('clientBank', 'purposeOfValuation', v)} />
+//             </div>
+//             <NextSectionButton onClick={() => setActiveSection('ownerLocality')} nextFocusId="owner-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Owner Details & Locality Classification', 'ownerLocality')}
+//         {activeSection === 'ownerLocality' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10">
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-b border-gray-200 pb-6 mb-6">
+//               <div className="md:col-span-2 flex gap-3">
+//                 <div className="w-1/3 md:w-1/4">
+//                   <label className={labelStyles}>Prefix</label>
+//                   <div className="relative">
+//                     <select id="owner-first" className={`${inputStyles} appearance-none bg-white`} value={formData.owner.prefix} onChange={e => {
+//                       const val = e.target.value;
+//                       updateSection('owner', 'prefix', val);
+//                       if (val === 'Smt' || val === 'Mrs') updateSection('owner', 'relation', 'W/o');
+//                       else if (val === 'Shri' || val === 'Mr') updateSection('owner', 'relation', 'S/o');
+//                     }}>
+//                       <option value="Shri">Shri</option>
+//                       <option value="Smt">Smt</option>
+//                       <option value="Mr">Mr</option>
+//                       <option value="Mrs">Mrs</option>
+//                     </select>
+//                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                   </div>
+//                 </div>
+//                 <div className="flex-1"><label className={labelStyles}>Owner Name</label><input type="text" className={inputStyles} value={formData.owner.ownerName} onChange={e => updateSection('owner', 'ownerName', e.target.value)} /></div>
+//               </div>
+//               <div className="md:col-span-2 flex gap-3">
+//                 <div className="w-1/3 md:w-1/4">
+//                   <label className={labelStyles}>Relation</label>
+//                   <div className="relative">
+//                     <select className={`${inputStyles} appearance-none bg-white`} value={formData.owner.relation} onChange={e => updateSection('owner', 'relation', e.target.value)}>
+//                       <option value="S/o">S/o</option>
+//                       <option value="D/o">D/o</option>
+//                       <option value="W/o">W/o</option>
+//                       <option value="F/o">F/o</option>
+//                     </select>
+//                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//                   </div>
+//                 </div>
+//                 <div className="flex-1"><label className={labelStyles}>Relative's Name</label><input type="text" className={inputStyles} value={formData.owner.relationName} onChange={e => updateSection('owner', 'relationName', e.target.value)} /></div>
+//               </div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Occupation</label><input type="text" className={inputStyles} value={formData.owner.occupation} onChange={e => updateSection('owner', 'occupation', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Phone Number 1</label><input type="tel" className={inputStyles} value={formData.owner.phone1} onChange={e => updateSection('owner', 'phone1', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Phone Number 2</label><input type="tel" className={inputStyles} value={formData.owner.phone2} onChange={e => updateSection('owner', 'phone2', e.target.value)} /></div>
+//             </div>
+
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//               <div className="md:col-span-2"><label className={labelStyles}>Rural / Urban</label><RadioGroup options={['metro city', 'urban', 'semi urban rural', 'N/A']} value={formData.locality.urbanRural} onChange={v => updateSection('locality', 'urbanRural', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Locality Class</label><RadioGroup options={['high', 'middle', 'low', 'posh', 'N/A']} value={formData.locality.localityClass} onChange={v => updateSection('locality', 'localityClass', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Land Tenure</label><RadioGroup options={['freehold', 'leasehold', 'N/A']} value={formData.locality.landTenure} onChange={v => updateSection('locality', 'landTenure', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Width of Road</label><RadioGroup options={['< 10ft', '< 20ft', '> 20ft']} value={formData.locality.widthOfRoad} onChange={v => updateSection('locality', 'widthOfRoad', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>No. of Stories</label><RadioGroup options={['1', '2', '3', '4', '5', '6', '7', '8', '9', 'vacant']} value={formData.locality.noOfStories} onChange={v => updateSection('locality', 'noOfStories', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Sanitary Fitting</label><RadioGroup options={['ordinary', 'good', 'superior', 'premium', 'excellent', 'under construction']} value={formData.locality.sanitaryFitting} onChange={v => updateSection('locality', 'sanitaryFitting', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Electrical Fitting</label><RadioGroup options={['ordinary', 'good', 'superior', 'premium', 'excellent', 'under construction']} value={formData.locality.electricalFitting} onChange={v => updateSection('locality', 'electricalFitting', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Townplan / MC / GP</label><RadioGroup options={['MC', 'townplanning', 'gram panchayat', 'outside Mc']} value={formData.locality.townplan} onChange={v => updateSection('locality', 'townplan', v)} /></div>
+//             </div>
+//             <NextSectionButton onClick={() => setActiveSection('property')} nextFocusId="property-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Property Details', 'property')}
+//         {activeSection === 'property' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/10">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles} id="property-first">Geo Location & Coordinates</label>
+//               <GeoCoordinatePicker 
+//                 onCoordinatesSubmit={(coords) => {
+//                   updateSection('property', 'boundaryCoordinates', coords);
+//                   if (coords.length > 0) {
+//                     updateSection('property', 'latitude', coords[0].lat.toString());
+//                     updateSection('property', 'longitude', coords[0].lng.toString());
+//                   }
+//                 }} 
+//               />
+//               <div className="flex gap-4 mt-4">
+//                 <input type="text" placeholder="Latitude" className={inputStyles} value={formData.property.latitude} readOnly />
+//                 <input type="text" placeholder="Longitude" className={inputStyles} value={formData.property.longitude} readOnly />
+//               </div>
+//             </div>
+            
+//             <div className="md:col-span-2"><label className={labelStyles}>Address</label><textarea rows={3} className={inputStyles} value={formData.property.address} onChange={e => updateSection('property', 'address', e.target.value)} /></div>
+            
+//             <div className="md:col-span-2"><label className={labelStyles}>Nature of Property</label><RadioGroup options={['Residential', 'Commercial', 'Industrial', 'Agriculture', 'mixed', 'institutional', 'N/A']} value={formData.property.natureOfProperty} onChange={v => updateSection('property', 'natureOfProperty', v)} /></div>
+//             <div className="md:col-span-1"><label className={labelStyles}>Vacant Plot?</label><RadioGroup options={['yes', 'NO']} value={formData.property.vacantPlot} onChange={v => updateSection('property', 'vacantPlot', v)} /></div>
+//             <div className="md:col-span-1"><label className={labelStyles}>Width of Road</label><RadioGroup options={['< 10ft', '< 20ft', '> 20ft']} value={formData.property.widthOfRoad} onChange={v => updateSection('property', 'widthOfRoad', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Plot Shape</label><RadioGroup options={['Rectangle', 'square', 'triangle', 'irregular', 'polygon']} value={formData.property.plotShape} onChange={v => updateSection('property', 'plotShape', v)} /></div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-gray-200 bg-white rounded-xl">
+//               <div className="md:col-span-3"><label className={labelStyles}>Dimension Unit</label><RadioGroup options={['ft', 'm', 'inch']} value={formData.property.dimensionUnit} onChange={v => updateSection('property', 'dimensionUnit', v)} /></div>
+//               <div><label className={labelStyles}>Length</label><input type="number" className={inputStyles} value={formData.property.length} onChange={e => { updateSection('property', 'length', e.target.value); const b = parseFloat(formData.property.breadth) || 0; updateSection('property', 'calculatedArea', (parseFloat(e.target.value || '0') * b).toString()); }} /></div>
+//               <div><label className={labelStyles}>Breadth</label><input type="number" className={inputStyles} value={formData.property.breadth} onChange={e => { updateSection('property', 'breadth', e.target.value); const l = parseFloat(formData.property.length) || 0; updateSection('property', 'calculatedArea', (parseFloat(e.target.value || '0') * l).toString()); }} /></div>
+//               <div className="md:col-span-3 border-t border-gray-100 pt-4 mt-2"><label className={labelStyles}>Conversion Unit</label><RadioGroup options={['sq ft', 'sq yd', 'sq mt', 'Acre', 'Hectare', 'Guntas']} value={formData.property.conversionUnit} onChange={v => updateSection('property', 'conversionUnit', v)} /></div>
+//               <div className="md:col-span-3"><label className={labelStyles}>Calculated Area (Dimensions converted to selected unit)</label><input type="text" className={`${inputStyles} bg-gray-50`} readOnly value={formData.property.calculatedArea} /></div>
+//             </div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-200 bg-white rounded-xl">
+//               <div className="md:col-span-2"><label className={labelStyles}>Wall Unit</label><RadioGroup options={['ft', 'm', 'inch']} value={formData.property.wallUnit} onChange={v => updateSection('property', 'wallUnit', v)} /></div>
+//               <div><label className={labelStyles}>Wall Length</label><input type="number" className={inputStyles} value={formData.property.wallLength} onChange={e => updateSection('property', 'wallLength', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Wall Height</label><input type="number" className={inputStyles} value={formData.property.wallHeight} onChange={e => updateSection('property', 'wallHeight', e.target.value)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Walls on Side</label><RadioGroup options={['1', '2', '3', '4']} value={formData.property.wallsOnSide} onChange={v => updateSection('property', 'wallsOnSide', v)} /></div>
+//               <div className="md:col-span-2"><label className={labelStyles}>Type of Brick</label><RadioGroup options={['brick work', 'Rcc', 'pacca offset / pavement']} value={formData.property.brickType} onChange={v => updateSection('property', 'brickType', v)} /></div>
+//             </div>
+
+//             <NextSectionButton onClick={() => setActiveSection('boundaries')} nextFocusId="boundaries-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Boundaries & Negative Points', 'boundaries')}
+//         {activeSection === 'boundaries' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10 space-y-8">
+//             <div className="md:col-span-2">
+//               <label className={labelStyles} id="boundaries-first">Boundary Unit</label>
+//               <RadioGroup options={['length', 'feet', 'meters', 'inchs']} value={formData.boundaries.unit} onChange={v => updateSection('boundaries', 'unit', v)} />
+//             </div>
+            
+//             {/* 1. Boundary Dimensions (Numbers) */}
+//             <div>
+//               <div className="flex items-center justify-between mb-3">
+//                 <h4 className="text-[13px] font-bold text-[#00a0ef]">Boundary Dimensions</h4>
+//                 <label className="flex items-center gap-2 text-[12px] font-semibold text-gray-700 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+//                   <input 
+//                     type="checkbox" 
+//                     className="w-4 h-4 text-[#00a0ef] rounded border-gray-300 focus:ring-[#00a0ef]"
+//                     checked={formData.boundaries.dimensionsMatch} 
+//                     onChange={(e) => {
+//                       const checked = e.target.checked;
+//                       updateSection('boundaries', 'dimensionsMatch', checked);
+//                       if (checked) {
+//                         updateSection('boundaries', 'northActualDim', formData.boundaries.northDeedDim);
+//                         updateSection('boundaries', 'southActualDim', formData.boundaries.southDeedDim);
+//                         updateSection('boundaries', 'eastActualDim', formData.boundaries.eastDeedDim);
+//                         updateSection('boundaries', 'westActualDim', formData.boundaries.westDeedDim);
+//                       }
+//                     }} 
+//                   />
+//                   Actual dimensions match document
+//                 </label>
+//               </div>
+
+//               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//                 {(['north', 'south', 'east', 'west'] as const).map(dir => (
+//                   <div key={`${dir}Dim`} className="flex gap-2">
+//                     <div className="flex-1">
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Deed)</label>
+//                       <input 
+//                         type="text" 
+//                         className={inputStyles} 
+//                         value={(formData.boundaries as any)[`${dir}DeedDim`]} 
+//                         onChange={e => handleDimensionChange(dir, 'DeedDim', e.target.value)} 
+//                       />
+//                     </div>
+//                     <div className="flex-1">
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Actual)</label>
+//                       <input 
+//                         type="text" 
+//                         className={`${inputStyles} ${formData.boundaries.dimensionsMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+//                         value={(formData.boundaries as any)[`${dir}ActualDim`]} 
+//                         onChange={e => handleDimensionChange(dir, 'ActualDim', e.target.value)} 
+//                         disabled={formData.boundaries.dimensionsMatch}
+//                       />
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+
+//             {/* 2. Textual Boundaries (Neighbors, Properties, etc.) */}
+//             <div>
+//               <div className="flex items-center justify-between mb-3">
+//                 <h4 className="text-[13px] font-bold text-[#00a0ef]">Boundary Descriptions (Neighbors)</h4>
+//                 <label className="flex items-center gap-2 text-[12px] font-semibold text-gray-700 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+//                   <input 
+//                     type="checkbox" 
+//                     className="w-4 h-4 text-[#00a0ef] rounded border-gray-300 focus:ring-[#00a0ef]"
+//                     checked={formData.boundaries.boundariesMatch} 
+//                     onChange={(e) => {
+//                       const checked = e.target.checked;
+//                       updateSection('boundaries', 'boundariesMatch', checked);
+//                       if (checked) {
+//                         updateSection('boundaries', 'northBoundaryActual', formData.boundaries.northBoundaryDeed);
+//                         updateSection('boundaries', 'southBoundaryActual', formData.boundaries.southBoundaryDeed);
+//                         updateSection('boundaries', 'eastBoundaryActual', formData.boundaries.eastBoundaryDeed);
+//                         updateSection('boundaries', 'westBoundaryActual', formData.boundaries.westBoundaryDeed);
+//                       }
+//                     }} 
+//                   />
+//                   Actual neighbors match document
+//                 </label>
+//               </div>
+
+//               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//                 {(['north', 'south', 'east', 'west'] as const).map(dir => (
+//                   <div key={`${dir}Text`} className="flex gap-2">
+//                     <div className="flex-1">
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} Neighbor (Deed)</label>
+//                       <input 
+//                         type="text" 
+//                         placeholder="e.g. H.No 2-1-206"
+//                         className={inputStyles} 
+//                         value={(formData.boundaries as any)[`${dir}BoundaryDeed`]} 
+//                         onChange={e => handleTextBoundaryChange(dir, 'Deed', e.target.value)} 
+//                       />
+//                     </div>
+//                     <div className="flex-1">
+//                       <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} Neighbor (Actual)</label>
+//                       <input 
+//                         type="text" 
+//                         placeholder="e.g. H.No 2-1-206"
+//                         className={`${inputStyles} ${formData.boundaries.boundariesMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+//                         value={(formData.boundaries as any)[`${dir}BoundaryActual`]} 
+//                         onChange={e => handleTextBoundaryChange(dir, 'Actual', e.target.value)} 
+//                         disabled={formData.boundaries.boundariesMatch}
+//                       />
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+
+//             <div className="border-t border-gray-200 pt-6 mt-6">
+//               <label className={labelStyles}>Property Negative Points</label>
+//               <MultiSelectGroup 
+//                 options={['HT line Over building', 'transformer in front', 'sub division of property', 'community dominace', 'common stair for separate units', 'near rail way track', 'near drain', 'near banquet hall']} 
+//                 selected={formData.negativePoints} 
+//                 onChange={v => setFormData((prev: AppState) => ({ ...prev, negativePoints: v }))} 
+//               />
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//     </div>
+//   );
+// }
+
+// function Step2Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const [activeSection, setActiveSection] = useState<string>('floors');
+//   const [activeFloorId, setActiveFloorId] = useState<string>('');
+
+//   useEffect(() => {
+//     if (formData.floors.length > 0 && !activeFloorId) setActiveFloorId(formData.floors[0].id);
+//   }, [formData.floors]);
+
+//   const handleAddFloor = (floorName: string) => {
+//     if (!floorName) return;
+//     const existing = formData.floors.find((f: FloorDetail) => f.floorName === floorName);
+//     if (existing) {
+//       setActiveFloorId(existing.id);
+//     } else {
+//       const newFloor: FloorDetail = {
+//         id: Math.random().toString(36).substr(2, 9),
+//         floorName, possessionWith: '', unit: '', length: '', breadth: '', conversionUnit: '', coveredArea: '', condition: '', structure: '', flooring: '', accommodation: '', doorsWindows: '', floorRemarks: ''
+//       };
+//       setFormData((prev: AppState) => ({ ...prev, floors: [...prev.floors, newFloor] }));
+//       setActiveFloorId(newFloor.id);
+//     }
+//   };
+
+//   const updateFloor = (id: string, field: keyof FloorDetail, value: string) => {
+//     setFormData((prev: AppState) => ({
+//       ...prev,
+//       floors: prev.floors.map(f => {
+//         if (f.id === id) {
+//           const newF = { ...f, [field]: value };
+//           if (field === 'length' || field === 'breadth') {
+//             const l = parseFloat(newF.length) || 0;
+//             const b = parseFloat(newF.breadth) || 0;
+//             newF.coveredArea = (l * b).toString();
+//           }
+//           return newF;
+//         }
+//         return f;
+//       })
+//     }));
+//   };
+
+//   const removeFloor = (id: string) => {
+//     setFormData((prev: AppState) => {
+//       const newFloors = prev.floors.filter(f => f.id !== id);
+//       if (activeFloorId === id) setActiveFloorId(newFloors.length > 0 ? newFloors[0].id : '');
+//       return { ...prev, floors: newFloors };
+//     });
+//   };
+
+//   const updateMarket = (field: string, value: any) => {
+//     setFormData((prev: AppState) => ({ ...prev, market: { ...prev.market, [field]: value } }));
+//   };
+
+//   const renderSectionHeader = (title: string, id: string) => (
+//     <div className={`flex items-center justify-between p-4 md:px-6 md:py-5 cursor-pointer transition-colors ${activeSection === id ? 'bg-blue-50/50 border-b border-blue-100' : 'bg-white hover:bg-gray-50 border-b border-gray-100'}`} onClick={() => setActiveSection(activeSection === id ? '' : id)}>
+//       <h3 className="font-bold md:text-[15px] text-[#00a0ef]">{title}</h3>
+//       <ChevronDown className={`w-5 h-5 text-[#00a0ef] transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
+      
+//       <div>
+//         {renderSectionHeader('Building Details (Per Floor)', 'floors')}
+//         {activeSection === 'floors' && (
+//           <div className="p-4 md:p-6 bg-blue-50/10">
+//             <div className="mb-6">
+//               <label className={labelStyles}>Select or Add Floor Details</label>
+//               <RadioGroup options={['basement', 'stilt', 'GF', 'FF', 'SF', 'TF', '4th', 'multistorey']} value="" onChange={v => handleAddFloor(v)} />
+//             </div>
+
+//             {formData.floors.length > 0 && (
+//               <div className="flex flex-col md:flex-row gap-4">
+//                 <div className="md:w-48 shrink-0 flex flex-col gap-2">
+//                   {formData.floors.map(f => (
+//                     <div key={f.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${activeFloorId === f.id ? 'bg-[#00a0ef] border-[#00a0ef] text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`} onClick={() => setActiveFloorId(f.id)}>
+//                       <span className="font-semibold text-[13px]">{f.floorName}</span>
+//                       <button type="button" onClick={(e) => { e.stopPropagation(); removeFloor(f.id); }} className={`p-1 rounded hover:bg-black/10 ${activeFloorId === f.id ? 'text-white' : 'text-gray-400 hover:text-red-500'}`}><Trash2 size={14} /></button>
+//                     </div>
+//                   ))}
+//                 </div>
+                
+//                 <div className="flex-1 bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
+//                   {formData.floors.filter(f => f.id === activeFloorId).map(activeFloor => (
+//                     <div key={activeFloor.id} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//                       <div className="md:col-span-2 pb-3 border-b border-gray-100 mb-2">
+//                         <h4 className="font-bold text-[#00a0ef] text-[15px]">{activeFloor.floorName} Details</h4>
+//                       </div>
+
+//                       <div className="md:col-span-2"><label className={labelStyles}>Possession With</label><RadioGroup options={['owner', 'tenant']} value={activeFloor.possessionWith} onChange={v => updateFloor(activeFloor.id, 'possessionWith', v)} /></div>
+
+//                       <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+//                         <div><label className={labelStyles}>Unit</label><RadioGroup options={['feet', 'inch', 'meter']} value={activeFloor.unit} onChange={v => updateFloor(activeFloor.id, 'unit', v)} /></div>
+//                         <div><label className={labelStyles}>Length</label><input type="number" className={inputStyles} value={activeFloor.length} onChange={e => updateFloor(activeFloor.id, 'length', e.target.value)} /></div>
+//                         <div><label className={labelStyles}>Breadth</label><input type="number" className={inputStyles} value={activeFloor.breadth} onChange={e => updateFloor(activeFloor.id, 'breadth', e.target.value)} /></div>
+//                         <div className="md:col-span-3 border-t border-gray-50 pt-4"><label className={labelStyles}>Conversion Unit</label><RadioGroup options={['sq ft', 'sq yd', 'sq mt', 'Acre', 'Hectare', 'Guntas']} value={activeFloor.conversionUnit} onChange={v => updateFloor(activeFloor.id, 'conversionUnit', v)} /></div>
+//                         <div className="md:col-span-3"><label className={labelStyles}>Covered Area</label><input type="text" className={`${inputStyles} bg-gray-50`} readOnly value={activeFloor.coveredArea} /></div>
+//                       </div>
+
+//                       <div className="md:col-span-2"><label className={labelStyles}>Condition</label><RadioGroup options={['excellent', 'good', 'avg', 'poor', 'under construction', 'under finishing', 'others']} value={activeFloor.condition} onChange={v => updateFloor(activeFloor.id, 'condition', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Structure</label><RadioGroup options={['Rcc framed', 'load bearing', 'composite Structure', 'Peb/shed']} value={activeFloor.structure} onChange={v => updateFloor(activeFloor.id, 'structure', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Flooring</label><RadioGroup options={['tiles', 'marble', 'wood', 'cement', 'pending', 'other']} value={activeFloor.flooring} onChange={v => updateFloor(activeFloor.id, 'flooring', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Accommodation</label><RadioGroup options={['storage', 'shop', 'office space', '1BHK', '1.5BHK', '2BHK', '2.5BHK', '3BHK', '3.5BHK', '4BHK', '4.5BHK', '5BHK', '5.5BHK', '6BHK', 'studio', 'penthouse']} value={activeFloor.accommodation} onChange={v => updateFloor(activeFloor.id, 'accommodation', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Doors / Windows</label><RadioGroup options={['wooden', 'aluminium', 'glass', 'upvc', 'pending', 'N/A']} value={activeFloor.doorsWindows} onChange={v => updateFloor(activeFloor.id, 'doorsWindows', v)} /></div>
+//                       <div className="md:col-span-2"><label className={labelStyles}>Floor Remarks</label><textarea rows={3} className={inputStyles} value={activeFloor.floorRemarks} onChange={e => updateFloor(activeFloor.id, 'floorRemarks', e.target.value)}></textarea></div>
+//                     </div>
+//                   ))}
+//                 </div>
+//               </div>
+//             )}
+            
+//             <NextSectionButton onClick={() => setActiveSection('market')} nextFocusId="market-first" />
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         {renderSectionHeader('Building-Shared / Market', 'market')}
+//         {activeSection === 'market' && (
+//           <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/10">
+//             <div><label className={labelStyles} id="market-first">Year of Construction</label><input type="text" className={inputStyles} value={formData.market.yearOfConstruction} onChange={e => updateMarket('yearOfConstruction', e.target.value)} /></div>
+//             <div><label className={labelStyles}>Renovation</label><RadioGroup options={['yes', 'no']} value={formData.market.renovation} onChange={v => updateMarket('renovation', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Parking</label><RadioGroup options={['covered', 'notpresent', 'open', 'N/A']} value={formData.market.parking} onChange={v => updateMarket('parking', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Lift</label><RadioGroup options={['yes', 'No', 'N/A']} value={formData.market.lift} onChange={v => updateMarket('lift', v)} /></div>
+//             <div className="md:col-span-2"><label className={labelStyles}>Kitchen Type</label><RadioGroup options={['modular', 'semi modular', 'odinary', 'N/A', 'other']} value={formData.market.kitchenType} onChange={v => updateMarket('kitchenType', v)} /></div>
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               <div className="md:col-span-3 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Rental Income</h4></div>
+//               <div><label className={labelStyles}>Minimum</label><input type="number" className={inputStyles} value={formData.market.rentalMin} onChange={e => updateMarket('rentalMin', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Maximum</label><input type="number" className={inputStyles} value={formData.market.rentalMax} onChange={e => updateMarket('rentalMax', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Unit</label><RadioGroup options={['hundred', 'thousand', 'lakh', 'crore']} value={formData.market.rentalUnit} onChange={v => updateMarket('rentalUnit', v)} /></div>
+//             </div>
+
+//             {['Client', 'Dealer', 'Market'].map((type) => {
+//               const minField = `market${type}Min` as keyof AppState['market'];
+//               const maxField = `market${type}Max` as keyof AppState['market'];
+//               const unitField = `market${type}Unit` as keyof AppState['market'];
+//               return (
+//                 <div key={type} className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//                   <div className="md:col-span-3 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Market Rate ({type === 'Market' ? 'As per market' : type})</h4></div>
+//                   <div><label className={labelStyles}>Minimum</label><input type="number" className={inputStyles} value={formData.market[minField] as string} onChange={e => updateMarket(minField, e.target.value)} /></div>
+//                   <div><label className={labelStyles}>Maximum</label><input type="number" className={inputStyles} value={formData.market[maxField] as string} onChange={e => updateMarket(maxField, e.target.value)} /></div>
+//                   <div><label className={labelStyles}>Unit</label><RadioGroup options={['hundred', 'thousand', 'lakh', 'crore']} value={formData.market[unitField] as string} onChange={v => updateMarket(unitField, v)} /></div>
+//                 </div>
+//               );
+//             })}
+
+//             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+//               <div className="md:col-span-2 border-b border-gray-100 pb-2 mb-2"><h4 className="text-[13px] font-bold text-[#00a0ef]">Dealer Details</h4></div>
+//               <div><label className={labelStyles}>Dealer Name</label><input type="text" className={inputStyles} value={formData.market.dealerName} onChange={e => updateMarket('dealerName', e.target.value)} /></div>
+//               <div><label className={labelStyles}>Mobile Number</label><input type="tel" className={inputStyles} value={formData.market.dealerMobile} onChange={e => updateMarket('dealerMobile', e.target.value)} /></div>
+//             </div>
+
+//             <div className="md:col-span-2 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+//               <div className="flex items-center justify-between mb-3">
+//                 <label className={labelStyles}>Additional Details</label>
+//                 <button type="button" onClick={() => updateMarket('additionalDetails', [...formData.market.additionalDetails, { key: '', value: '' }])} className="text-[13px] font-semibold text-[#00a0ef] hover:underline flex items-center gap-1"><Plus size={14} /> Add Detail</button>
+//               </div>
+//               <div className="space-y-3">
+//                 {formData.market.additionalDetails.map((pair, idx) => (
+//                   <div key={idx} className="flex gap-3">
+//                     <input type="text" placeholder="Key" className={inputStyles} value={pair.key} onChange={e => {
+//                       const newArr = [...formData.market.additionalDetails];
+//                       newArr[idx].key = e.target.value;
+//                       updateMarket('additionalDetails', newArr);
+//                     }} />
+//                     <input type="text" placeholder="Value" className={inputStyles} value={pair.value} onChange={e => {
+//                       const newArr = [...formData.market.additionalDetails];
+//                       newArr[idx].value = e.target.value;
+//                       updateMarket('additionalDetails', newArr);
+//                     }} />
+//                     <button type="button" onClick={() => {
+//                       const newArr = formData.market.additionalDetails.filter((_, i) => i !== idx);
+//                       updateMarket('additionalDetails', newArr);
+//                     }} className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Step3Form({ formData, setFormData }: { formData: AppState; setFormData: (val: any) => void }) {
+//   const photoInputRef = useRef<HTMLInputElement>(null);
+//   const docInputRef = useRef<HTMLInputElement>(null);
+
+//   const handleFileUpload = (type: 'photos' | 'documents', e: React.ChangeEvent<HTMLInputElement>) => {
+//     if (e.target.files) {
+//       setFormData((prev: AppState) => ({ ...prev, uploads: { ...prev.uploads, [type]: [...prev.uploads[type], ...Array.from(e.target.files!)] } }));
+//     }
+//   };
+
+//   const removeFile = (type: 'photos' | 'documents', idx: number) => {
+//     setFormData((prev: AppState) => ({ ...prev, uploads: { ...prev.uploads, [type]: prev.uploads[type].filter((_, i) => i !== idx) } }));
+//   };
+
+//   return (
+//     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm p-4 md:p-6 space-y-8">
+//       <div>
+//         <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Site Photos <span className="text-red-500">*</span></h3>
+//         <div onClick={() => photoInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+//           <input type="file" multiple accept="image/*" className="hidden" ref={photoInputRef} onChange={(e) => handleFileUpload('photos', e)} />
+//           <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
+//           <p className="text-sm text-gray-600 text-center">Click to <span className="text-[#00a0ef] font-medium">browse photos</span></p>
+//         </div>
+//         {formData.uploads.photos.length > 0 && (
+//           <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4">
+//             {formData.uploads.photos.map((file, idx) => (
+//               <div key={idx} className="relative aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center group">
+//                 <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover transition-opacity group-hover:opacity-75" />
+//                 <button type="button" onClick={(e) => { e.stopPropagation(); removeFile('photos', idx); }} className="absolute top-1 right-1 bg-white/90 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 text-red-500"><X size={14} /></button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+
+//       <div className="border-t border-gray-100 pt-8">
+//         <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Documents <span className="text-red-500">*</span></h3>
+//         <div onClick={() => docInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+//           <input type="file" multiple className="hidden" ref={docInputRef} onChange={(e) => handleFileUpload('documents', e)} />
+//           <FileText className="w-8 h-8 text-gray-400 mb-2" />
+//           <p className="text-sm text-gray-600 text-center">Click to <span className="text-[#00a0ef] font-medium">browse documents</span></p>
+//         </div>
+//         {formData.uploads.documents.length > 0 && (
+//           <div className="space-y-3 mt-4">
+//             {formData.uploads.documents.map((file, idx) => (
+//               <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-xl">
+//                 <div className="flex items-center gap-3"><div className="w-10 h-10 bg-[#e6f5fd] rounded-lg flex items-center justify-center text-[#00a0ef]"><FileText className="w-5 h-5" /></div><div><p className="text-[13px] font-medium text-gray-900 line-clamp-1">{file.name}</p><p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(1)} MB</p></div></div>
+//                 <button type="button" onClick={() => removeFile('documents', idx)} className="text-[13px] text-red-500 font-medium px-2 py-1">Remove</button>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Step4Form({ formData, onEditStep, isConfirmed, setIsConfirmed }: { formData: AppState; onEditStep: (step: number) => void; isConfirmed: boolean; setIsConfirmed: (v: boolean) => void }) {
+//   const MainCategory = ({ title, icon: Icon, children }: any) => (
+//     <div className="mb-8 px-1"><div className="flex items-center gap-2 mb-4"><div className="w-5 h-5 flex items-center justify-center text-[#00a0ef]"><Icon className="w-5 h-5 fill-current opacity-20" strokeWidth={2} /></div><h3 className="text-[15px] font-bold text-gray-900">{title}</h3></div><div className="bg-white px-2">{children}</div></div>
+//   );
+//   const SubCategory = ({ title, stepNum, children }: any) => (
+//     <div className="py-4 border-b border-gray-200 last:border-0 first:pt-0"><div className="flex items-center justify-between mb-4"><h4 className="text-[13px] font-bold text-gray-800">{title}</h4><button type="button" onClick={() => onEditStep(stepNum)} className="text-[#00a0ef] hover:bg-blue-50 p-1.5 rounded transition-colors"><Edit2 className="w-3.5 h-3.5" /></button></div><div className="grid grid-cols-2 gap-y-4 gap-x-4">{children}</div></div>
+//   );
+//   const DataField = ({ label, value }: any) => (
+//     <div><p className="text-[11px] text-gray-500 font-medium mb-1">{label}</p><div className="text-[13px] font-medium text-gray-900 break-words">{value || '—'}</div></div>
+//   );
+
+//   return (
+//     <div className="max-w-3xl bg-white mx-auto md:px-4 pb-8">
+//       <div className="py-6 px-2"><h2 className="text-[18px] font-bold text-[#00a0ef]">Review & Submit</h2></div>
+
+//       <MainCategory title="Client, Owner & Property" icon={Landmark}>
+//         <SubCategory title="Bank Details" stepNum={1}>
+//           <DataField label="IFSC Code" value={formData.clientBank.ifsc} />
+//           <DataField label="Bank Name" value={formData.clientBank.bankName} />
+//           <DataField label="Branch" value={formData.clientBank.branch} />
+//           <DataField label="Email" value={formData.clientBank.email} />
+//           <DataField label="POC" value={`${formData.clientBank.contactPersonName} / ${formData.clientBank.contactPersonNumber}`} />
+//           <DataField label="Dates" value={`${formData.clientBank.dateOfInspection} / ${formData.clientBank.dateOfValuation}`} />
+//           <DataField label="Type of Property" value={formData.clientBank.propertyType} />
+//           <DataField label="Purpose" value={formData.clientBank.purposeOfValuation} />
+//         </SubCategory>
+//         <SubCategory title="Owner Details & Locality" stepNum={1}>
+//           <DataField label="Name" value={`${formData.owner.prefix} ${formData.owner.ownerName}`} />
+//           <DataField label="Relation" value={`${formData.owner.relation} ${formData.owner.relationName}`} />
+//           <DataField label="Phone" value={`${formData.owner.phone1} / ${formData.owner.phone2}`} />
+//           <DataField label="Urban/Rural" value={formData.locality.urbanRural} />
+//           <DataField label="Class" value={formData.locality.localityClass} />
+//           <DataField label="Tenure" value={formData.locality.landTenure} />
+//         </SubCategory>
+//         <SubCategory title="Property Settings" stepNum={1}>
+//           <DataField label="Address" value={formData.property.address} />
+//           <DataField label="Nature" value={formData.property.natureOfProperty} />
+//           <DataField label="Shape" value={formData.property.plotShape} />
+//           <DataField label="Calculated Area" value={`${formData.property.calculatedArea} ${formData.property.conversionUnit}`} />
+//           <DataField label="Wall Setup" value={`${formData.property.wallLength}x${formData.property.wallHeight} ${formData.property.wallUnit}`} />
+//           <DataField label="Negative Points" value={formData.negativePoints.join(', ')} />
+//         </SubCategory>
+//         <SubCategory title="Boundaries" stepNum={1}>
+//           <DataField label="Unit" value={formData.boundaries.unit} />
+//           <DataField label="Dimensions Match" value={formData.boundaries.dimensionsMatch ? "Yes" : "No"} />
+//           <DataField label="North (Deed/Act)" value={`${formData.boundaries.northDeedDim} / ${formData.boundaries.northActualDim}`} />
+//           <DataField label="South (Deed/Act)" value={`${formData.boundaries.southDeedDim} / ${formData.boundaries.southActualDim}`} />
+//           <DataField label="East (Deed/Act)" value={`${formData.boundaries.eastDeedDim} / ${formData.boundaries.eastActualDim}`} />
+//           <DataField label="West (Deed/Act)" value={`${formData.boundaries.westDeedDim} / ${formData.boundaries.westActualDim}`} />
+//         </SubCategory>
+//         <SubCategory title="Boundary Descriptions" stepNum={1}>
+//           <DataField label="Neighbors Match" value={formData.boundaries.boundariesMatch ? "Yes" : "No"} />
+//           <DataField label="North (Deed/Act)" value={`${formData.boundaries.northBoundaryDeed || 'N/A'} / ${formData.boundaries.northBoundaryActual || 'N/A'}`} />
+//           <DataField label="South (Deed/Act)" value={`${formData.boundaries.southBoundaryDeed || 'N/A'} / ${formData.boundaries.southBoundaryActual || 'N/A'}`} />
+//           <DataField label="East (Deed/Act)" value={`${formData.boundaries.eastBoundaryDeed || 'N/A'} / ${formData.boundaries.eastBoundaryActual || 'N/A'}`} />
+//           <DataField label="West (Deed/Act)" value={`${formData.boundaries.westBoundaryDeed || 'N/A'} / ${formData.boundaries.westBoundaryActual || 'N/A'}`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <MainCategory title="Building & Market Details" icon={Building}>
+//         {formData.floors.map((floor) => (
+//           <SubCategory key={floor.id} title={`Floor: ${floor.floorName}`} stepNum={2}>
+//             <DataField label="Possession" value={floor.possessionWith} />
+//             <DataField label="Covered Area" value={`${floor.coveredArea} ${floor.conversionUnit}`} />
+//             <DataField label="Condition" value={floor.condition} />
+//             <DataField label="Structure" value={floor.structure} />
+//             <DataField label="Flooring" value={floor.flooring} />
+//             <DataField label="Accommodation" value={floor.accommodation} />
+//             <DataField label="Doors/Windows" value={floor.doorsWindows} />
+//             <DataField label="Remarks" value={floor.floorRemarks} />
+//           </SubCategory>
+//         ))}
+//         <SubCategory title="Market & Shared Details" stepNum={2}>
+//           <DataField label="Year Constructed" value={formData.market.yearOfConstruction} />
+//           <DataField label="Renovation" value={formData.market.renovation} />
+//           <DataField label="Parking" value={formData.market.parking} />
+//           <DataField label="Rental Income" value={`${formData.market.rentalMin} - ${formData.market.rentalMax} ${formData.market.rentalUnit}`} />
+//           <DataField label="Client Rate" value={`${formData.market.marketClientMin} - ${formData.market.marketClientMax} ${formData.market.marketClientUnit}`} />
+//           <DataField label="Dealer Rate" value={`${formData.market.marketDealerMin} - ${formData.market.marketDealerMax} ${formData.market.marketDealerUnit}`} />
+//           <DataField label="Market Rate" value={`${formData.market.marketMarketMin} - ${formData.market.marketMarketMax} ${formData.market.marketMarketUnit}`} />
+//           <DataField label="Dealer Details" value={`${formData.market.dealerName} / ${formData.market.dealerMobile}`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <MainCategory title="Uploads" icon={UploadCloud}>
+//         <SubCategory title="Files Overview" stepNum={3}>
+//           <DataField label="Photos" value={`${formData.uploads.photos.length} uploaded`} />
+//           <DataField label="Documents" value={`${formData.uploads.documents.length} uploaded`} />
+//         </SubCategory>
+//       </MainCategory>
+
+//       <div className="mt-8 p-4 bg-[#f8fafc] border border-gray-200 rounded-xl flex flex-col gap-2">
+//         <div className="flex items-start gap-3">
+//           <div className="pt-0.5"><input type="checkbox" id="final-confirm" checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]" /></div>
+//           <label htmlFor="final-confirm" className="text-[13px] text-gray-700 leading-relaxed select-none cursor-pointer">I confirm that all information provided above is correct.</label>
+//         </div>
+//         {(!formData.uploads.photos.length || !formData.uploads.documents.length) && (
+//           <p className="text-red-500 text-[12px] font-medium mt-1">Please ensure at least one photo and one document is uploaded in Step 3 before submitting.</p>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default function App() {
+//   const [currentStep, setCurrentStep] = useState(1);
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const [isConfirmed, setIsConfirmed] = useState(false);
+//   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
+
+//   const [customers, setCustomers] = useState<any[]>([]);
+//   const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
+
+//   const [formData, setFormData] = useState<AppState>({
+//     customer: '',
+//     clientBank: { ifsc: '', bankName: '', branch: '', email: '', contactPersonName: '', contactPersonNumber: '', dateOfInspection: '', dateOfValuation: '', propertyType: '', purposeOfValuation: '' },
+//     owner: { prefix: 'Shri', ownerName: '', relation: 'S/o', relationName: '', occupation: '', phone1: '', phone2: '' },
+//     locality: { urbanRural: '', localityClass: '', landTenure: '', widthOfRoad: '', noOfStories: '', sanitaryFitting: '', electricalFitting: '', townplan: '' },
+//     property: { address: '', natureOfProperty: '', vacantPlot: '', widthOfRoad: '', latitude: '', longitude: '', boundaryCoordinates: [], plotShape: '', dimensionUnit: '', length: '', breadth: '', conversionUnit: '', calculatedArea: '', wallUnit: '', wallLength: '', wallHeight: '', wallsOnSide: '', brickType: '' },
+//     boundaries: { 
+//       unit: '', 
+//       dimensionsMatch: false,
+//       boundariesMatch: false,
+//       northDeedDim: '', southDeedDim: '', eastDeedDim: '', westDeedDim: '',
+//       northActualDim: '', southActualDim: '', eastActualDim: '', westActualDim: '',
+//       northBoundaryDeed: '', southBoundaryDeed: '', eastBoundaryDeed: '', westBoundaryDeed: '',
+//       northBoundaryActual: '', southBoundaryActual: '', eastBoundaryActual: '', westBoundaryActual: ''
+//     },
+//     floors: [],
+//     market: { yearOfConstruction: '', renovation: '', parking: '', lift: '', rentalMin: '', rentalMax: '', rentalUnit: '', kitchenType: '', marketClientMin: '', marketClientMax: '', marketClientUnit: '', marketDealerMin: '', marketDealerMax: '', marketDealerUnit: '', marketMarketMin: '', marketMarketMax: '', marketMarketUnit: '', dealerName: '', dealerMobile: '', additionalDetails: [] },
+//     negativePoints: [],
+//     uploads: { photos: [], documents: [] }
+//   });
+
+//   useEffect(() => {
+//     const fetchCustomers = async () => {
+//       try {
+//         const data = await api.getCustomerProfiles();
+//         setCustomers(data);
+//       } catch (error) {
+//         console.error("Failed to fetch customers:", error);
+//       } finally {
+//         setIsLoadingCustomers(false);
+//       }
+//     };
+//     fetchCustomers();
+//   }, []);
+
+//   const handleCustomerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+//     const selectedId = e.target.value;
+//     const selectedCustomer = customers.find(c => c.id === selectedId);
+
+//     if (selectedCustomer) {
+//       setFormData(prev => ({
+//         ...prev,
+//         customer: selectedId,
+//         clientBank: { ...prev.clientBank, ...selectedCustomer.clientBank },
+//         owner: { ...prev.owner, ...selectedCustomer.owner }
+//       }));
+//     } else {
+//       setFormData(prev => ({ ...prev, customer: '' }));
+//     }
+//   };
+
+//   const handleStepContinue = () => {
+//     if (currentStep < 4) { setCurrentStep(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+//     else { handleSubmit(); }
+//   };
+
+//   const handleStepBack = () => {
+//     if (currentStep > 1) { setCurrentStep(prev => prev - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!isConfirmed) { alert('Please check the confirmation box to submit.'); return; }
+//     setIsSubmitting(true);
+    
+//     try {
+//       const customerIdPath = formData.customer || "unknown_customer";
+      
+//       const uploadedPhotosUrls = await Promise.all(
+//         formData.uploads.photos.map(file => 
+//           uploadFile(file, `valuation-records/${customerIdPath}/photos/${Date.now()}_${file.name}`)
+//         )
+//       );
+      
+//       const uploadedDocumentsUrls = await Promise.all(
+//         formData.uploads.documents.map(file => 
+//           uploadFile(file, `valuation-records/${customerIdPath}/documents/${Date.now()}_${file.name}`)
+//         )
+//       );
+
+//       const payload = {
+//         customer: formData.customer,
+//         clientBank: formData.clientBank,
+//         owner: formData.owner,
+//         locality: formData.locality,
+//         property: formData.property,
+//         boundaries: formData.boundaries,
+//         floors: formData.floors,
+//         market: formData.market,
+//         negativePoints: formData.negativePoints,
+//         uploads: { 
+//           photos: uploadedPhotosUrls, 
+//           documents: uploadedDocumentsUrls 
+//         }
+//       };
+
+//       await api.createValuationRecord(payload);
+//       setIsSubmittedSuccessfully(true);
+
+//     } catch (e) { 
+//       console.error("Failed to submit report:", e); 
+//       alert("An error occurred while uploading files or submitting the report.");
+//     } finally { 
+//       setIsSubmitting(false); 
+//     }
+//   };
+
+//   if (isSubmittedSuccessfully) {
+//     return (
+//       <div className="flex flex-col flex-1 w-full relative min-h-screen md:min-h-0 bg-white overflow-hidden items-center justify-center p-6">
+//         <div className="w-[88px] h-[88px] rounded-full flex items-center justify-center bg-[#f0f8fd] mb-6">
+//           <div className="w-[60px] h-[60px] rounded-full bg-white flex items-center justify-center shadow-sm">
+//             <div className="w-[32px] h-[32px] bg-[#00a0ef] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white" strokeWidth={3.5} /></div>
+//           </div>
+//         </div>
+//         <h2 className="text-[20px] lg:text-[24px] font-bold text-gray-900 mb-3 text-center">Report submitted successfully.</h2>
+//         <p className="text-[#8A94A6] text-[14px] md:text-[15px] mb-8 text-center max-w-sm">Files uploaded and data verified.</p>
+//         <button onClick={() => window.location.reload()} className="px-8 py-3 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white font-medium transition-colors">Start New Report</button>
+//       </div>
+//     );
+//   }
+
+//   const isUploadsReady = formData.uploads.photos.length > 0 && formData.uploads.documents.length > 0;
+//   const isSubmitDisabled = isSubmitting || (currentStep === 4 && (!isConfirmed || !isUploadsReady));
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col md:py-8">
+//       <div className="flex-1 flex flex-col w-full md:max-w-4xl md:mx-auto bg-white border-x md:border border-gray-200 md:rounded-xl md:shadow-sm overflow-hidden">
+        
+//         <div className="px-4 md:px-6 py-4 border-b border-gray-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+//           <h1 className="text-lg md:text-xl font-medium text-gray-900">Submit New Report</h1>
+//           <div className="relative w-full md:w-64">
+//             <select 
+//               className={`${inputStyles} appearance-none bg-blue-50/30 border-[#00a0ef]/30 font-medium disabled:opacity-50 disabled:cursor-not-allowed`} 
+//               value={formData.customer} 
+//               onChange={handleCustomerSelect}
+//               disabled={isLoadingCustomers}
+//             >
+//               <option value="">
+//                 {isLoadingCustomers ? 'Loading Customers...' : 'Select Customer (Prefill)...'}
+//               </option>
+              
+//               {customers.map((c) => (
+//                 <option key={c.id} value={c.id}>
+//                   {c.profileReference || `${c.owner?.ownerName || 'Unknown'} - ${c.clientBank?.bankName || 'Unknown Bank'}`}
+//                 </option>
+//               ))}
+//             </select>
+//             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+//           </div>
+//         </div>
+
+//         <div className="px-6 pt-10 pb-6 md:pt-12 md:pb-8 border-b border-gray-200 bg-white shrink-0">
+//           <div className="max-w-xl mx-auto relative">
+//             <div className="flex items-center justify-between relative">
+//               <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gray-200" />
+//               {[1, 2, 3, 4].map((step) => {
+//                 const isCompleted = step < currentStep;
+//                 const isCurrent = step === currentStep;
+//                 return (
+//                   <div key={step} className="relative z-10 flex flex-col items-center">
+//                     <span className={`absolute -top-7 whitespace-nowrap text-xs font-semibold tracking-wide ${isCompleted || isCurrent ? 'text-[#00a0ef]' : 'text-gray-400'}`}>STEP {step}</span>
+//                     <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-white ${isCompleted ? 'border-2 border-[#00a0ef] bg-[#00a0ef]' : isCurrent ? 'border-2 border-[#00a0ef]' : 'border-2 border-gray-300'}`}>
+//                       {isCompleted && <CircleCheck color='white' fill='#00a0ef' />}
+//                       {isCurrent && <div className="w-4 h-4 bg-[#00a0ef] rounded-full" />}
+//                     </div>
+//                   </div>
+//                 );
+//               })}
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="flex-1 overflow-y-auto bg-gray-50 md:p-6">
+//           {currentStep === 1 && <Step1Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 2 && <Step2Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 3 && <Step3Form formData={formData} setFormData={setFormData} />}
+//           {currentStep === 4 && <Step4Form formData={formData} onEditStep={setCurrentStep} isConfirmed={isConfirmed} setIsConfirmed={setIsConfirmed} />}
+//         </div>
+        
+//         <div className="p-4 md:px-6 md:py-5 bg-white border-t border-gray-200 flex items-center justify-between mt-auto shrink-0">
+//           <button onClick={handleStepBack} className={`flex items-center px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 text-[13px] font-medium hover:bg-gray-50 transition-colors ${currentStep === 1 ? 'invisible' : ''}`}>
+//             <ArrowLeft className="w-4 h-4 mr-2" /> Back
+//           </button>
+//           <button onClick={handleStepContinue} disabled={isSubmitDisabled} className="flex items-center px-6 py-2.5 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white text-[13px] font-medium transition-shadow shadow-sm hover:shadow-md disabled:opacity-60">
+//             {isSubmitting ? 'Uploading & Submitting...' : currentStep === 4 ? 'Submit Report' : `Continue to Step ${currentStep + 1}`}
+//             {!isSubmitting && currentStep !== 4 && <ArrowRight className="w-4 h-4 ml-2" />}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Building, Building2, Landmark, LayoutGrid, CheckCircle2, UploadCloud, X, FileText, Edit2, CircleCheck, Plus, Trash2, Check, RotateCcw, ArrowLeft, ArrowRight, ChevronDown, Map as MapIcon } from 'lucide-react';
+import { Building, Landmark, CheckCircle2, UploadCloud, X, FileText, Edit2, CircleCheck, Plus, Trash2, Check, RotateCcw, ArrowLeft, ArrowRight, ChevronDown, Loader2, MapPin } from 'lucide-react';
 import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { api } from '@/app/lib/userApis';
+import { uploadFile } from "@/app/lib/firebase/storageUtils";
 
 type Coord = { lat: number; lng: number };
 type Pin = { id: number; coord: Coord };
@@ -1376,13 +5376,22 @@ export interface FloorDetail {
   floorRemarks: string;
 }
 
+// ─── FULLY UPDATED APP STATE ───
 interface AppState {
   customer: string;
   clientBank: { ifsc: string; bankName: string; branch: string; email: string; contactPersonName: string; contactPersonNumber: string; dateOfInspection: string; dateOfValuation: string; propertyType: string; purposeOfValuation: string; };
   owner: { prefix: string; ownerName: string; relation: string; relationName: string; occupation: string; phone1: string; phone2: string; };
   locality: { urbanRural: string; localityClass: string; landTenure: string; widthOfRoad: string; noOfStories: string; sanitaryFitting: string; electricalFitting: string; townplan: string; };
   property: { address: string; natureOfProperty: string; vacantPlot: string; widthOfRoad: string; latitude: string; longitude: string; boundaryCoordinates: Coord[]; plotShape: string; dimensionUnit: string; length: string; breadth: string; conversionUnit: string; calculatedArea: string; wallUnit: string; wallLength: string; wallHeight: string; wallsOnSide: string; brickType: string; };
-  boundaries: { unit: string; northDoc: string; northAct: string; southDoc: string; southAct: string; eastDoc: string; eastAct: string; westDoc: string; westAct: string; };
+  boundaries: { 
+    unit: string; 
+    dimensionsMatch: boolean;
+    boundariesMatch: boolean; 
+    northDeedDim: string; southDeedDim: string; eastDeedDim: string; westDeedDim: string; 
+    northActualDim: string; southActualDim: string; eastActualDim: string; westActualDim: string; 
+    northBoundaryDeed: string; southBoundaryDeed: string; eastBoundaryDeed: string; westBoundaryDeed: string; 
+    northBoundaryActual: string; southBoundaryActual: string; eastBoundaryActual: string; westBoundaryActual: string;
+  };
   floors: FloorDetail[];
   market: { yearOfConstruction: string; renovation: string; parking: string; lift: string; rentalMin: string; rentalMax: string; rentalUnit: string; kitchenType: string; marketClientMin: string; marketClientMax: string; marketClientUnit: string; marketDealerMin: string; marketDealerMax: string; marketDealerUnit: string; marketMarketMin: string; marketMarketMax: string; marketMarketUnit: string; dealerName: string; dealerMobile: string; additionalDetails: { key: string; value: string }[]; };
   negativePoints: string[];
@@ -1391,6 +5400,32 @@ interface AppState {
 
 const inputStyles = "w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00a0ef] focus:ring-1 focus:ring-[#00a0ef] text-[13px] text-gray-900 bg-white shadow-sm transition-shadow";
 const labelStyles = "block text-[13px] font-semibold text-gray-700 mb-2";
+
+// ─── Geo helpers ───
+function computeCentroid(coords: Coord[]): Coord {
+  const total = coords.reduce(
+    (acc, c) => ({ lat: acc.lat + c.lat, lng: acc.lng + c.lng }),
+    { lat: 0, lng: 0 }
+  );
+  return { lat: total.lat / coords.length, lng: total.lng / coords.length };
+}
+
+function reverseGeocode(coord: Coord): Promise<string> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined" || !(window as any).google?.maps) {
+      resolve('');
+      return;
+    }
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ location: coord }, (results, status) => {
+      if (status === "OK" && results && results[0]) {
+        resolve(results[0].formatted_address);
+      } else {
+        resolve('');
+      }
+    });
+  });
+}
 
 const RadioGroup = ({ options, value, onChange }: { options: string[], value: string, onChange: (val: string) => void }) => {
   const isCustom = value !== '' && !options.includes(value);
@@ -1475,7 +5510,7 @@ function NextSectionButton({ onClick, nextFocusId }: { onClick: () => void, next
   );
 }
 
-function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (coords: Coord[]) => void }) {
+function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (coords: Coord[], address?: string) => void }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
   const [center, setCenter] = useState<Coord>({ lat: 20, lng: 78 });
   const [zoom, setZoom] = useState(4);
@@ -1485,6 +5520,7 @@ function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (co
   const [submitted, setSubmitted] = useState<Pin[]>([]);
   const [editTarget, setEditTarget] = useState<number | null>(null);
   const [userLocation, setUserLocation] = useState<Coord | null>(null);
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -1506,15 +5542,34 @@ function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (co
       setNextId((n) => n + 1); return;
     }
     if (mode === "submitted" && editTarget !== null) {
-      setSubmitted((prev) => prev.map((p, i) => (i === editTarget ? { ...p, coord } : p)));
+      const updated = submitted.map((p, i) => (i === editTarget ? { ...p, coord } : p));
+      setSubmitted(updated);
       setEditTarget(null);
+      // Re-resolve the address after a point is dragged/edited post-submit.
+      (async () => {
+        setIsGeocoding(true);
+        const centroid = computeCentroid(updated.map(p => p.coord));
+        const address = await reverseGeocode(centroid);
+        setIsGeocoding(false);
+        onCoordinatesSubmit(updated.map(p => p.coord), address);
+      })();
     }
-  }, [mode, pins.length, nextId, editTarget]);
+  }, [mode, pins.length, nextId, editTarget, submitted, onCoordinatesSubmit]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (pins.length === 0) return;
-    setSubmitted([...pins]); setMode("submitted"); setEditTarget(null);
-    onCoordinatesSubmit(pins.map(p => p.coord));
+    const finalPins = [...pins];
+    setSubmitted(finalPins); setMode("submitted"); setEditTarget(null);
+
+    // Resolve a human-readable address from the captured points (uses the
+    // centroid so multi-point boundaries still resolve to one sensible
+    // address) and send it upstream alongside the raw coordinates.
+    setIsGeocoding(true);
+    const centroid = computeCentroid(finalPins.map(p => p.coord));
+    const address = await reverseGeocode(centroid);
+    setIsGeocoding(false);
+
+    onCoordinatesSubmit(finalPins.map(p => p.coord), address);
   };
 
   return (
@@ -1539,19 +5594,45 @@ function GeoCoordinatePicker({ onCoordinatesSubmit }: { onCoordinatesSubmit: (co
               </AdvancedMarker>
             ))}
           </Map>
+
+          {/* Point counter badge */}
+          <div className="absolute top-3 left-3 z-10 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-lg pointer-events-none">
+            <MapPin className="w-3.5 h-3.5 text-white" />
+            <span className="text-white text-[12px] font-semibold">
+              {(mode === "picking" ? pins.length : submitted.length)} / {MAX} points placed
+            </span>
+          </div>
         </APIProvider>
       </div>
-      <div className="p-4 bg-gray-50 border-t border-gray-200">
+      <div className="p-4 bg-gray-50 border-t border-gray-200 flex flex-col gap-2">
         {mode === "picking" ? (
-          <button type="button" onClick={handleSubmit} disabled={pins.length === 0}
-            className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${pins.length > 0 ? "bg-[#00a0ef] text-white hover:bg-[#008bd1] shadow-sm" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
-            {pins.length > 0 ? <><CheckCircle2 className="w-4 h-4" /> Confirm Boundaries</> : "Place at least 1 point"}
-          </button>
+          <>
+            <p className="text-[11px] text-gray-500 text-center">
+              Tap the map to drop a point (up to {MAX}). At least 1 point is required.
+            </p>
+            <button type="button" onClick={handleSubmit} disabled={pins.length === 0 || isGeocoding}
+              className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${pins.length > 0 && !isGeocoding ? "bg-[#00a0ef] text-white hover:bg-[#008bd1] shadow-sm" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+              {isGeocoding ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Resolving address...</>
+              ) : pins.length > 0 ? (
+                <><CheckCircle2 className="w-4 h-4" /> Confirm {pins.length} Point{pins.length > 1 ? 's' : ''}</>
+              ) : (
+                "Place at least 1 point"
+              )}
+            </button>
+          </>
         ) : (
-          <button type="button" onClick={() => { setPins([]); setSubmitted([]); setMode("picking"); setEditTarget(null); setNextId(0); }}
-            className="w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100">
-            <RotateCcw className="w-4 h-4" /> Reset Boundaries
-          </button>
+          <>
+            {isGeocoding && (
+              <p className="text-[11px] text-gray-500 text-center flex items-center justify-center gap-1.5">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Updating address...
+              </p>
+            )}
+            <button type="button" onClick={() => { setPins([]); setSubmitted([]); setMode("picking"); setEditTarget(null); setNextId(0); }}
+              className="w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100">
+              <RotateCcw className="w-4 h-4" /> Reset Boundaries
+            </button>
+          </>
         )}
       </div>
     </div>
@@ -1575,6 +5656,24 @@ function Step1Form({ formData, setFormData }: { formData: AppState; setFormData:
 
   const updateSection = (section: keyof AppState, field: string, value: any) => {
     setFormData((prev: AppState) => ({ ...prev, [section]: { ...(prev[section] as any), [field]: value } }));
+  };
+
+  const handleDimensionChange = (dir: string, type: 'DeedDim' | 'ActualDim', value: string) => {
+    const key = `${dir}${type}`;
+    updateSection('boundaries', key, value);
+
+    if (type === 'DeedDim' && formData.boundaries.dimensionsMatch) {
+      updateSection('boundaries', `${dir}ActualDim`, value);
+    }
+  };
+
+  const handleTextBoundaryChange = (dir: string, type: 'Deed' | 'Actual', value: string) => {
+    const key = `${dir}Boundary${type}`;
+    updateSection('boundaries', key, value);
+
+    if (type === 'Deed' && formData.boundaries.boundariesMatch) {
+      updateSection('boundaries', `${dir}BoundaryActual`, value);
+    }
   };
 
   const renderSectionHeader = (title: string, id: string) => (
@@ -1680,14 +5779,44 @@ function Step1Form({ formData, setFormData }: { formData: AppState; setFormData:
             <div className="md:col-span-2">
               <label className={labelStyles} id="property-first">Geo Location & Coordinates</label>
               <GeoCoordinatePicker 
-                onCoordinatesSubmit={(coords) => {
+                onCoordinatesSubmit={(coords, address) => {
                   updateSection('property', 'boundaryCoordinates', coords);
                   if (coords.length > 0) {
                     updateSection('property', 'latitude', coords[0].lat.toString());
                     updateSection('property', 'longitude', coords[0].lng.toString());
                   }
+                  // Prefill the address from reverse-geocoding the captured
+                  // point(s); the field stays editable afterwards.
+                  if (address) {
+                    updateSection('property', 'address', address);
+                  }
                 }} 
               />
+
+              {/* Captured points list — shows every lat/lng pair placed on the map */}
+              <div className="mt-4">
+                <label className={labelStyles}>
+                  Captured Points ({formData.property.boundaryCoordinates?.length || 0} / {MAX})
+                </label>
+                {formData.property.boundaryCoordinates?.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    {formData.property.boundaryCoordinates.map((c: Coord, i: number) => (
+                      <div key={i} className="flex items-center gap-2 text-[12px] bg-white px-3 py-2 rounded-lg border border-gray-200">
+                        <span
+                          className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                          style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                        >
+                          {LABELS[i % LABELS.length]}
+                        </span>
+                        <span className="text-gray-700 font-mono">{c.lat.toFixed(6)}, {c.lng.toFixed(6)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[12px] text-gray-400 italic">No points placed yet.</p>
+                )}
+              </div>
+
               <div className="flex gap-4 mt-4">
                 <input type="text" placeholder="Latitude" className={inputStyles} value={formData.property.latitude} readOnly />
                 <input type="text" placeholder="Longitude" className={inputStyles} value={formData.property.longitude} readOnly />
@@ -1725,25 +5854,114 @@ function Step1Form({ formData, setFormData }: { formData: AppState; setFormData:
       <div>
         {renderSectionHeader('Boundaries & Negative Points', 'boundaries')}
         {activeSection === 'boundaries' && (
-          <div className="p-4 md:p-6 bg-blue-50/10 space-y-6">
+          <div className="p-4 md:p-6 bg-blue-50/10 space-y-8">
             <div className="md:col-span-2">
               <label className={labelStyles} id="boundaries-first">Boundary Unit</label>
               <RadioGroup options={['length', 'feet', 'meters', 'inchs']} value={formData.boundaries.unit} onChange={v => updateSection('boundaries', 'unit', v)} />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
-              {(['north', 'south', 'east', 'west'] as const).map(dir => (
-                <div key={dir} className="flex gap-2">
-                  <div className="flex-1">
-                    <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (As per Document)</label>
-                    <input type="text" className={inputStyles} value={(formData.boundaries as any)[`${dir}Doc`]} onChange={e => updateSection('boundaries', `${dir}Doc`, e.target.value)} />
+            {/* 1. Boundary Dimensions (Numbers) */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-[13px] font-bold text-[#00a0ef]">Boundary Dimensions</h4>
+                <label className="flex items-center gap-2 text-[12px] font-semibold text-gray-700 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 text-[#00a0ef] rounded border-gray-300 focus:ring-[#00a0ef]"
+                    checked={formData.boundaries.dimensionsMatch} 
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      updateSection('boundaries', 'dimensionsMatch', checked);
+                      if (checked) {
+                        updateSection('boundaries', 'northActualDim', formData.boundaries.northDeedDim);
+                        updateSection('boundaries', 'southActualDim', formData.boundaries.southDeedDim);
+                        updateSection('boundaries', 'eastActualDim', formData.boundaries.eastDeedDim);
+                        updateSection('boundaries', 'westActualDim', formData.boundaries.westDeedDim);
+                      }
+                    }} 
+                  />
+                  Actual dimensions match document
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+                {(['north', 'south', 'east', 'west'] as const).map(dir => (
+                  <div key={`${dir}Dim`} className="flex gap-2">
+                    <div className="flex-1">
+                      <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Deed)</label>
+                      <input 
+                        type="text" 
+                        className={inputStyles} 
+                        value={(formData.boundaries as any)[`${dir}DeedDim`]} 
+                        onChange={e => handleDimensionChange(dir, 'DeedDim', e.target.value)} 
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Actual)</label>
+                      <input 
+                        type="text" 
+                        className={`${inputStyles} ${formData.boundaries.dimensionsMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                        value={(formData.boundaries as any)[`${dir}ActualDim`]} 
+                        onChange={e => handleDimensionChange(dir, 'ActualDim', e.target.value)} 
+                        disabled={formData.boundaries.dimensionsMatch}
+                      />
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} (Actual)</label>
-                    <input type="text" className={inputStyles} value={(formData.boundaries as any)[`${dir}Act`]} onChange={e => updateSection('boundaries', `${dir}Act`, e.target.value)} />
+                ))}
+              </div>
+            </div>
+
+            {/* 2. Textual Boundaries (Neighbors, Properties, etc.) */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-[13px] font-bold text-[#00a0ef]">Boundary Descriptions (Neighbors)</h4>
+                <label className="flex items-center gap-2 text-[12px] font-semibold text-gray-700 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 text-[#00a0ef] rounded border-gray-300 focus:ring-[#00a0ef]"
+                    checked={formData.boundaries.boundariesMatch} 
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      updateSection('boundaries', 'boundariesMatch', checked);
+                      if (checked) {
+                        updateSection('boundaries', 'northBoundaryActual', formData.boundaries.northBoundaryDeed);
+                        updateSection('boundaries', 'southBoundaryActual', formData.boundaries.southBoundaryDeed);
+                        updateSection('boundaries', 'eastBoundaryActual', formData.boundaries.eastBoundaryDeed);
+                        updateSection('boundaries', 'westBoundaryActual', formData.boundaries.westBoundaryDeed);
+                      }
+                    }} 
+                  />
+                  Actual neighbors match document
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+                {(['north', 'south', 'east', 'west'] as const).map(dir => (
+                  <div key={`${dir}Text`} className="flex gap-2">
+                    <div className="flex-1">
+                      <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} Neighbor (Deed)</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. H.No 2-1-206"
+                        className={inputStyles} 
+                        value={(formData.boundaries as any)[`${dir}BoundaryDeed`]} 
+                        onChange={e => handleTextBoundaryChange(dir, 'Deed', e.target.value)} 
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className={labelStyles}>{dir.charAt(0).toUpperCase() + dir.slice(1)} Neighbor (Actual)</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. H.No 2-1-206"
+                        className={`${inputStyles} ${formData.boundaries.boundariesMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                        value={(formData.boundaries as any)[`${dir}BoundaryActual`]} 
+                        onChange={e => handleTextBoundaryChange(dir, 'Actual', e.target.value)} 
+                        disabled={formData.boundaries.boundariesMatch}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <div className="border-t border-gray-200 pt-6 mt-6">
@@ -1966,7 +6184,7 @@ function Step3Form({ formData, setFormData }: { formData: AppState; setFormData:
   return (
     <div className="bg-white border border-gray-200 md:rounded-xl overflow-hidden shadow-sm p-4 md:p-6 space-y-8">
       <div>
-        <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Site Photos</h3>
+        <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Site Photos <span className="text-red-500">*</span></h3>
         <div onClick={() => photoInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
           <input type="file" multiple accept="image/*" className="hidden" ref={photoInputRef} onChange={(e) => handleFileUpload('photos', e)} />
           <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
@@ -1985,7 +6203,7 @@ function Step3Form({ formData, setFormData }: { formData: AppState; setFormData:
       </div>
 
       <div className="border-t border-gray-100 pt-8">
-        <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Documents</h3>
+        <h3 className="font-bold md:text-[16px] text-[#00a0ef] mb-4">Documents <span className="text-red-500">*</span></h3>
         <div onClick={() => docInputRef.current?.click()} className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
           <input type="file" multiple className="hidden" ref={docInputRef} onChange={(e) => handleFileUpload('documents', e)} />
           <FileText className="w-8 h-8 text-gray-400 mb-2" />
@@ -2050,10 +6268,18 @@ function Step4Form({ formData, onEditStep, isConfirmed, setIsConfirmed }: { form
         </SubCategory>
         <SubCategory title="Boundaries" stepNum={1}>
           <DataField label="Unit" value={formData.boundaries.unit} />
-          <DataField label="North (Doc/Act)" value={`${formData.boundaries.northDoc} / ${formData.boundaries.northAct}`} />
-          <DataField label="South (Doc/Act)" value={`${formData.boundaries.southDoc} / ${formData.boundaries.southAct}`} />
-          <DataField label="East (Doc/Act)" value={`${formData.boundaries.eastDoc} / ${formData.boundaries.eastAct}`} />
-          <DataField label="West (Doc/Act)" value={`${formData.boundaries.westDoc} / ${formData.boundaries.westAct}`} />
+          <DataField label="Dimensions Match" value={formData.boundaries.dimensionsMatch ? "Yes" : "No"} />
+          <DataField label="North (Deed/Act)" value={`${formData.boundaries.northDeedDim} / ${formData.boundaries.northActualDim}`} />
+          <DataField label="South (Deed/Act)" value={`${formData.boundaries.southDeedDim} / ${formData.boundaries.southActualDim}`} />
+          <DataField label="East (Deed/Act)" value={`${formData.boundaries.eastDeedDim} / ${formData.boundaries.eastActualDim}`} />
+          <DataField label="West (Deed/Act)" value={`${formData.boundaries.westDeedDim} / ${formData.boundaries.westActualDim}`} />
+        </SubCategory>
+        <SubCategory title="Boundary Descriptions" stepNum={1}>
+          <DataField label="Neighbors Match" value={formData.boundaries.boundariesMatch ? "Yes" : "No"} />
+          <DataField label="North (Deed/Act)" value={`${formData.boundaries.northBoundaryDeed || 'N/A'} / ${formData.boundaries.northBoundaryActual || 'N/A'}`} />
+          <DataField label="South (Deed/Act)" value={`${formData.boundaries.southBoundaryDeed || 'N/A'} / ${formData.boundaries.southBoundaryActual || 'N/A'}`} />
+          <DataField label="East (Deed/Act)" value={`${formData.boundaries.eastBoundaryDeed || 'N/A'} / ${formData.boundaries.eastBoundaryActual || 'N/A'}`} />
+          <DataField label="West (Deed/Act)" value={`${formData.boundaries.westBoundaryDeed || 'N/A'} / ${formData.boundaries.westBoundaryActual || 'N/A'}`} />
         </SubCategory>
       </MainCategory>
 
@@ -2089,9 +6315,14 @@ function Step4Form({ formData, onEditStep, isConfirmed, setIsConfirmed }: { form
         </SubCategory>
       </MainCategory>
 
-      <div className="mt-8 p-4 bg-[#f8fafc] border border-gray-200 rounded-xl flex items-start gap-3">
-        <div className="pt-0.5"><input type="checkbox" id="final-confirm" checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]" /></div>
-        <label htmlFor="final-confirm" className="text-[13px] text-gray-700 leading-relaxed select-none cursor-pointer">I confirm that all information provided above is correct.</label>
+      <div className="mt-8 p-4 bg-[#f8fafc] border border-gray-200 rounded-xl flex flex-col gap-2">
+        <div className="flex items-start gap-3">
+          <div className="pt-0.5"><input type="checkbox" id="final-confirm" checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="w-4 h-4 text-[#00a0ef] border-gray-300 rounded focus:ring-[#00a0ef]" /></div>
+          <label htmlFor="final-confirm" className="text-[13px] text-gray-700 leading-relaxed select-none cursor-pointer">I confirm that all information provided above is correct.</label>
+        </div>
+        {(!formData.uploads.photos.length || !formData.uploads.documents.length) && (
+          <p className="text-red-500 text-[12px] font-medium mt-1">Please ensure at least one photo and one document is uploaded in Step 3 before submitting.</p>
+        )}
       </div>
     </div>
   );
@@ -2103,18 +6334,59 @@ export default function App() {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
 
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
+
   const [formData, setFormData] = useState<AppState>({
     customer: '',
     clientBank: { ifsc: '', bankName: '', branch: '', email: '', contactPersonName: '', contactPersonNumber: '', dateOfInspection: '', dateOfValuation: '', propertyType: '', purposeOfValuation: '' },
     owner: { prefix: 'Shri', ownerName: '', relation: 'S/o', relationName: '', occupation: '', phone1: '', phone2: '' },
     locality: { urbanRural: '', localityClass: '', landTenure: '', widthOfRoad: '', noOfStories: '', sanitaryFitting: '', electricalFitting: '', townplan: '' },
     property: { address: '', natureOfProperty: '', vacantPlot: '', widthOfRoad: '', latitude: '', longitude: '', boundaryCoordinates: [], plotShape: '', dimensionUnit: '', length: '', breadth: '', conversionUnit: '', calculatedArea: '', wallUnit: '', wallLength: '', wallHeight: '', wallsOnSide: '', brickType: '' },
-    boundaries: { unit: '', northDoc: '', northAct: '', southDoc: '', southAct: '', eastDoc: '', eastAct: '', westDoc: '', westAct: '' },
+    boundaries: { 
+      unit: '', 
+      dimensionsMatch: false,
+      boundariesMatch: false,
+      northDeedDim: '', southDeedDim: '', eastDeedDim: '', westDeedDim: '',
+      northActualDim: '', southActualDim: '', eastActualDim: '', westActualDim: '',
+      northBoundaryDeed: '', southBoundaryDeed: '', eastBoundaryDeed: '', westBoundaryDeed: '',
+      northBoundaryActual: '', southBoundaryActual: '', eastBoundaryActual: '', westBoundaryActual: ''
+    },
     floors: [],
     market: { yearOfConstruction: '', renovation: '', parking: '', lift: '', rentalMin: '', rentalMax: '', rentalUnit: '', kitchenType: '', marketClientMin: '', marketClientMax: '', marketClientUnit: '', marketDealerMin: '', marketDealerMax: '', marketDealerUnit: '', marketMarketMin: '', marketMarketMax: '', marketMarketUnit: '', dealerName: '', dealerMobile: '', additionalDetails: [] },
     negativePoints: [],
     uploads: { photos: [], documents: [] }
   });
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const data = await api.getCustomerProfiles();
+        setCustomers(data);
+      } catch (error) {
+        console.error("Failed to fetch customers:", error);
+      } finally {
+        setIsLoadingCustomers(false);
+      }
+    };
+    fetchCustomers();
+  }, []);
+
+  const handleCustomerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    const selectedCustomer = customers.find(c => c.id === selectedId);
+
+    if (selectedCustomer) {
+      setFormData(prev => ({
+        ...prev,
+        customer: selectedId,
+        clientBank: { ...prev.clientBank, ...selectedCustomer.clientBank },
+        owner: { ...prev.owner, ...selectedCustomer.owner }
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, customer: '' }));
+    }
+  };
 
   const handleStepContinue = () => {
     if (currentStep < 4) { setCurrentStep(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -2129,16 +6401,45 @@ export default function App() {
     if (!isConfirmed) { alert('Please check the confirmation box to submit.'); return; }
     setIsSubmitting(true);
     
-    console.log("Submitted Data:", JSON.stringify(formData, null, 2));
-    // console.log("Submitted Data:", formData);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const customerIdPath = formData.customer || "unknown_customer";
+      
+      const uploadedPhotosUrls = await Promise.all(
+        formData.uploads.photos.map(file => 
+          uploadFile(file, `valuation-records/${customerIdPath}/photos/${Date.now()}_${file.name}`)
+        )
+      );
+      
+      const uploadedDocumentsUrls = await Promise.all(
+        formData.uploads.documents.map(file => 
+          uploadFile(file, `valuation-records/${customerIdPath}/documents/${Date.now()}_${file.name}`)
+        )
+      );
+
+      const payload = {
+        customer: formData.customer,
+        clientBank: formData.clientBank,
+        owner: formData.owner,
+        locality: formData.locality,
+        property: formData.property,
+        boundaries: formData.boundaries,
+        floors: formData.floors,
+        market: formData.market,
+        negativePoints: formData.negativePoints,
+        uploads: { 
+          photos: uploadedPhotosUrls, 
+          documents: uploadedDocumentsUrls 
+        }
+      };
+
+      await api.createValuationRecord(payload);
       setIsSubmittedSuccessfully(true);
+
     } catch (e) { 
-      console.error(e); 
+      console.error("Failed to submit report:", e); 
+      alert("An error occurred while uploading files or submitting the report.");
     } finally { 
       setIsSubmitting(false); 
-      
     }
   };
 
@@ -2151,11 +6452,14 @@ export default function App() {
           </div>
         </div>
         <h2 className="text-[20px] lg:text-[24px] font-bold text-gray-900 mb-3 text-center">Report submitted successfully.</h2>
-        <p className="text-[#8A94A6] text-[14px] md:text-[15px] mb-8 text-center max-w-sm">Data has been logged to the console.</p>
+        <p className="text-[#8A94A6] text-[14px] md:text-[15px] mb-8 text-center max-w-sm">Files uploaded and data verified.</p>
         <button onClick={() => window.location.reload()} className="px-8 py-3 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white font-medium transition-colors">Start New Report</button>
       </div>
     );
   }
+
+  const isUploadsReady = formData.uploads.photos.length > 0 && formData.uploads.documents.length > 0;
+  const isSubmitDisabled = isSubmitting || (currentStep === 4 && (!isConfirmed || !isUploadsReady));
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:py-8">
@@ -2164,10 +6468,21 @@ export default function App() {
         <div className="px-4 md:px-6 py-4 border-b border-gray-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h1 className="text-lg md:text-xl font-medium text-gray-900">Submit New Report</h1>
           <div className="relative w-full md:w-64">
-            <select className={`${inputStyles} appearance-none bg-blue-50/30 border-[#00a0ef]/30 font-medium`} value={formData.customer} onChange={e => setFormData({ ...formData, customer: e.target.value })}>
-              <option value="">Select Customer (Prefill)...</option>
-              <option value="cust_001">Customer A - John Doe</option>
-              <option value="cust_002">Customer B - Acme Corp</option>
+            <select 
+              className={`${inputStyles} appearance-none bg-blue-50/30 border-[#00a0ef]/30 font-medium disabled:opacity-50 disabled:cursor-not-allowed`} 
+              value={formData.customer} 
+              onChange={handleCustomerSelect}
+              disabled={isLoadingCustomers}
+            >
+              <option value="">
+                {isLoadingCustomers ? 'Loading Customers...' : 'Select Customer (Prefill)...'}
+              </option>
+              
+              {customers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.profileReference || `${c.owner?.ownerName || 'Unknown'} - ${c.clientBank?.bankName || 'Unknown Bank'}`}
+                </option>
+              ))}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
           </div>
@@ -2205,8 +6520,8 @@ export default function App() {
           <button onClick={handleStepBack} className={`flex items-center px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 text-[13px] font-medium hover:bg-gray-50 transition-colors ${currentStep === 1 ? 'invisible' : ''}`}>
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </button>
-          <button onClick={handleStepContinue} disabled={isSubmitting} className="flex items-center px-6 py-2.5 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white text-[13px] font-medium transition-shadow shadow-sm hover:shadow-md disabled:opacity-60">
-            {isSubmitting ? 'Submitting...' : currentStep === 4 ? 'Submit Report' : `Continue to Step ${currentStep + 1}`}
+          <button onClick={handleStepContinue} disabled={isSubmitDisabled} className="flex items-center px-6 py-2.5 bg-[#00a0ef] hover:bg-[#008bd1] rounded-lg text-white text-[13px] font-medium transition-shadow shadow-sm hover:shadow-md disabled:opacity-60">
+            {isSubmitting ? 'Uploading & Submitting...' : currentStep === 4 ? 'Submit Report' : `Continue to Step ${currentStep + 1}`}
             {!isSubmitting && currentStep !== 4 && <ArrowRight className="w-4 h-4 ml-2" />}
           </button>
         </div>
